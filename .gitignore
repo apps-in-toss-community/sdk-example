@@ -1,0 +1,9 @@
+# Claude Code
+.claude/settings.local.json
+.claude.lock
+.claude/schedule.lock
+
+node_modules
+dist
+.DS_Store
+*.local
