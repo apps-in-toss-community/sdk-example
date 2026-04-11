@@ -1,0 +1,144 @@
+import { useState, useCallback } from 'react';
+import { PageHeader } from '../components/PageHeader';
+import { WorkflowStepper } from '../components/WorkflowStepper';
+import { ApiCard } from '../components/ApiCard';
+import { ResultView } from '../components/ResultView';
+import { HistoryLog, type HistoryEntry } from '../components/HistoryLog';
+import { IAP, checkoutPayment } from '@apps-in-toss/web-framework';
+
+export function IAPPage() {
+  const [activeStep, setActiveStep] = useState(0);
+  const [products, setProducts] = useState<any[]>([]);
+  const [selectedSku, setSelectedSku] = useState('');
+  const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [purchaseResult, setPurchaseResult] = useState<unknown>(undefined);
+  const [purchaseError, setPurchaseError] = useState('');
+  const [eventLog, setEventLog] = useState<HistoryEntry[]>([]);
+
+  const addLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
+    setEventLog((prev) => [{ timestamp: Date.now(), status, data, error }, ...prev].slice(0, 20));
+  }, []);
+
+  const handlePurchase = useCallback((type: 'onetime' | 'subscription') => {
+    if (!selectedSku) return;
+    setPurchaseStatus('loading');
+    const method = type === 'onetime'
+      ? IAP.createOneTimePurchaseOrder
+      : IAP.createSubscriptionPurchaseOrder;
+    method({
+      options: {
+        sku: selectedSku,
+        processProductGrant: async () => {
+          addLog('success', { event: 'processProductGrant', sku: selectedSku });
+          return true;
+        },
+      },
+      onEvent: (event) => {
+        setPurchaseStatus('success');
+        setPurchaseResult(event);
+        addLog('success', event);
+      },
+      onError: (error) => {
+        setPurchaseStatus('error');
+        setPurchaseError(String(error));
+        addLog('error', undefined, String(error));
+      },
+    });
+  }, [selectedSku, addLog]);
+
+  const steps = [
+    {
+      title: '상품 조회',
+      description: 'getProductItemList()로 상품 목록을 가져옵니다',
+      content: (
+        <div className="space-y-3 py-2">
+          <ApiCard
+            name="IAP.getProductItemList"
+            description="상품 목록 조회"
+            execute={async () => {
+              const result = await IAP.getProductItemList();
+              const items = (result as any)?.products ?? [];
+              setProducts(items);
+              if (items.length > 0) setSelectedSku(items[0].sku ?? items[0].productId ?? '');
+              return result;
+            }}
+          />
+          {products.length > 0 && (
+            <div className="rounded-lg border border-gray-200 p-3">
+              <p className="text-xs font-medium text-gray-500 mb-2">상품 선택</p>
+              {products.map((p: any, i: number) => (
+                <button
+                  key={i}
+                  onClick={() => { setSelectedSku(p.sku ?? p.productId ?? ''); setActiveStep(1); }}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${
+                    selectedSku === (p.sku ?? p.productId) ? 'bg-gray-900 text-white' : 'bg-gray-50 hover:bg-gray-100'
+                  }`}
+                >
+                  {p.displayName ?? p.sku ?? p.productId} — {p.displayAmount ?? p.price ?? '?'}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: '구매',
+      description: `선택한 상품(${selectedSku || '없음'})을 구매합니다`,
+      content: (
+        <div className="space-y-3 py-2">
+          <p className="text-sm text-gray-700">SKU: <span className="font-mono font-semibold">{selectedSku || '상품을 먼저 선택하세요'}</span></p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => handlePurchase('onetime')}
+              disabled={!selectedSku || purchaseStatus === 'loading'}
+              className="flex-1 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+            >
+              일회성 구매
+            </button>
+            <button
+              onClick={() => handlePurchase('subscription')}
+              disabled={!selectedSku || purchaseStatus === 'loading'}
+              className="flex-1 rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-600 disabled:opacity-50 transition-colors"
+            >
+              구독 구매
+            </button>
+          </div>
+          <ResultView status={purchaseStatus} data={purchaseResult} error={purchaseError} />
+          <HistoryLog entries={eventLog} />
+        </div>
+      ),
+    },
+    {
+      title: '주문 관리',
+      description: '미완료 주문 조회, 완료/환불 내역, 구독 정보',
+      content: (
+        <div className="space-y-3 py-2">
+          <ApiCard name="IAP.getPendingOrders" description="미완료 주문 조회" execute={async () => await IAP.getPendingOrders()} />
+          <ApiCard name="IAP.getCompletedOrRefundedOrders" description="완료/환불 주문 조회" execute={async () => await IAP.getCompletedOrRefundedOrders()} />
+          <ApiCard
+            name="IAP.getSubscriptionInfo"
+            description="구독 정보 조회"
+            params={[{ name: 'orderId', label: 'Order ID', placeholder: 'order-123' }]}
+            execute={async (p) => await IAP.getSubscriptionInfo({ params: { orderId: p.orderId } })}
+          />
+          <ApiCard
+            name="checkoutPayment"
+            description="TossPay 결제"
+            params={[{ name: 'payToken', label: 'Pay Token', placeholder: 'token-123' }]}
+            execute={async (p) => await checkoutPayment({ params: { payToken: p.payToken } })}
+          />
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      <PageHeader title="IAP" />
+      <div className="p-4">
+        <WorkflowStepper steps={steps} activeStep={activeStep} onStepClick={setActiveStep} />
+      </div>
+    </div>
+  );
+}

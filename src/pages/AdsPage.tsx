@@ -1,0 +1,138 @@
+import { useState, useCallback } from 'react';
+import { PageHeader } from '../components/PageHeader';
+import { WorkflowStepper } from '../components/WorkflowStepper';
+import { ResultView } from '../components/ResultView';
+import { HistoryLog, type HistoryEntry } from '../components/HistoryLog';
+import { ApiCard } from '../components/ApiCard';
+import { GoogleAdMob, TossAds, loadFullScreenAd, showFullScreenAd } from '@apps-in-toss/web-framework';
+
+export function AdsPage() {
+  const [activeStep, setActiveStep] = useState(0);
+  const [adLoaded, setAdLoaded] = useState(false);
+  const [eventLog, setEventLog] = useState<HistoryEntry[]>([]);
+  const [loadStatus, setLoadStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [loadResult, setLoadResult] = useState<unknown>(undefined);
+  const [loadError, setLoadError] = useState('');
+
+  const addLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
+    setEventLog((prev) => [{ timestamp: Date.now(), status, data, error }, ...prev].slice(0, 20));
+  }, []);
+
+  const handleLoad = useCallback(() => {
+    setLoadStatus('loading');
+    GoogleAdMob.loadAppsInTossAdMob({
+      onEvent: (e) => {
+        setLoadStatus('success');
+        setLoadResult(e);
+        setAdLoaded(true);
+        addLog('success', e);
+        setActiveStep(1);
+      },
+      onError: (e) => {
+        setLoadStatus('error');
+        setLoadError(String(e));
+        addLog('error', undefined, String(e));
+      },
+    });
+  }, [addLog]);
+
+  const handleShow = useCallback(() => {
+    GoogleAdMob.showAppsInTossAdMob({
+      onEvent: (e) => addLog('success', e),
+      onError: (e) => addLog('error', undefined, String(e)),
+    });
+  }, [addLog]);
+
+  const steps = [
+    {
+      title: '광고 로드',
+      description: '광고를 미리 로드합니다',
+      content: (
+        <div className="space-y-3 py-2">
+          <button
+            onClick={handleLoad}
+            disabled={loadStatus === 'loading'}
+            className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+          >
+            GoogleAdMob.loadAppsInTossAdMob
+          </button>
+          <ResultView status={loadStatus} data={loadResult} error={loadError} />
+        </div>
+      ),
+    },
+    {
+      title: '광고 표시',
+      description: '로드된 광고를 화면에 표시합니다',
+      content: (
+        <div className="space-y-3 py-2">
+          <button
+            onClick={handleShow}
+            disabled={!adLoaded}
+            className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+          >
+            GoogleAdMob.showAppsInTossAdMob
+          </button>
+          <HistoryLog entries={eventLog} />
+        </div>
+      ),
+    },
+  ];
+
+  return (
+    <div>
+      <PageHeader title="Ads" />
+      <div className="p-4 space-y-6">
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">GoogleAdMob</h2>
+          <WorkflowStepper steps={steps} activeStep={activeStep} onStepClick={setActiveStep} />
+        </div>
+
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">FullScreen Ad</h2>
+          <div className="space-y-3">
+            <ApiCard
+              name="loadFullScreenAd"
+              description="전면 광고 로드"
+              execute={async () => {
+                return new Promise((resolve, reject) => {
+                  loadFullScreenAd({
+                    onEvent: (e) => resolve(e),
+                    onError: (e) => reject(e),
+                  });
+                });
+              }}
+            />
+            <ApiCard
+              name="showFullScreenAd"
+              description="전면 광고 표시"
+              execute={async () => {
+                return new Promise((resolve, reject) => {
+                  showFullScreenAd({
+                    onEvent: (e) => resolve(e),
+                    onError: (e) => reject(e),
+                  });
+                });
+              }}
+            />
+          </div>
+        </div>
+
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 mb-3">TossAds</h2>
+          <div className="space-y-3">
+            <ApiCard
+              name="TossAds.initialize"
+              description="TossAds 초기화"
+              execute={async () => { TossAds.initialize({}); return 'initialized'; }}
+            />
+            <ApiCard
+              name="TossAds.destroyAll"
+              description="모든 TossAds 슬롯 제거"
+              execute={async () => { TossAds.destroyAll(); return 'destroyed'; }}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
