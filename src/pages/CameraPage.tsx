@@ -11,8 +11,8 @@ export function CameraPage() {
         <ApiCard
           name="fetchAlbumPhotos"
           description="앨범 사진 가져오기"
-          params={[{ name: 'maxCount', label: 'Max Count', type: 'number', defaultValue: '5' }]}
-          execute={async (p) => await fetchAlbumPhotos({ maxCount: Number(p.maxCount) })}
+          params={[{ name: 'maxCount', label: 'Max Count', type: 'number', defaultValue: '5', parse: (v) => Number(v) }]}
+          execute={async (p) => await fetchAlbumPhotos({ maxCount: p.maxCount as number })}
         />
       </div>
     </div>

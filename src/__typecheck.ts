@@ -6,7 +6,7 @@
  * SDK가 업데이트되어 새 export가 추가됐는데 여기 없으면 tsc --noEmit이 실패한다.
  */
 
-// Value imports — `void` prevents "unused local" errors
+// Value imports — exported as types to prevent "unused local" errors
 import {
   Storage,
   Accuracy,
@@ -36,32 +36,32 @@ import {
   Analytics,
 } from '@apps-in-toss/web-framework';
 
-void Storage;
-void Accuracy;
-void getCurrentLocation;
-void startUpdateLocation;
-void openCamera;
-void fetchAlbumPhotos;
-void fetchContacts;
-void getClipboardText;
-void setClipboardText;
-void SafeAreaInsets;
-void getSafeAreaInsets;
-void isMinVersionSupported;
-void getServerTime;
-void requestReview;
-void getAppsInTossGlobals;
-void graniteEvent;
-void appsInTossEvent;
-void tdsEvent;
-void env;
-void GoogleAdMob;
-void TossAds;
-void loadFullScreenAd;
-void showFullScreenAd;
-void IAP;
-void partner;
-void Analytics;
+export type _Storage = typeof Storage;
+export type _Accuracy = typeof Accuracy;
+export type _getCurrentLocation = typeof getCurrentLocation;
+export type _startUpdateLocation = typeof startUpdateLocation;
+export type _openCamera = typeof openCamera;
+export type _fetchAlbumPhotos = typeof fetchAlbumPhotos;
+export type _fetchContacts = typeof fetchContacts;
+export type _getClipboardText = typeof getClipboardText;
+export type _setClipboardText = typeof setClipboardText;
+export type _SafeAreaInsets = typeof SafeAreaInsets;
+export type _getSafeAreaInsets = typeof getSafeAreaInsets;
+export type _isMinVersionSupported = typeof isMinVersionSupported;
+export type _getServerTime = typeof getServerTime;
+export type _requestReview = typeof requestReview;
+export type _getAppsInTossGlobals = typeof getAppsInTossGlobals;
+export type _graniteEvent = typeof graniteEvent;
+export type _appsInTossEvent = typeof appsInTossEvent;
+export type _tdsEvent = typeof tdsEvent;
+export type _env = typeof env;
+export type _GoogleAdMob = typeof GoogleAdMob;
+export type _TossAds = typeof TossAds;
+export type _loadFullScreenAd = typeof loadFullScreenAd;
+export type _showFullScreenAd = typeof showFullScreenAd;
+export type _IAP = typeof IAP;
+export type _partner = typeof partner;
+export type _Analytics = typeof Analytics;
 
 // Type-only imports — used in the _SdkTypes alias below
 import type {
@@ -73,6 +73,7 @@ import type {
   ConsumableProductListItem,
   CreateSubscriptionPurchaseOrderOptions,
   GraniteEvent,
+  HapticFeedbackType,
   IapCreateOneTimePurchaseOrderOptions,
   IapProductListItem,
   IapSubscriptionInfoResponse,
@@ -148,6 +149,7 @@ export type _SdkTypes = [
   ConsumableProductListItem,
   CreateSubscriptionPurchaseOrderOptions,
   GraniteEvent,
+  HapticFeedbackType,
   IapCreateOneTimePurchaseOrderOptions,
   IapProductListItem,
   IapSubscriptionInfoResponse,

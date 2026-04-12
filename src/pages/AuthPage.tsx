@@ -31,7 +31,7 @@ export function AuthPage() {
           name="appsInTossSignTossCert"
           description="토스 인증서 서명"
           params={[{ name: 'txId', label: 'txId', placeholder: 'transaction-id' }]}
-          execute={async (p) => await appsInTossSignTossCert({ txId: p.txId })}
+          execute={async (p) => await appsInTossSignTossCert({ txId: p.txId as string })}
         />
       </div>
     </div>

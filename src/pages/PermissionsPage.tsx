@@ -1,14 +1,15 @@
 import { PageHeader } from '../components/PageHeader';
 import { ApiCard } from '../components/ApiCard';
 import { getPermission, openPermissionDialog, requestPermission } from '@apps-in-toss/web-framework';
+import type { PermissionName } from '@apps-in-toss/web-framework';
 
-const permissionOptions = [
+const permissionOptions: { label: string; value: PermissionName }[] = [
   { label: 'camera', value: 'camera' },
-  { label: 'photo', value: 'photo' },
+  { label: 'photos', value: 'photos' },
   { label: 'contacts', value: 'contacts' },
-  { label: 'location', value: 'location' },
+  { label: 'geolocation', value: 'geolocation' },
   { label: 'microphone', value: 'microphone' },
-  { label: 'notification', value: 'notification' },
+  { label: 'clipboard', value: 'clipboard' },
 ];
 
 export function PermissionsPage() {
@@ -20,13 +21,13 @@ export function PermissionsPage() {
           name="getPermission"
           description="권한 상태 조회"
           params={[{ name: 'name', label: 'Permission', type: 'select', options: permissionOptions, defaultValue: 'camera' }]}
-          execute={async (p) => await getPermission(p.name as any)}
+          execute={async (p) => await getPermission({ name: p.name as PermissionName, access: 'read' })}
         />
         <ApiCard
           name="openPermissionDialog"
           description="권한 요청 다이얼로그"
           params={[{ name: 'name', label: 'Permission', type: 'select', options: permissionOptions, defaultValue: 'camera' }]}
-          execute={async (p) => await openPermissionDialog(p.name as any)}
+          execute={async (p) => await openPermissionDialog({ name: p.name as PermissionName, access: 'read' })}
         />
         <ApiCard
           name="requestPermission"
@@ -35,7 +36,7 @@ export function PermissionsPage() {
             { name: 'name', label: 'Permission', type: 'select', options: permissionOptions, defaultValue: 'camera' },
             { name: 'access', label: 'Access', placeholder: 'read', defaultValue: 'read' },
           ]}
-          execute={async (p) => await requestPermission({ name: p.name as any, access: p.access as any })}
+          execute={async (p) => await requestPermission({ name: p.name as PermissionName, access: p.access as 'read' | 'write' })}
         />
       </div>
     </div>

@@ -1,10 +1,10 @@
 import { useState, useCallback } from 'react';
 import { PageHeader } from '../components/PageHeader';
 import { WorkflowStepper } from '../components/WorkflowStepper';
-import { ResultView } from '../components/ResultView';
 import { HistoryLog, type HistoryEntry } from '../components/HistoryLog';
 import { ApiCard } from '../components/ApiCard';
 import { GoogleAdMob, TossAds, loadFullScreenAd, showFullScreenAd } from '@apps-in-toss/web-framework';
+import { ResultView } from '../components/ResultView';
 
 export function AdsPage() {
   const [activeStep, setActiveStep] = useState(0);
@@ -43,6 +43,15 @@ export function AdsPage() {
     });
   }, [addLog]);
 
+  const handleReset = useCallback(() => {
+    setActiveStep(0);
+    setAdLoaded(false);
+    setEventLog([]);
+    setLoadStatus('idle');
+    setLoadResult(undefined);
+    setLoadError('');
+  }, []);
+
   const steps = [
     {
       title: '광고 로드',
@@ -50,6 +59,7 @@ export function AdsPage() {
       content: (
         <div className="space-y-3 py-2">
           <button
+            type="button"
             onClick={handleLoad}
             disabled={loadStatus === 'loading'}
             className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
@@ -66,6 +76,7 @@ export function AdsPage() {
       content: (
         <div className="space-y-3 py-2">
           <button
+            type="button"
             onClick={handleShow}
             disabled={!adLoaded}
             className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
@@ -83,7 +94,16 @@ export function AdsPage() {
       <PageHeader title="Ads" />
       <div className="p-4 space-y-6">
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">GoogleAdMob</h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-sm font-semibold text-gray-700">GoogleAdMob</h2>
+            <button
+              type="button"
+              onClick={handleReset}
+              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            >
+              초기화
+            </button>
+          </div>
           <WorkflowStepper steps={steps} activeStep={activeStep} onStepClick={setActiveStep} />
         </div>
 
@@ -123,12 +143,12 @@ export function AdsPage() {
             <ApiCard
               name="TossAds.initialize"
               description="TossAds 초기화"
-              execute={async () => { TossAds.initialize({}); return 'initialized'; }}
+              execute={async () => { TossAds.initialize({}); }}
             />
             <ApiCard
               name="TossAds.destroyAll"
               description="모든 TossAds 슬롯 제거"
-              execute={async () => { TossAds.destroyAll(); return 'destroyed'; }}
+              execute={async () => { TossAds.destroyAll(); }}
             />
           </div>
         </div>

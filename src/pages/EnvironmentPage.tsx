@@ -33,7 +33,10 @@ export function EnvironmentPage() {
             { name: 'android', label: 'Android', placeholder: '5.0.0', defaultValue: '5.0.0' },
             { name: 'ios', label: 'iOS', placeholder: '5.0.0', defaultValue: '5.0.0' },
           ]}
-          execute={async (p) => isMinVersionSupported({ android: p.android as any, ios: p.ios as any })}
+          execute={async (p) => isMinVersionSupported({
+            android: p.android as `${number}.${number}.${number}` | 'always' | 'never',
+            ios: p.ios as `${number}.${number}.${number}` | 'always' | 'never',
+          })}
         />
         <ApiCard name="getSchemeUri" description="현재 scheme URI" execute={async () => getSchemeUri()} />
         <ApiCard name="getLocale" description="로케일" execute={async () => getLocale()} />

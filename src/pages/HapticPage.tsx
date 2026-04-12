@@ -1,6 +1,20 @@
 import { PageHeader } from '../components/PageHeader';
 import { ApiCard } from '../components/ApiCard';
 import { generateHapticFeedback, saveBase64Data } from '@apps-in-toss/web-framework';
+import type { HapticFeedbackType } from '@apps-in-toss/web-framework';
+
+const hapticOptions: { label: string; value: HapticFeedbackType }[] = [
+  { label: 'tickWeak', value: 'tickWeak' },
+  { label: 'tickMedium', value: 'tickMedium' },
+  { label: 'softMedium', value: 'softMedium' },
+  { label: 'basicWeak', value: 'basicWeak' },
+  { label: 'basicMedium', value: 'basicMedium' },
+  { label: 'tap', value: 'tap' },
+  { label: 'success', value: 'success' },
+  { label: 'error', value: 'error' },
+  { label: 'wiggle', value: 'wiggle' },
+  { label: 'confetti', value: 'confetti' },
+];
 
 export function HapticPage() {
   return (
@@ -12,16 +26,10 @@ export function HapticPage() {
           description="햅틱 피드백 생성"
           params={[{
             name: 'type', label: 'Type', type: 'select',
-            options: [
-              { label: 'tickWeak', value: 'tickWeak' },
-              { label: 'tap', value: 'tap' },
-              { label: 'success', value: 'success' },
-              { label: 'error', value: 'error' },
-              { label: 'confetti', value: 'confetti' },
-            ],
+            options: hapticOptions,
             defaultValue: 'success',
           }]}
-          execute={async (p) => { generateHapticFeedback({ type: p.type as any }); return 'triggered'; }}
+          execute={async (p) => { await generateHapticFeedback({ type: p.type as HapticFeedbackType }); }}
         />
         <ApiCard
           name="saveBase64Data"
@@ -31,7 +39,7 @@ export function HapticPage() {
             { name: 'fileName', label: 'File Name', placeholder: 'test.txt', defaultValue: 'test.txt' },
             { name: 'mimeType', label: 'MIME Type', placeholder: 'text/plain', defaultValue: 'text/plain' },
           ]}
-          execute={async (p) => { await saveBase64Data({ data: p.data, fileName: p.fileName, mimeType: p.mimeType }); return 'saved'; }}
+          execute={async (p) => { await saveBase64Data({ data: p.data as string, fileName: p.fileName as string, mimeType: p.mimeType as string }); }}
         />
       </div>
     </div>

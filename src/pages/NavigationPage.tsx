@@ -17,18 +17,18 @@ export function NavigationPage() {
     <div>
       <PageHeader title="Navigation" />
       <div className="p-4 space-y-3">
-        <ApiCard name="closeView" description="현재 뷰 닫기" execute={async () => { closeView(); return 'closed'; }} />
+        <ApiCard name="closeView" description="현재 뷰 닫기" execute={async () => { closeView(); }} />
         <ApiCard
           name="openURL"
           description="URL 열기"
           params={[{ name: 'url', label: 'URL', placeholder: 'https://example.com' }]}
-          execute={async (p) => { openURL(p.url); return 'opened'; }}
+          execute={async (p) => { openURL(p.url as string); }}
         />
         <ApiCard
           name="share"
           description="메시지 공유"
           params={[{ name: 'message', label: 'Message', placeholder: '공유할 메시지' }]}
-          execute={async (p) => { await share({ message: p.message }); return 'shared'; }}
+          execute={async (p) => { await share({ message: p.message as string }); }}
         />
         <ApiCard
           name="getTossShareLink"
@@ -37,40 +37,41 @@ export function NavigationPage() {
             { name: 'path', label: 'Path', placeholder: '/some/path' },
             { name: 'ogImageUrl', label: 'OG Image URL (optional)', placeholder: 'https://...' },
           ]}
-          execute={async (p) => await getTossShareLink(p.path, p.ogImageUrl || undefined)}
+          execute={async (p) => await getTossShareLink(p.path as string, (p.ogImageUrl as string) || undefined)}
         />
         <ApiCard
           name="setIosSwipeGestureEnabled"
           description="iOS 스와이프 제스처 활성화"
-          params={[{ name: 'isEnabled', label: 'Enabled', type: 'toggle', defaultValue: 'true' }]}
-          execute={async (p) => { setIosSwipeGestureEnabled({ isEnabled: p.isEnabled === 'true' }); return 'set'; }}
+          params={[{ name: 'isEnabled', label: 'Enabled', type: 'toggle', defaultValue: 'true', parse: (v) => v === 'true' }]}
+          execute={async (p) => { setIosSwipeGestureEnabled({ isEnabled: p.isEnabled as boolean }); }}
         />
         <ApiCard
           name="setDeviceOrientation"
           description="화면 방향 설정"
           params={[{
             name: 'type', label: 'Orientation', type: 'select',
+            // SDK only supports 'portrait' | 'landscape'
             options: [{ label: 'Portrait', value: 'portrait' }, { label: 'Landscape', value: 'landscape' }],
             defaultValue: 'portrait',
           }]}
-          execute={async (p) => { setDeviceOrientation({ type: p.type as 'portrait' | 'landscape' }); return 'set'; }}
+          execute={async (p) => { setDeviceOrientation({ type: p.type as 'portrait' | 'landscape' }); }}
         />
         <ApiCard
           name="setScreenAwakeMode"
           description="화면 꺼짐 방지"
-          params={[{ name: 'enabled', label: 'Enabled', type: 'toggle', defaultValue: 'true' }]}
-          execute={async (p) => await setScreenAwakeMode({ enabled: p.enabled === 'true' })}
+          params={[{ name: 'enabled', label: 'Enabled', type: 'toggle', defaultValue: 'true', parse: (v) => v === 'true' }]}
+          execute={async (p) => await setScreenAwakeMode({ enabled: p.enabled as boolean })}
         />
         <ApiCard
           name="setSecureScreen"
           description="보안 화면 설정"
-          params={[{ name: 'enabled', label: 'Enabled', type: 'toggle', defaultValue: 'true' }]}
-          execute={async (p) => await setSecureScreen({ enabled: p.enabled === 'true' })}
+          params={[{ name: 'enabled', label: 'Enabled', type: 'toggle', defaultValue: 'true', parse: (v) => v === 'true' }]}
+          execute={async (p) => await setSecureScreen({ enabled: p.enabled as boolean })}
         />
         <ApiCard
           name="requestReview"
           description="앱 리뷰 요청"
-          execute={async () => { await requestReview(); return 'requested'; }}
+          execute={async () => { await requestReview(); }}
         />
       </div>
     </div>

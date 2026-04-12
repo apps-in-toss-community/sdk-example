@@ -15,12 +15,12 @@ export function PartnerPage() {
             { name: 'title', label: 'Title', placeholder: 'My Button', defaultValue: 'My Button' },
             { name: 'iconName', label: 'Icon Name', placeholder: 'star', defaultValue: 'star' },
           ]}
-          execute={async (p) => { await partner.addAccessoryButton({ id: p.id, title: p.title, icon: { name: p.iconName } }); return 'added'; }}
+          execute={async (p) => { await partner.addAccessoryButton({ id: p.id as string, title: p.title as string, icon: { name: p.iconName as string } }); }}
         />
         <ApiCard
           name="partner.removeAccessoryButton"
           description="액세서리 버튼 제거"
-          execute={async () => { await partner.removeAccessoryButton(); return 'removed'; }}
+          execute={async () => { await partner.removeAccessoryButton(); }}
         />
       </div>
     </div>
