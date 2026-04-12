@@ -24,7 +24,7 @@ export function HistoryLog({ entries }: HistoryLogProps) {
           <div key={entry.timestamp} className="flex items-start gap-2 text-xs">
             <span className="text-gray-400 shrink-0">{formatTime(entry.timestamp)}</span>
             <span className={entry.status === 'error' ? 'text-red-600' : 'text-green-600'}>
-              {entry.status === 'error' ? entry.error : JSON.stringify(entry.data)}
+              {entry.status === 'error' ? entry.error : entry.data === undefined ? '(no data)' : JSON.stringify(entry.data)}
             </span>
           </div>
         ))}

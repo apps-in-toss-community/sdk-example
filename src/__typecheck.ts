@@ -6,7 +6,8 @@
  * SDK가 업데이트되어 새 export가 추가됐는데 여기 없으면 tsc --noEmit이 실패한다.
  */
 
-// Value imports — exported as types to prevent "unused local" errors
+// Value imports — `typeof X` only works for values (not pure types), so all SDK exports
+// must be imported as values here. They are re-exported as types to prevent "unused local" errors.
 import {
   Storage,
   Accuracy,

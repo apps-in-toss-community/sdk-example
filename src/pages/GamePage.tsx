@@ -71,7 +71,7 @@ export function GamePage() {
             { name: 'promotionCode', label: 'Promotion Code', placeholder: 'PROMO_001', defaultValue: 'PROMO_001' },
             { name: 'amount', label: 'Amount', type: 'number', defaultValue: '100', parse: (v) => Number(v) },
           ]}
-          execute={async (p) => await grantPromotionReward({ params: { promotionCode: p.promotionCode as string, amount: p.amount as number } })}
+          execute={async (p) => await grantPromotionReward({ params: { promotionCode: p.promotionCode, amount: p.amount } })}
         />
         <ApiCard
           name="grantPromotionRewardForGame"
@@ -80,13 +80,13 @@ export function GamePage() {
             { name: 'promotionCode', label: 'Promotion Code', placeholder: 'GAME_001', defaultValue: 'GAME_001' },
             { name: 'amount', label: 'Amount', type: 'number', defaultValue: '100', parse: (v) => Number(v) },
           ]}
-          execute={async (p) => await grantPromotionRewardForGame({ params: { promotionCode: p.promotionCode as string, amount: p.amount as number } })}
+          execute={async (p) => await grantPromotionRewardForGame({ params: { promotionCode: p.promotionCode, amount: p.amount } })}
         />
         <ApiCard
           name="submitGameCenterLeaderBoardScore"
           description="리더보드 점수 제출"
           params={[{ name: 'score', label: 'Score', placeholder: '1000', defaultValue: '1000' }]}
-          execute={async (p) => await submitGameCenterLeaderBoardScore({ score: p.score as string })}
+          execute={async (p) => await submitGameCenterLeaderBoardScore({ score: p.score })}
         />
         <ApiCard name="getGameCenterGameProfile" description="게임 프로필 조회" execute={async () => await getGameCenterGameProfile()} />
         <ApiCard name="openGameCenterLeaderboard" description="리더보드 열기" execute={async () => { await openGameCenterLeaderboard(); }} />

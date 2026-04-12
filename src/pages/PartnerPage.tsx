@@ -15,7 +15,7 @@ export function PartnerPage() {
             { name: 'title', label: 'Title', placeholder: 'My Button', defaultValue: 'My Button' },
             { name: 'iconName', label: 'Icon Name', placeholder: 'star', defaultValue: 'star' },
           ]}
-          execute={async (p) => { await partner.addAccessoryButton({ id: p.id as string, title: p.title as string, icon: { name: p.iconName as string } }); }}
+          execute={async (p) => { await partner.addAccessoryButton({ id: p.id, title: p.title, icon: { name: p.iconName } }); }}
         />
         <ApiCard
           name="partner.removeAccessoryButton"

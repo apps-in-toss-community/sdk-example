@@ -22,7 +22,7 @@ export function ResultView({ status, data, error }: ResultViewProps) {
       <span className={`inline-block text-xs font-medium px-1.5 py-0.5 rounded ${isError ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
         {isError ? 'Error' : 'Success'}
       </span>
-      <pre className="mt-1 text-xs text-gray-800 whitespace-pre-wrap break-all overflow-auto max-h-48">
+      <pre className="mt-1 text-xs text-gray-800 whitespace-pre-wrap break-all overflow-auto max-h-64">
         {isError ? error : JSON.stringify(data, null, 2)}
       </pre>
     </div>

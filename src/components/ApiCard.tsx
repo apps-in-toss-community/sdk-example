@@ -1,9 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { ParamInput } from './ParamInput';
 import { ResultView } from './ResultView';
 import { HistoryLog, type HistoryEntry } from './HistoryLog';
 
-export interface ParamDef {
+export interface ParamDef<T = string> {
   name: string;
   label: string;
   type?: 'text' | 'number' | 'toggle' | 'select';
@@ -11,17 +11,42 @@ export interface ParamDef {
   placeholder?: string;
   defaultValue?: string;
   /** Optional transformer applied to the raw string value before passing to execute. */
-  parse?: (raw: string) => unknown;
+  parse?: (raw: string) => T;
 }
 
-interface ApiCardProps {
+type AnyParamDef = ParamDef<any>;
+
+/** Resolve the parsed value type for a single param. */
+type ParsedParam<P extends AnyParamDef> = P extends { parse: infer F }
+  ? F extends (raw: string) => infer T ? T : string
+  : string;
+
+/**
+ * Recursively map a variadic tuple of ParamDefs to an object type keyed by
+ * each param's name, with value type inferred from the param's `parse` return
+ * type (or `string` when no `parse` is provided).
+ *
+ * The recursive approach avoids the "union collapse" problem that occurs when
+ * indexing a heterogeneous tuple with `Params[number]`.
+ */
+type ParamsRecord<Params extends AnyParamDef[]> =
+  Params extends [infer Head extends AnyParamDef, ...infer Tail extends AnyParamDef[]]
+    ? { [K in Head['name']]: ParsedParam<Head> } & ParamsRecord<Tail>
+    : Record<never, never>;
+
+interface ApiCardProps<Params extends AnyParamDef[]> {
   name: string;
   description?: string;
-  params?: ParamDef[];
-  execute: (params: Record<string, unknown>) => Promise<unknown>;
+  params?: [...Params];
+  execute: (params: ParamsRecord<Params>) => Promise<unknown>;
 }
 
-export function ApiCard({ name, description, params = [], execute }: ApiCardProps) {
+export function ApiCard<Params extends AnyParamDef[]>({
+  name,
+  description,
+  params = [] as any,
+  execute,
+}: ApiCardProps<Params>) {
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(params.map((p) => [p.name, p.defaultValue ?? '']))
   );
@@ -30,7 +55,7 @@ export function ApiCard({ name, description, params = [], execute }: ApiCardProp
   const [error, setError] = useState<string>('');
   const [history, setHistory] = useState<HistoryEntry[]>([]);
 
-  const handleExecute = useCallback(async () => {
+  async function handleExecute() {
     setStatus('loading');
     try {
       // Apply parse transforms for params that define one; otherwise pass raw string
@@ -39,7 +64,7 @@ export function ApiCard({ name, description, params = [], execute }: ApiCardProp
         const raw = values[p.name] ?? '';
         parsed[p.name] = p.parse ? p.parse(raw) : raw;
       }
-      const data = await execute(parsed);
+      const data = await execute(parsed as ParamsRecord<Params>);
       setStatus('success');
       setResult(data);
       setHistory((prev) => [{ timestamp: Date.now(), status: 'success' as const, data }, ...prev].slice(0, 20));
@@ -49,7 +74,7 @@ export function ApiCard({ name, description, params = [], execute }: ApiCardProp
       setError(msg);
       setHistory((prev) => [{ timestamp: Date.now(), status: 'error' as const, error: msg }, ...prev].slice(0, 20));
     }
-  }, [execute, values, params]);
+  }
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4">

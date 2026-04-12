@@ -28,8 +28,9 @@ export function HapticPage() {
             name: 'type', label: 'Type', type: 'select',
             options: hapticOptions,
             defaultValue: 'success',
+            parse: (v) => v as HapticFeedbackType,
           }]}
-          execute={async (p) => { await generateHapticFeedback({ type: p.type as HapticFeedbackType }); }}
+          execute={async (p) => { await generateHapticFeedback({ type: p.type }); }}
         />
         <ApiCard
           name="saveBase64Data"
@@ -39,7 +40,7 @@ export function HapticPage() {
             { name: 'fileName', label: 'File Name', placeholder: 'test.txt', defaultValue: 'test.txt' },
             { name: 'mimeType', label: 'MIME Type', placeholder: 'text/plain', defaultValue: 'text/plain' },
           ]}
-          execute={async (p) => { await saveBase64Data({ data: p.data as string, fileName: p.fileName as string, mimeType: p.mimeType as string }); }}
+          execute={async (p) => { await saveBase64Data({ data: p.data, fileName: p.fileName, mimeType: p.mimeType }); }}
         />
       </div>
     </div>

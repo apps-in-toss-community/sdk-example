@@ -14,7 +14,7 @@ export function ContactsPage() {
             { name: 'size', label: 'Size', type: 'number', defaultValue: '10', parse: (v) => Number(v) },
             { name: 'offset', label: 'Offset', type: 'number', defaultValue: '0', parse: (v) => Number(v) },
           ]}
-          execute={async (p) => await fetchContacts({ size: p.size as number, offset: p.offset as number })}
+          execute={async (p) => await fetchContacts({ size: p.size, offset: p.offset })}
         />
       </div>
     </div>

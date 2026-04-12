@@ -25,7 +25,7 @@ export function AnalyticsPage() {
           name="Analytics.screen"
           description="화면 조회 로그"
           params={[{ name: 'page', label: 'Page', placeholder: 'home', defaultValue: 'home' }]}
-          execute={async (p) => { await Analytics.screen({ page: p.page as string }); }}
+          execute={async (p) => { await Analytics.screen({ page: p.page }); }}
         />
         <ApiCard
           name="Analytics.impression"
@@ -34,7 +34,7 @@ export function AnalyticsPage() {
             { name: 'component', label: 'Component', placeholder: 'banner', defaultValue: 'banner' },
             { name: 'page', label: 'Page', placeholder: 'home', defaultValue: 'home' },
           ]}
-          execute={async (p) => { await Analytics.impression({ component: p.component as string, page: p.page as string }); }}
+          execute={async (p) => { await Analytics.impression({ component: p.component, page: p.page }); }}
         />
         <ApiCard
           name="Analytics.click"
@@ -43,7 +43,7 @@ export function AnalyticsPage() {
             { name: 'component', label: 'Component', placeholder: 'button', defaultValue: 'button' },
             { name: 'page', label: 'Page', placeholder: 'home', defaultValue: 'home' },
           ]}
-          execute={async (p) => { await Analytics.click({ component: p.component as string, page: p.page as string }); }}
+          execute={async (p) => { await Analytics.click({ component: p.component, page: p.page }); }}
         />
         <ApiCard
           name="eventLog"
@@ -54,7 +54,7 @@ export function AnalyticsPage() {
           ]}
           execute={async (p) => {
             await eventLog({
-              log_name: p.log_name as string,
+              log_name: p.log_name,
               log_type: p.log_type as EventLogType,
               params: {},
             });

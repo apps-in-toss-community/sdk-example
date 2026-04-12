@@ -6,12 +6,9 @@ import { HistoryLog, type HistoryEntry } from '../components/HistoryLog';
 import { IAP, checkoutPayment } from '@apps-in-toss/web-framework';
 import type { IapProductListItem } from '@apps-in-toss/web-framework';
 
-// IapProductListItem is the union of all IAP product variants
-type Product = IapProductListItem;
-
 export function IAPPage() {
   const [activeStep, setActiveStep] = useState(0);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<IapProductListItem[]>([]);
   const [selectedSku, setSelectedSku] = useState('');
   const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [purchaseError, setPurchaseError] = useState('');
@@ -69,7 +66,7 @@ export function IAPPage() {
             description="상품 목록 조회"
             execute={async () => {
               const result = await IAP.getProductItemList();
-              const items: Product[] = result?.products ?? [];
+              const items: IapProductListItem[] = result?.products ?? [];
               setProducts(items);
               if (items.length > 0) setSelectedSku(items[0].sku ?? '');
               return result;
@@ -78,12 +75,12 @@ export function IAPPage() {
           {products.length > 0 && (
             <div className="rounded-lg border border-gray-200 p-3">
               <p className="text-xs font-medium text-gray-500 mb-2">상품 선택</p>
-              {products.map((p) => {
+              {products.map((p, i) => {
                 const sku = p.sku ?? '';
                 return (
                   <button
                     type="button"
-                    key={sku || p.sku}
+                    key={p.sku ?? String(i)}
                     onClick={() => { setSelectedSku(sku); setActiveStep(1); }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${
                       selectedSku === sku ? 'bg-gray-900 text-white' : 'bg-gray-50 hover:bg-gray-100'
@@ -145,13 +142,13 @@ export function IAPPage() {
             name="IAP.getSubscriptionInfo"
             description="구독 정보 조회"
             params={[{ name: 'orderId', label: 'Order ID', placeholder: 'order-123' }]}
-            execute={async (p) => await IAP.getSubscriptionInfo({ params: { orderId: p.orderId as string } })}
+            execute={async (p) => await IAP.getSubscriptionInfo({ params: { orderId: p.orderId } })}
           />
           <ApiCard
             name="checkoutPayment"
             description="TossPay 결제"
             params={[{ name: 'payToken', label: 'Pay Token', placeholder: 'token-123' }]}
-            execute={async (p) => await checkoutPayment({ params: { payToken: p.payToken as string } })}
+            execute={async (p) => await checkoutPayment({ params: { payToken: p.payToken } })}
           />
         </div>
       ),
