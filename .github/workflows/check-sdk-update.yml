@@ -1,0 +1,92 @@
+name: Check SDK Update
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+jobs:
+  check-update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Check for SDK updates
+        run: |
+          CURRENT_SDK=$(node -p "require('./package.json').dependencies['@apps-in-toss/web-framework']")
+          LATEST_SDK=$(pnpm view @apps-in-toss/web-framework version 2>/dev/null || echo "unknown")
+
+          CURRENT_DEVTOOLS=$(node -p "require('./package.json').dependencies['@ait-co/devtools']")
+          LATEST_DEVTOOLS=$(pnpm view @ait-co/devtools version 2>/dev/null || echo "unknown")
+
+          echo "SDK: current=$CURRENT_SDK latest=$LATEST_SDK"
+          echo "Devtools: current=$CURRENT_DEVTOOLS latest=$LATEST_DEVTOOLS"
+
+          NEEDS_UPDATE=false
+
+          if [ "$LATEST_SDK" != "unknown" ] && [ "$CURRENT_SDK" != "^$LATEST_SDK" ]; then
+            echo "sdk_update=true" >> $GITHUB_ENV
+            echo "sdk_latest=$LATEST_SDK" >> $GITHUB_ENV
+            NEEDS_UPDATE=true
+          fi
+
+          if [ "$LATEST_DEVTOOLS" != "unknown" ] && [ "$CURRENT_DEVTOOLS" != "^$LATEST_DEVTOOLS" ]; then
+            echo "devtools_update=true" >> $GITHUB_ENV
+            echo "devtools_latest=$LATEST_DEVTOOLS" >> $GITHUB_ENV
+            NEEDS_UPDATE=true
+          fi
+
+          echo "needs_update=$NEEDS_UPDATE" >> $GITHUB_ENV
+
+      - name: Try update and typecheck
+        if: env.needs_update == 'true'
+        id: typecheck
+        continue-on-error: true
+        run: |
+          if [ "${{ env.sdk_update }}" = "true" ]; then
+            pnpm add @apps-in-toss/web-framework@latest
+          fi
+          if [ "${{ env.devtools_update }}" = "true" ]; then
+            pnpm add @ait-co/devtools@latest
+          fi
+          pnpm typecheck 2>&1 | head -50 | tee /tmp/typecheck-output.txt
+
+      - name: Create issue if typecheck fails
+        if: env.needs_update == 'true' && steps.typecheck.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const output = fs.readFileSync('/tmp/typecheck-output.txt', 'utf8');
+            const title = 'SDK update available — typecheck failures detected';
+            const body = [
+              '## SDK Update Check',
+              '',
+              `- SDK: ${process.env.sdk_latest || 'no update'}`,
+              `- Devtools: ${process.env.devtools_latest || 'no update'}`,
+              '',
+              '### Typecheck Output',
+              '```',
+              output,
+              '```',
+              '',
+              'Update the dependencies and fix type errors.',
+            ].join('\n');
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body,
+              labels: ['sdk-update'],
+            });
