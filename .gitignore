@@ -3,7 +3,13 @@
 .claude.lock
 .claude/schedule.lock
 
-node_modules
-dist
+node_modules/
+dist/
+*.tgz
+*.tsbuildinfo
 .DS_Store
+.playwright-mcp/
+test-results/
+playwright-report/
+.tmp/
 *.local
