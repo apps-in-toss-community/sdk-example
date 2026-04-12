@@ -19,8 +19,10 @@ import { PartnerPage } from './pages/PartnerPage';
 import { EventsPage } from './pages/EventsPage';
 
 export function App() {
+  // Honors Vite's BASE_URL so Pages (e.g. /sdk-example/) and 앱인토스 배포 (/) both work.
+  const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <Routes>
         <Route element={<Layout />}>
           <Route path="/" element={<HomePage />} />
