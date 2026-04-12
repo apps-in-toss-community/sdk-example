@@ -14,12 +14,20 @@ export interface ParamDef<T = string> {
   parse?: (raw: string) => T;
 }
 
+/**
+ * Variance helper — must be `any`, not `unknown`.
+ * A `ParamDef<unknown>` cannot accept a `ParamDef<number>` in a covariant tuple position,
+ * which would break type inference in the variadic `ParamsRecord` helper.
+ */
 type AnyParamDef = ParamDef<any>;
 
-/** Resolve the parsed value type for a single param. */
-type ParsedParam<P extends AnyParamDef> = P extends { parse: infer F }
-  ? F extends (raw: string) => infer T ? T : string
-  : string;
+/**
+ * Resolve the parsed value type for a single param.
+ * Uses a function-shape match `parse: (raw: string) => infer T` rather than
+ * `parse: infer F` to avoid matching `parse: undefined` — if `ParamDef.parse`
+ * ever becomes `((raw: string) => T) | undefined` this conditional stays correct.
+ */
+type ParsedParam<P extends AnyParamDef> = P extends { parse: (raw: string) => infer T } ? T : string;
 
 /**
  * Recursively map a variadic tuple of ParamDefs to an object type keyed by
@@ -44,6 +52,7 @@ interface ApiCardProps<Params extends AnyParamDef[]> {
 export function ApiCard<Params extends AnyParamDef[]>({
   name,
   description,
+  // Empty-tuple default; generic constraint can't express this cleanly.
   params = [] as any,
   execute,
 }: ApiCardProps<Params>) {
