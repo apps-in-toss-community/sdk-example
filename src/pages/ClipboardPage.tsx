@@ -13,7 +13,7 @@ export function ClipboardPage() {
           params={[{ name: 'text', label: 'Text', placeholder: '복사할 텍스트' }]}
           execute={async (p) => { await setClipboardText(p.text); }}
         />
-        <ApiCard name="getClipboardText" description="클립보드 텍스트 읽기" execute={async () => await getClipboardText()} />
+        <ApiCard name="getClipboardText" description="클립보드 텍스트 읽기" params={[]} execute={async () => await getClipboardText()} />
       </div>
     </div>
   );

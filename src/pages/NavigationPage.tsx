@@ -17,7 +17,7 @@ export function NavigationPage() {
     <div>
       <PageHeader title="Navigation" />
       <div className="p-4 space-y-3">
-        <ApiCard name="closeView" description="현재 뷰 닫기" execute={async () => { closeView(); }} />
+        <ApiCard name="closeView" description="현재 뷰 닫기" params={[]} execute={async () => { closeView(); }} />
         <ApiCard
           name="openURL"
           description="URL 열기"
@@ -72,6 +72,7 @@ export function NavigationPage() {
         <ApiCard
           name="requestReview"
           description="앱 리뷰 요청"
+          params={[]}
           execute={async () => { await requestReview(); }}
         />
       </div>

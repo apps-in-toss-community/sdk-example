@@ -7,6 +7,7 @@ import { GoogleAdMob, TossAds, loadFullScreenAd, showFullScreenAd } from '@apps-
 import { ResultView } from '../components/ResultView';
 
 export function AdsPage() {
+  // --- GoogleAdMob state ---
   const [activeStep, setActiveStep] = useState(0);
   const [adLoaded, setAdLoaded] = useState(false);
   const [eventLog, setEventLog] = useState<HistoryEntry[]>([]);
@@ -89,16 +90,63 @@ export function AdsPage() {
     },
   ];
 
+  // --- FullScreen Ad state ---
+  const [fsEventLog, setFsEventLog] = useState<HistoryEntry[]>([]);
+  const [fsLoadStatus, setFsLoadStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [fsLoadResult, setFsLoadResult] = useState<unknown>(undefined);
+  const [fsLoadError, setFsLoadError] = useState('');
+  const [fsShowStatus, setFsShowStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [fsShowResult, setFsShowResult] = useState<unknown>(undefined);
+  const [fsShowError, setFsShowError] = useState('');
+
+  const addFsLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
+    setFsEventLog((prev) => [{ timestamp: Date.now(), status, data, error }, ...prev].slice(0, 20));
+  }, []);
+
+  const handleFsLoad = useCallback(() => {
+    setFsLoadStatus('loading');
+    loadFullScreenAd({
+      onEvent: (e) => {
+        setFsLoadStatus('success');
+        setFsLoadResult(e);
+        addFsLog('success', e);
+      },
+      onError: (e) => {
+        setFsLoadStatus('error');
+        setFsLoadError(String(e));
+        addFsLog('error', undefined, String(e));
+      },
+    });
+  }, [addFsLog]);
+
+  const handleFsShow = useCallback(() => {
+    setFsShowStatus('loading');
+    showFullScreenAd({
+      onEvent: (e) => {
+        setFsShowStatus('success');
+        setFsShowResult(e);
+        addFsLog('success', e);
+      },
+      onError: (e) => {
+        setFsShowStatus('error');
+        setFsShowError(String(e));
+        addFsLog('error', undefined, String(e));
+      },
+    });
+  }, [addFsLog]);
+
   return (
     <div>
       <PageHeader title="Ads" />
       <div className="p-4 space-y-6">
+        {/* GoogleAdMob — stepper workflow */}
         <div>
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-700">GoogleAdMob</h2>
             <button
               type="button"
               onClick={handleReset}
+              aria-label="GoogleAdMob 워크플로우 초기화"
               className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
             >
               초기화
@@ -107,47 +155,57 @@ export function AdsPage() {
           <WorkflowStepper steps={steps} activeStep={activeStep} onStepClick={setActiveStep} />
         </div>
 
+        {/* FullScreen Ad — dedicated event-log cards */}
         <div>
           <h2 className="text-sm font-semibold text-gray-700 mb-3">FullScreen Ad</h2>
           <div className="space-y-3">
-            <ApiCard
-              name="loadFullScreenAd"
-              description="전면 광고 로드"
-              execute={async () => {
-                return new Promise((resolve, reject) => {
-                  loadFullScreenAd({
-                    onEvent: (e) => resolve(e),
-                    onError: (e) => reject(e),
-                  });
-                });
-              }}
-            />
-            <ApiCard
-              name="showFullScreenAd"
-              description="전면 광고 표시"
-              execute={async () => {
-                return new Promise((resolve, reject) => {
-                  showFullScreenAd({
-                    onEvent: (e) => resolve(e),
-                    onError: (e) => reject(e),
-                  });
-                });
-              }}
-            />
+            {/* loadFullScreenAd */}
+            <div className="rounded-xl border border-gray-200 bg-white p-4">
+              <h3 className="text-sm font-semibold text-gray-900 font-mono">loadFullScreenAd</h3>
+              <p className="mt-0.5 text-xs text-gray-500">전면 광고 로드 — 여러 이벤트를 수신합니다</p>
+              <button
+                type="button"
+                onClick={handleFsLoad}
+                disabled={fsLoadStatus === 'loading'}
+                className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+              >
+                실행
+              </button>
+              <ResultView status={fsLoadStatus} data={fsLoadResult} error={fsLoadError} />
+            </div>
+            {/* showFullScreenAd */}
+            <div className="rounded-xl border border-gray-200 bg-white p-4">
+              <h3 className="text-sm font-semibold text-gray-900 font-mono">showFullScreenAd</h3>
+              <p className="mt-0.5 text-xs text-gray-500">전면 광고 표시 — 여러 이벤트를 수신합니다</p>
+              <button
+                type="button"
+                onClick={handleFsShow}
+                disabled={fsShowStatus === 'loading'}
+                className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+              >
+                실행
+              </button>
+              <ResultView status={fsShowStatus} data={fsShowResult} error={fsShowError} />
+            </div>
+            {/* Shared event log for FullScreen Ad */}
+            <HistoryLog entries={fsEventLog} />
           </div>
         </div>
 
+        {/* TossAds */}
         <div>
           <h2 className="text-sm font-semibold text-gray-700 mb-3">TossAds</h2>
           <div className="space-y-3">
             <ApiCard
               name="TossAds.initialize"
               description="TossAds 초기화"
+              params={[]}
               execute={async () => { TossAds.initialize({}); }}
             />
             <ApiCard
               name="TossAds.destroyAll"
               description="모든 TossAds 슬롯 제거"
+              params={[]}
               execute={async () => { TossAds.destroyAll(); }}
             />
           </div>

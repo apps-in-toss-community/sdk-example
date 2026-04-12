@@ -17,6 +17,7 @@ const domains = [
   { path: '/game', name: 'Game', description: '게임센터, 프로모션, contactsViral', apis: ['grantPromotionReward', 'grantPromotionRewardForGame', 'submitGameCenterLeaderBoardScore', 'getGameCenterGameProfile', 'openGameCenterLeaderboard', 'contactsViral'] },
   { path: '/analytics', name: 'Analytics', description: 'screen, impression, click, eventLog', apis: ['screen', 'impression', 'click', 'eventLog'] },
   { path: '/partner', name: 'Partner', description: 'addAccessoryButton, removeAccessoryButton', apis: ['addAccessoryButton', 'removeAccessoryButton'] },
+  { path: '/events', name: 'Events', description: 'graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb', apis: ['graniteEvent.addEventListener', 'tdsEvent.addEventListener', 'onVisibilityChangedByTransparentServiceWeb'] },
 ];
 
 export function HomePage() {

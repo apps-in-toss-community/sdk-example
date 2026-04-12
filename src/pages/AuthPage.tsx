@@ -15,16 +15,19 @@ export function AuthPage() {
         <ApiCard
           name="appLogin"
           description="앱 로그인, authorizationCode 반환"
+          params={[]}
           execute={async () => await appLogin()}
         />
         <ApiCard
           name="getIsTossLoginIntegratedService"
           description="토스 로그인 연동 서비스 여부"
+          params={[]}
           execute={async () => getIsTossLoginIntegratedService()}
         />
         <ApiCard
           name="getUserKeyForGame"
           description="게임용 유저 해시 키"
+          params={[]}
           execute={async () => await getUserKeyForGame()}
         />
         <ApiCard

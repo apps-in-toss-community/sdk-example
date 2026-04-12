@@ -88,8 +88,8 @@ export function GamePage() {
           params={[{ name: 'score', label: 'Score', placeholder: '1000', defaultValue: '1000' }]}
           execute={async (p) => await submitGameCenterLeaderBoardScore({ score: p.score })}
         />
-        <ApiCard name="getGameCenterGameProfile" description="게임 프로필 조회" execute={async () => await getGameCenterGameProfile()} />
-        <ApiCard name="openGameCenterLeaderboard" description="리더보드 열기" execute={async () => { await openGameCenterLeaderboard(); }} />
+        <ApiCard name="getGameCenterGameProfile" description="게임 프로필 조회" params={[]} execute={async () => await getGameCenterGameProfile()} />
+        <ApiCard name="openGameCenterLeaderboard" description="리더보드 열기" params={[]} execute={async () => { await openGameCenterLeaderboard(); }} />
         <ContactsViralCard />
       </div>
     </div>

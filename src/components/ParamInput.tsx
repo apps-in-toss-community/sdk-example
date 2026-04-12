@@ -1,3 +1,10 @@
+/**
+ * All param values are stored and passed as strings throughout this component.
+ * Toggle inputs store `'true'` | `'false'` strings — not booleans.
+ * Numeric inputs store digit strings — not numbers.
+ * The `parse` function on each `ParamDef` in ApiCard is responsible for converting
+ * these raw strings to the correct type before calling `execute`.
+ */
 interface ParamInputProps {
   label: string;
   value: string;

@@ -20,8 +20,8 @@ export function HistoryLog({ entries }: HistoryLogProps) {
     <div className="mt-3 border-t border-gray-100 pt-2">
       <p className="text-xs font-medium text-gray-500 mb-1">History ({entries.length})</p>
       <div className="space-y-1 max-h-40 overflow-y-auto">
-        {entries.map((entry) => (
-          <div key={entry.timestamp} className="flex items-start gap-2 text-xs">
+        {entries.map((entry, i) => (
+          <div key={`${entry.timestamp}-${i}`} className="flex items-start gap-2 text-xs">
             <span className="text-gray-400 shrink-0">{formatTime(entry.timestamp)}</span>
             <span className={entry.status === 'error' ? 'text-red-600' : 'text-green-600'}>
               {entry.status === 'error' ? entry.error : entry.data === undefined ? '(no data)' : JSON.stringify(entry.data)}

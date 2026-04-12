@@ -11,11 +11,13 @@ export function LocationPage() {
         <ApiCard
           name="getCurrentLocation"
           description="현재 위치 조회"
+          params={[]}
           execute={async () => await getCurrentLocation({ accuracy: Accuracy.Highest })}
         />
         <ApiCard
           name="startUpdateLocation"
           description="위치 업데이트 시작"
+          params={[]}
           execute={async () => {
             return new Promise<unknown>((resolve, reject) => {
               const params: StartUpdateLocationEventParams = {

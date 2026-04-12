@@ -20,23 +20,23 @@ export function PermissionsPage() {
         <ApiCard
           name="getPermission"
           description="권한 상태 조회"
-          params={[{ name: 'name', label: 'Permission', type: 'select', options: permissionOptions, defaultValue: 'camera' }]}
-          execute={async (p) => await getPermission({ name: p.name as PermissionName, access: 'read' })}
+          params={[{ name: 'name', label: 'Permission', type: 'select', options: permissionOptions, defaultValue: 'camera', parse: (v) => v as PermissionName }]}
+          execute={async (p) => await getPermission({ name: p.name, access: 'read' })}
         />
         <ApiCard
           name="openPermissionDialog"
           description="권한 요청 다이얼로그"
-          params={[{ name: 'name', label: 'Permission', type: 'select', options: permissionOptions, defaultValue: 'camera' }]}
-          execute={async (p) => await openPermissionDialog({ name: p.name as PermissionName, access: 'read' })}
+          params={[{ name: 'name', label: 'Permission', type: 'select', options: permissionOptions, defaultValue: 'camera', parse: (v) => v as PermissionName }]}
+          execute={async (p) => await openPermissionDialog({ name: p.name, access: 'read' })}
         />
         <ApiCard
           name="requestPermission"
           description="권한 요청"
           params={[
-            { name: 'name', label: 'Permission', type: 'select', options: permissionOptions, defaultValue: 'camera' },
-            { name: 'access', label: 'Access', placeholder: 'read', defaultValue: 'read' },
+            { name: 'name', label: 'Permission', type: 'select', options: permissionOptions, defaultValue: 'camera', parse: (v) => v as PermissionName },
+            { name: 'access', label: 'Access', type: 'select', options: [{ label: 'read', value: 'read' }, { label: 'write', value: 'write' }], defaultValue: 'read', parse: (v) => v as 'read' | 'write' },
           ]}
-          execute={async (p) => await requestPermission({ name: p.name as PermissionName, access: p.access as 'read' | 'write' })}
+          execute={async (p) => await requestPermission({ name: p.name, access: p.access })}
         />
       </div>
     </div>

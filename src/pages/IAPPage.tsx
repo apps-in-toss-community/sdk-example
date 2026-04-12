@@ -64,11 +64,12 @@ export function IAPPage() {
           <ApiCard
             name="IAP.getProductItemList"
             description="상품 목록 조회"
+            params={[]}
             execute={async () => {
               const result = await IAP.getProductItemList();
               const items: IapProductListItem[] = result?.products ?? [];
               setProducts(items);
-              if (items.length > 0) setSelectedSku(items[0].sku ?? '');
+              if (items.length > 0) setSelectedSku(items[0]?.sku ?? '');
               return result;
             }}
           />
@@ -80,7 +81,7 @@ export function IAPPage() {
                 return (
                   <button
                     type="button"
-                    key={p.sku ?? String(i)}
+                    key={`${p.sku ?? 'unknown'}-${i}`}
                     onClick={() => { setSelectedSku(sku); setActiveStep(1); }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${
                       selectedSku === sku ? 'bg-gray-900 text-white' : 'bg-gray-50 hover:bg-gray-100'
@@ -136,8 +137,8 @@ export function IAPPage() {
       description: '미완료 주문 조회, 완료/환불 내역, 구독 정보',
       content: (
         <div className="space-y-3 py-2">
-          <ApiCard name="IAP.getPendingOrders" description="미완료 주문 조회" execute={async () => await IAP.getPendingOrders()} />
-          <ApiCard name="IAP.getCompletedOrRefundedOrders" description="완료/환불 주문 조회" execute={async () => await IAP.getCompletedOrRefundedOrders()} />
+          <ApiCard name="IAP.getPendingOrders" description="미완료 주문 조회" params={[]} execute={async () => await IAP.getPendingOrders()} />
+          <ApiCard name="IAP.getCompletedOrRefundedOrders" description="완료/환불 주문 조회" params={[]} execute={async () => await IAP.getCompletedOrRefundedOrders()} />
           <ApiCard
             name="IAP.getSubscriptionInfo"
             description="구독 정보 조회"

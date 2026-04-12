@@ -20,6 +20,7 @@ export function PartnerPage() {
         <ApiCard
           name="partner.removeAccessoryButton"
           description="액세서리 버튼 제거"
+          params={[]}
           execute={async () => { await partner.removeAccessoryButton(); }}
         />
       </div>

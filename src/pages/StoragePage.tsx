@@ -31,6 +31,7 @@ export function StoragePage() {
         <ApiCard
           name="Storage.clearItems"
           description="전체 삭제"
+          params={[]}
           execute={async () => { await Storage.clearItems(); }}
         />
       </div>

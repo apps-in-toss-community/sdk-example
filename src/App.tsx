@@ -16,6 +16,7 @@ import { AdsPage } from './pages/AdsPage';
 import { GamePage } from './pages/GamePage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { PartnerPage } from './pages/PartnerPage';
+import { EventsPage } from './pages/EventsPage';
 
 export function App() {
   return (
@@ -38,6 +39,7 @@ export function App() {
           <Route path="/game" element={<GamePage />} />
           <Route path="/analytics" element={<AnalyticsPage />} />
           <Route path="/partner" element={<PartnerPage />} />
+          <Route path="/events" element={<EventsPage />} />
         </Route>
       </Routes>
     </BrowserRouter>

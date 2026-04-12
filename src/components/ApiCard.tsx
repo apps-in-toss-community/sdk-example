@@ -17,7 +17,7 @@ export interface ParamDef<T = string> {
 /**
  * Variance helper — must be `any`, not `unknown`.
  * A `ParamDef<unknown>` cannot accept a `ParamDef<number>` in a covariant tuple position,
- * which would break type inference in the variadic `ParamsRecord` helper.
+ * which would break type inference in the variadic helpers below.
  */
 type AnyParamDef = ParamDef<any>;
 
@@ -29,31 +29,47 @@ type AnyParamDef = ParamDef<any>;
  */
 type ParsedParam<P extends AnyParamDef> = P extends { parse: (raw: string) => infer T } ? T : string;
 
+/** Merge a union of types into a single intersection type. */
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+
 /**
- * Recursively map a variadic tuple of ParamDefs to an object type keyed by
- * each param's name, with value type inferred from the param's `parse` return
- * type (or `string` when no `parse` is provided).
+ * Map a single ParamDef to `{ [literalName]: parsedType }`.
+ * Captures the literal name via `infer N extends string` so the resulting
+ * object type has a named property rather than an index signature — this
+ * prevents `noUncheckedIndexedAccess` from widening the value to `T | undefined`.
+ */
+type ParamEntry<P extends AnyParamDef> = P extends { name: infer N extends string }
+  ? { [K in N]: ParsedParam<P> }
+  : never;
+
+/**
+ * Map a variadic tuple of ParamDefs to a single object type keyed by each
+ * param's literal name, with the value type inferred from `parse` (or `string`).
  *
- * The recursive approach avoids the "union collapse" problem that occurs when
- * indexing a heterogeneous tuple with `Params[number]`.
+ * Uses `UnionToIntersection` to collapse the union of `ParamEntry` types into
+ * one flat object. The `const Params` type parameter (below) ensures TypeScript
+ * infers literal string names rather than widening them to `string`.
  */
 type ParamsRecord<Params extends AnyParamDef[]> =
-  Params extends [infer Head extends AnyParamDef, ...infer Tail extends AnyParamDef[]]
-    ? { [K in Head['name']]: ParsedParam<Head> } & ParamsRecord<Tail>
-    : Record<never, never>;
+  UnionToIntersection<ParamEntry<Params[number]>> extends infer T ? T : never;
 
 interface ApiCardProps<Params extends AnyParamDef[]> {
   name: string;
   description?: string;
-  params?: [...Params];
+  params: readonly [...Params];
   execute: (params: ParamsRecord<Params>) => Promise<unknown>;
 }
 
-export function ApiCard<Params extends AnyParamDef[]>({
+/**
+ * `const Params` is a TypeScript 5.0 const type parameter.
+ * It infers the `params` array as a `readonly` tuple with literal string `name`
+ * values — enabling `ParamsRecord` to produce named properties instead of an
+ * index signature, which in turn satisfies `noUncheckedIndexedAccess`.
+ */
+export function ApiCard<const Params extends AnyParamDef[]>({
   name,
   description,
-  // Empty-tuple default; generic constraint can't express this cleanly.
-  params = [] as any,
+  params,
   execute,
 }: ApiCardProps<Params>) {
   const [values, setValues] = useState<Record<string, string>>(() =>
