@@ -103,6 +103,9 @@ export function AdsPage() {
     setFsEventLog((prev) => [{ timestamp: Date.now(), status, data, error }, ...prev].slice(0, 20));
   }, []);
 
+  // NOTE: `status` in ResultView reflects only the *latest* event received from
+  // loadFullScreenAd / showFullScreenAd. The full event history is available in
+  // the shared HistoryLog below both cards.
   const handleFsLoad = useCallback(() => {
     setFsLoadStatus('loading');
     loadFullScreenAd({
@@ -119,6 +122,7 @@ export function AdsPage() {
     });
   }, [addFsLog]);
 
+  // NOTE: same as handleFsLoad — `status` reflects only the latest event.
   const handleFsShow = useCallback(() => {
     setFsShowStatus('loading');
     showFullScreenAd({

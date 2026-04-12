@@ -1,24 +1,20 @@
 import { useEffect, useRef, useState } from 'react';
 import { PageHeader } from '../components/PageHeader';
+import { HistoryLog, type HistoryEntry } from '../components/HistoryLog';
 import { graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb } from '@apps-in-toss/web-framework';
-
-interface EventEntry {
-  timestamp: number;
-  payload: unknown;
-}
-
-function formatTime(ts: number) {
-  return new Date(ts).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-}
 
 interface EventSubscriberCardProps {
   name: string;
   description: string;
+  /**
+   * Called once on each subscribe toggle. Callers should not rely on closure
+   * stability — a new subscription is created every time the user toggles on.
+   */
   subscribe: (onEvent: (payload: unknown) => void) => () => void;
 }
 
 function EventSubscriberCard({ name, description, subscribe }: EventSubscriberCardProps) {
-  const [events, setEvents] = useState<EventEntry[]>([]);
+  const [events, setEvents] = useState<HistoryEntry[]>([]);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const unsubRef = useRef<(() => void) | null>(null);
 
@@ -29,7 +25,7 @@ function EventSubscriberCard({ name, description, subscribe }: EventSubscriberCa
       setIsSubscribed(false);
     } else {
       const unsub = subscribe((payload) => {
-        setEvents((prev) => [{ timestamp: Date.now(), payload }, ...prev].slice(0, 20));
+        setEvents((prev) => [{ timestamp: Date.now(), status: 'success' as const, data: payload }, ...prev].slice(0, 20));
       });
       unsubRef.current = unsub;
       setIsSubscribed(true);
@@ -71,23 +67,7 @@ function EventSubscriberCard({ name, description, subscribe }: EventSubscriberCa
         {isSubscribed ? '구독 해제' : '구독'}
       </button>
 
-      {events.length > 0 && (
-        <div className="mt-3 border-t border-gray-100 pt-2">
-          <p className="text-xs font-medium text-gray-500 mb-1">
-            이벤트 로그 ({events.length})
-          </p>
-          <div className="space-y-1 max-h-40 overflow-y-auto">
-            {events.map((entry, i) => (
-              <div key={`${entry.timestamp}-${i}`} className="flex items-start gap-2 text-xs">
-                <span className="text-gray-400 shrink-0">{formatTime(entry.timestamp)}</span>
-                <span className="text-green-600 break-all">
-                  {entry.payload === undefined ? '(no payload)' : JSON.stringify(entry.payload)}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      <HistoryLog entries={events} />
     </div>
   );
 }
