@@ -27,6 +27,9 @@ importers:
         specifier: ^7.14.0
         version: 7.14.0(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
     devDependencies:
+      '@biomejs/biome':
+        specifier: 2.4.12
+        version: 2.4.12
       '@tailwindcss/vite':
         specifier: ^4.2.2
         version: 4.2.2(vite@8.0.8(@types/node@25.6.0)(esbuild@0.27.7)(jiti@2.6.1)(terser@5.46.1)(yaml@2.8.3))
@@ -923,6 +926,63 @@ packages:
 
   '@bcoe/v8-coverage@0.2.3':
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
+
+  '@biomejs/biome@2.4.12':
+    resolution: {integrity: sha512-Rro7adQl3NLq/zJCIL98eElXKI8eEiBtoeu5TbXF/U3qbjuSc7Jb5rjUbeHHcquDWeSf3HnGP7XI5qGrlRk/pA==}
+    engines: {node: '>=14.21.3'}
+    hasBin: true
+
+  '@biomejs/cli-darwin-arm64@2.4.12':
+    resolution: {integrity: sha512-BnMU4Pc3ciEVteVpZ0BK33MLr7X57F5w1dwDLDn+/iy/yTrA4Q/N2yftidFtsA4vrDh0FMXDpacNV/Tl3fbmng==}
+    engines: {node: '>=14.21.3'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@biomejs/cli-darwin-x64@2.4.12':
+    resolution: {integrity: sha512-x9uJ0bI1rJsWICp3VH8w/5PnAVD3A7SqzDpbrfoUQX1QyWrK5jSU4fRLo/wSgGeplCivbxBRKmt5Xq4/nWvq8A==}
+    engines: {node: '>=14.21.3'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@biomejs/cli-linux-arm64-musl@2.4.12':
+    resolution: {integrity: sha512-FhfpkAAlKL6kwvcVap0Hgp4AhZmtd3YImg0kK1jd7C/aSoh4SfsB2f++yG1rU0lr8Y5MCFJrcSkmssiL9Xnnig==}
+    engines: {node: '>=14.21.3'}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@biomejs/cli-linux-arm64@2.4.12':
+    resolution: {integrity: sha512-tOwuCuZZtKi1jVzbk/5nXmIsziOB6yqN8c9r9QM0EJYPU6DpQWf11uBOSCfFKKM4H3d9ZoarvlgMfbcuD051Pw==}
+    engines: {node: '>=14.21.3'}
+    cpu: [arm64]
+    os: [linux]
+    libc: [glibc]
+
+  '@biomejs/cli-linux-x64-musl@2.4.12':
+    resolution: {integrity: sha512-dwTIgZrGutzhkQCuvHynCkyW6hJxUuyZqKKO0YNfaS2GUoRO+tOvxXZqZB6SkWAOdfZTzwaw8IEdUnIkHKHoew==}
+    engines: {node: '>=14.21.3'}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@biomejs/cli-linux-x64@2.4.12':
+    resolution: {integrity: sha512-8pFeAnLU9QdW9jCIslB/v82bI0lhBmz2ZAKc8pVMFPO0t0wAHsoEkrUQUbMkIorTRIjbqyNZHA3lEXavsPWYSw==}
+    engines: {node: '>=14.21.3'}
+    cpu: [x64]
+    os: [linux]
+    libc: [glibc]
+
+  '@biomejs/cli-win32-arm64@2.4.12':
+    resolution: {integrity: sha512-B0DLnx0vA9ya/3v7XyCaP+/lCpnbWbMOfUFFve+xb5OxyYvdHaS55YsSddr228Y+JAFk58agCuZTsqNiw2a6ig==}
+    engines: {node: '>=14.21.3'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@biomejs/cli-win32-x64@2.4.12':
+    resolution: {integrity: sha512-yMckRzTyZ83hkk8iDFWswqSdU8tvZxspJKnYNh7JZr/zhZNOlzH13k4ecboU6MurKExCe2HUkH75pGI/O2JwGA==}
+    engines: {node: '>=14.21.3'}
+    cpu: [x64]
+    os: [win32]
 
   '@clack/core@0.4.2':
     resolution: {integrity: sha512-NYQfcEy8MWIxrT5Fj8nIVchfRFA26yYKJcvBS7WlUIlw2OmQOY9DhGGXMovyI5J5PpxrCPGkgUi207EBrjpBvg==}
@@ -1975,36 +2035,42 @@ packages:
     engines: {node: '>=14.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@oxc-transform/binding-linux-arm64-musl@0.82.3':
     resolution: {integrity: sha512-//hl3Xe36+fwyBrzKpTSMgSDqscbqpkeQ1TTvfkZS7IKuLoSM7lVbU+fpaOslDXUezLg9SwN6Cn2sL61OX7IaA==}
     engines: {node: '>=14.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@oxc-transform/binding-linux-riscv64-gnu@0.82.3':
     resolution: {integrity: sha512-iOPpMG0EAvOOZ048OdmuUhWV5NRXERDVj/+k5IUIOzXuxZSjrJK/NjirdpYnXXLMx3lDIm2muMR1ESg0f8eb+A==}
     engines: {node: '>=14.0.0'}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@oxc-transform/binding-linux-s390x-gnu@0.82.3':
     resolution: {integrity: sha512-pdgFqoFoqs6JNoaV540RZSMq4uaArlL1ZnjT1rsL662K4CejOAFmyuroCw98DdF/TQsuFQV1a4At7jHlF1H+0Q==}
     engines: {node: '>=14.0.0'}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@oxc-transform/binding-linux-x64-gnu@0.82.3':
     resolution: {integrity: sha512-OJ9k0xIqejBNp+6dn1V/QZk0iHBqJsq/Jm/+9wjg3gJyDOZFq0qU/zHAuUzObro6JGFBmPvAZsVi4qEaYZLIQA==}
     engines: {node: '>=14.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@oxc-transform/binding-linux-x64-musl@0.82.3':
     resolution: {integrity: sha512-nPaIuIm0OM2Xylt3suhiLw6POklE8KlpO2hRuGtiLQTFWORPgB3SzDTrp2Trxob40bsbCTVyeWHB/VsC/vw5Gw==}
     engines: {node: '>=14.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@oxc-transform/binding-wasm32-wasi@0.82.3':
     resolution: {integrity: sha512-srV5VaR6cgs808dm/gBDAuqUaPqgWsoLMPbmojMt/qGu2fEOSQzv5i3X0b5V6OyHM9k53BK449k22JHTCzpyAg==}
@@ -2328,36 +2394,42 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@rolldown/binding-linux-arm64-musl@1.0.0-rc.15':
     resolution: {integrity: sha512-ZvRYMGrAklV9PEkgt4LQM6MjQX2P58HPAuecwYObY2DhS2t35R0I810bKi0wmaYORt6m/2Sm+Z+nFgb0WhXNcQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@rolldown/binding-linux-ppc64-gnu@1.0.0-rc.15':
     resolution: {integrity: sha512-VDpgGBzgfg5hLg+uBpCLoFG5kVvEyafmfxGUV0UHLcL5irxAK7PKNeC2MwClgk6ZAiNhmo9FLhRYgvMmedLtnQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@rolldown/binding-linux-s390x-gnu@1.0.0-rc.15':
     resolution: {integrity: sha512-y1uXY3qQWCzcPgRJATPSOUP4tCemh4uBdY7e3EZbVwCJTY3gLJWnQABgeUetvED+bt1FQ01OeZwvhLS2bpNrAQ==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@rolldown/binding-linux-x64-gnu@1.0.0-rc.15':
     resolution: {integrity: sha512-023bTPBod7J3Y/4fzAN6QtpkSABR0rigtrwaP+qSEabUh5zf6ELr9Nc7GujaROuPY3uwdSIXWrvhn1KxOvurWA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@rolldown/binding-linux-x64-musl@1.0.0-rc.15':
     resolution: {integrity: sha512-witB2O0/hU4CgfOOKUoeFgQ4GktPi1eEbAhaLAIpgD6+ZnhcPkUtPsoKKHRzmOoWPZue46IThdSgdo4XneOLYw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@rolldown/binding-openharmony-arm64@1.0.0-rc.15':
     resolution: {integrity: sha512-UCL68NJ0Ud5zRipXZE9dF5PmirzJE4E4BCIOOssEnM7wLDsxjc6Qb0sGDxTNRTP53I6MZpygyCpY8Aa8sPfKPg==}
@@ -2422,66 +2494,79 @@ packages:
     resolution: {integrity: sha512-L+34Qqil+v5uC0zEubW7uByo78WOCIrBvci69E7sFASRl0X7b/MB6Cqd1lky/CtcSVTydWa2WZwFuWexjS5o6g==}
     cpu: [arm]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.60.1':
     resolution: {integrity: sha512-n83O8rt4v34hgFzlkb1ycniJh7IR5RCIqt6mz1VRJD6pmhRi0CXdmfnLu9dIUS6buzh60IvACM842Ffb3xd6Gg==}
     cpu: [arm]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.60.1':
     resolution: {integrity: sha512-Nql7sTeAzhTAja3QXeAI48+/+GjBJ+QmAH13snn0AJSNL50JsDqotyudHyMbO2RbJkskbMbFJfIJKWA6R1LCJQ==}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.60.1':
     resolution: {integrity: sha512-+pUymDhd0ys9GcKZPPWlFiZ67sTWV5UU6zOJat02M1+PiuSGDziyRuI/pPue3hoUwm2uGfxdL+trT6Z9rxnlMA==}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-loong64-gnu@4.60.1':
     resolution: {integrity: sha512-VSvgvQeIcsEvY4bKDHEDWcpW4Yw7BtlKG1GUT4FzBUlEKQK0rWHYBqQt6Fm2taXS+1bXvJT6kICu5ZwqKCnvlQ==}
     cpu: [loong64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-loong64-musl@4.60.1':
     resolution: {integrity: sha512-4LqhUomJqwe641gsPp6xLfhqWMbQV04KtPp7/dIp0nzPxAkNY1AbwL5W0MQpcalLYk07vaW9Kp1PBhdpZYYcEw==}
     cpu: [loong64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-ppc64-gnu@4.60.1':
     resolution: {integrity: sha512-tLQQ9aPvkBxOc/EUT6j3pyeMD6Hb8QF2BTBnCQWP/uu1lhc9AIrIjKnLYMEroIz/JvtGYgI9dF3AxHZNaEH0rw==}
     cpu: [ppc64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-ppc64-musl@4.60.1':
     resolution: {integrity: sha512-RMxFhJwc9fSXP6PqmAz4cbv3kAyvD1etJFjTx4ONqFP9DkTkXsAMU4v3Vyc5BgzC+anz7nS/9tp4obsKfqkDHg==}
     cpu: [ppc64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-riscv64-gnu@4.60.1':
     resolution: {integrity: sha512-QKgFl+Yc1eEk6MmOBfRHYF6lTxiiiV3/z/BRrbSiW2I7AFTXoBFvdMEyglohPj//2mZS4hDOqeB0H1ACh3sBbg==}
     cpu: [riscv64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-musl@4.60.1':
     resolution: {integrity: sha512-RAjXjP/8c6ZtzatZcA1RaQr6O1TRhzC+adn8YZDnChliZHviqIjmvFwHcxi4JKPSDAt6Uhf/7vqcBzQJy0PDJg==}
     cpu: [riscv64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-linux-s390x-gnu@4.60.1':
     resolution: {integrity: sha512-wcuocpaOlaL1COBYiA89O6yfjlp3RwKDeTIA0hM7OpmhR1Bjo9j31G1uQVpDlTvwxGn2nQs65fBFL5UFd76FcQ==}
     cpu: [s390x]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.60.1':
     resolution: {integrity: sha512-77PpsFQUCOiZR9+LQEFg9GClyfkNXj1MP6wRnzYs0EeWbPcHs02AXu4xuUbM1zhwn3wqaizle3AEYg5aeoohhg==}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.60.1':
     resolution: {integrity: sha512-5cIATbk5vynAjqqmyBjlciMJl1+R/CwX9oLk/EyiFXDWd95KpHdrOJT//rnUl4cUcskrd0jCCw3wpZnhIHdD9w==}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@rollup/rollup-openbsd-x64@4.60.1':
     resolution: {integrity: sha512-cl0w09WsCi17mcmWqqglez9Gk8isgeWvoUZ3WiJFYSR3zjBQc2J5/ihSjpl+VLjPqjQ/1hJRcqBfLjssREQILw==}
@@ -2635,24 +2720,28 @@ packages:
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@swc/core-linux-arm64-musl@1.15.8':
     resolution: {integrity: sha512-koiCqL09EwOP1S2RShCI7NbsQuG6r2brTqUYE7pV7kZm9O17wZ0LSz22m6gVibpwEnw8jI3IE1yYsQTVpluALw==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@swc/core-linux-x64-gnu@1.15.8':
     resolution: {integrity: sha512-4p6lOMU3bC+Vd5ARtKJ/FxpIC5G8v3XLoPEZ5s7mLR8h7411HWC/LmTXDHcrSXRC55zvAVia1eldy6zDLz8iFQ==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@swc/core-linux-x64-musl@1.15.8':
     resolution: {integrity: sha512-z3XBnbrZAL+6xDGAhJoN4lOueIxC/8rGrJ9tg+fEaeqLEuAtHSW2QHDHxDwkxZMjuF/pZ6MUTjHjbp8wLbuRLA==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@swc/core-win32-arm64-msvc@1.15.8':
     resolution: {integrity: sha512-djQPJ9Rh9vP8GTS/Df3hcc6XP6xnG5c8qsngWId/BLA9oX6C7UzCPAn74BG/wGb9a6j4w3RINuoaieJB3t+7iQ==}
@@ -2731,24 +2820,28 @@ packages:
     engines: {node: '>= 20'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   '@tailwindcss/oxide-linux-arm64-musl@4.2.2':
     resolution: {integrity: sha512-oCfG/mS+/+XRlwNjnsNLVwnMWYH7tn/kYPsNPh+JSOMlnt93mYNCKHYzylRhI51X+TbR+ufNhhKKzm6QkqX8ag==}
     engines: {node: '>= 20'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   '@tailwindcss/oxide-linux-x64-gnu@4.2.2':
     resolution: {integrity: sha512-rTAGAkDgqbXHNp/xW0iugLVmX62wOp2PoE39BTCGKjv3Iocf6AFbRP/wZT/kuCxC9QBh9Pu8XPkv/zCZB2mcMg==}
     engines: {node: '>= 20'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   '@tailwindcss/oxide-linux-x64-musl@4.2.2':
     resolution: {integrity: sha512-XW3t3qwbIwiSyRCggeO2zxe3KWaEbM0/kW9e8+0XpBgyKU4ATYzcVSMKteZJ1iukJ3HgHBjbg9P5YPRCVUxlnQ==}
     engines: {node: '>= 20'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   '@tailwindcss/oxide-wasm32-wasi@4.2.2':
     resolution: {integrity: sha512-eKSztKsmEsn1O5lJ4ZAfyn41NfG7vzCg496YiGtMDV86jz1q/irhms5O0VrY6ZwTUkFy/EKG3RfWgxSI3VbZ8Q==}
@@ -4589,24 +4682,28 @@ packages:
     engines: {node: '>= 12.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [glibc]
 
   lightningcss-linux-arm64-musl@1.32.0:
     resolution: {integrity: sha512-UpQkoenr4UJEzgVIYpI80lDFvRmPVg6oqboNHfoH4CQIfNA+HOrZ7Mo7KZP02dC6LjghPQJeBsvXhJod/wnIBg==}
     engines: {node: '>= 12.0.0'}
     cpu: [arm64]
     os: [linux]
+    libc: [musl]
 
   lightningcss-linux-x64-gnu@1.32.0:
     resolution: {integrity: sha512-V7Qr52IhZmdKPVr+Vtw8o+WLsQJYCTd8loIfpDaMRWGUZfBOYEJeyJIkqGIDMZPwPx24pUMfwSxxI8phr/MbOA==}
     engines: {node: '>= 12.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [glibc]
 
   lightningcss-linux-x64-musl@1.32.0:
     resolution: {integrity: sha512-bYcLp+Vb0awsiXg/80uCRezCYHNg1/l3mt0gzHnWV9XP1W5sKa5/TCdGWaR/zBM2PeF/HbsQv/j2URNOiVuxWg==}
     engines: {node: '>= 12.0.0'}
     cpu: [x64]
     os: [linux]
+    libc: [musl]
 
   lightningcss-win32-arm64-msvc@1.32.0:
     resolution: {integrity: sha512-8SbC8BR40pS6baCM8sbtYDSwEVQd4JlFTOlaD3gWGHfThTcABnNDBda6eTZeqbofalIJhFx0qKzgHJmcPTnGdw==}
@@ -7095,6 +7192,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@babel/plugin-proposal-class-properties@7.18.6(@babel/core@7.29.0)':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/helper-create-class-features-plugin': 7.28.6(@babel/core@7.29.0)
+      '@babel/helper-plugin-utils': 7.28.6
+    transitivePeerDependencies:
+      - supports-color
+
   '@babel/plugin-proposal-export-default-from@7.27.1(@babel/core@7.23.9)':
     dependencies:
       '@babel/core': 7.23.9
@@ -7116,6 +7221,12 @@ snapshots:
       '@babel/core': 7.28.5
       '@babel/helper-plugin-utils': 7.28.6
       '@babel/plugin-syntax-nullish-coalescing-operator': 7.8.3(@babel/core@7.28.5)
+
+  '@babel/plugin-proposal-nullish-coalescing-operator@7.18.6(@babel/core@7.29.0)':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/helper-plugin-utils': 7.28.6
+      '@babel/plugin-syntax-nullish-coalescing-operator': 7.8.3(@babel/core@7.29.0)
 
   '@babel/plugin-proposal-numeric-separator@7.18.6(@babel/core@7.23.9)':
     dependencies:
@@ -7174,6 +7285,15 @@ snapshots:
       '@babel/helper-plugin-utils': 7.28.6
       '@babel/helper-skip-transparent-expression-wrappers': 7.27.1
       '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@7.28.5)
+    transitivePeerDependencies:
+      - supports-color
+
+  '@babel/plugin-proposal-optional-chaining@7.21.0(@babel/core@7.29.0)':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/helper-plugin-utils': 7.28.6
+      '@babel/helper-skip-transparent-expression-wrappers': 7.27.1
+      '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@7.29.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -7328,6 +7448,11 @@ snapshots:
       '@babel/core': 7.28.5
       '@babel/helper-plugin-utils': 7.28.6
 
+  '@babel/plugin-syntax-nullish-coalescing-operator@7.8.3(@babel/core@7.29.0)':
+    dependencies:
+      '@babel/core': 7.29.0
+      '@babel/helper-plugin-utils': 7.28.6
+
   '@babel/plugin-syntax-numeric-separator@7.10.4(@babel/core@7.23.9)':
     dependencies:
       '@babel/core': 7.23.9
@@ -7366,6 +7491,11 @@ snapshots:
   '@babel/plugin-syntax-optional-chaining@7.8.3(@babel/core@7.28.5)':
     dependencies:
       '@babel/core': 7.28.5
+      '@babel/helper-plugin-utils': 7.28.6
+
+  '@babel/plugin-syntax-optional-chaining@7.8.3(@babel/core@7.29.0)':
+    dependencies:
+      '@babel/core': 7.29.0
       '@babel/helper-plugin-utils': 7.28.6
 
   '@babel/plugin-syntax-private-property-in-object@7.14.5(@babel/core@7.23.9)':
@@ -8405,13 +8535,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/preset-flow@7.27.1(@babel/core@7.23.9)':
-    dependencies:
-      '@babel/core': 7.23.9
-      '@babel/helper-plugin-utils': 7.28.6
-      '@babel/helper-validator-option': 7.27.1
-      '@babel/plugin-transform-flow-strip-types': 7.27.1(@babel/core@7.23.9)
-
   '@babel/preset-flow@7.27.1(@babel/core@7.29.0)':
     dependencies:
       '@babel/core': 7.29.0
@@ -8445,17 +8568,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@babel/preset-typescript@7.28.5(@babel/core@7.23.9)':
-    dependencies:
-      '@babel/core': 7.23.9
-      '@babel/helper-plugin-utils': 7.28.6
-      '@babel/helper-validator-option': 7.27.1
-      '@babel/plugin-syntax-jsx': 7.28.6(@babel/core@7.23.9)
-      '@babel/plugin-transform-modules-commonjs': 7.28.6(@babel/core@7.23.9)
-      '@babel/plugin-transform-typescript': 7.28.6(@babel/core@7.23.9)
-    transitivePeerDependencies:
-      - supports-color
-
   '@babel/preset-typescript@7.28.5(@babel/core@7.28.5)':
     dependencies:
       '@babel/core': 7.28.5
@@ -8477,15 +8589,6 @@ snapshots:
       '@babel/plugin-transform-typescript': 7.28.6(@babel/core@7.29.0)
     transitivePeerDependencies:
       - supports-color
-
-  '@babel/register@7.28.6(@babel/core@7.23.9)':
-    dependencies:
-      '@babel/core': 7.23.9
-      clone-deep: 4.0.1
-      find-cache-dir: 2.1.0
-      make-dir: 2.1.0
-      pirates: 4.0.7
-      source-map-support: 0.5.21
 
   '@babel/register@7.28.6(@babel/core@7.29.0)':
     dependencies:
@@ -8547,6 +8650,41 @@ snapshots:
       '@babel/helper-validator-identifier': 7.28.5
 
   '@bcoe/v8-coverage@0.2.3': {}
+
+  '@biomejs/biome@2.4.12':
+    optionalDependencies:
+      '@biomejs/cli-darwin-arm64': 2.4.12
+      '@biomejs/cli-darwin-x64': 2.4.12
+      '@biomejs/cli-linux-arm64': 2.4.12
+      '@biomejs/cli-linux-arm64-musl': 2.4.12
+      '@biomejs/cli-linux-x64': 2.4.12
+      '@biomejs/cli-linux-x64-musl': 2.4.12
+      '@biomejs/cli-win32-arm64': 2.4.12
+      '@biomejs/cli-win32-x64': 2.4.12
+
+  '@biomejs/cli-darwin-arm64@2.4.12':
+    optional: true
+
+  '@biomejs/cli-darwin-x64@2.4.12':
+    optional: true
+
+  '@biomejs/cli-linux-arm64-musl@2.4.12':
+    optional: true
+
+  '@biomejs/cli-linux-arm64@2.4.12':
+    optional: true
+
+  '@biomejs/cli-linux-x64-musl@2.4.12':
+    optional: true
+
+  '@biomejs/cli-linux-x64@2.4.12':
+    optional: true
+
+  '@biomejs/cli-win32-arm64@2.4.12':
+    optional: true
+
+  '@biomejs/cli-win32-x64@2.4.12':
+    optional: true
 
   '@clack/core@0.4.2':
     dependencies:
@@ -10767,9 +10905,9 @@ snapshots:
 
   b4a@1.8.0: {}
 
-  babel-core@7.0.0-bridge.0(@babel/core@7.23.9):
+  babel-core@7.0.0-bridge.0(@babel/core@7.29.0):
     dependencies:
-      '@babel/core': 7.23.9
+      '@babel/core': 7.29.0
 
   babel-jest@29.7.0(@babel/core@7.23.9):
     dependencies:
@@ -12608,19 +12746,19 @@ snapshots:
 
   jscodeshift@0.14.0(@babel/preset-env@7.28.5(@babel/core@7.23.9)):
     dependencies:
-      '@babel/core': 7.23.9
+      '@babel/core': 7.29.0
       '@babel/parser': 7.29.2
-      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.23.9)
-      '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.23.9)
-      '@babel/plugin-proposal-optional-chaining': 7.21.0(@babel/core@7.23.9)
-      '@babel/plugin-transform-modules-commonjs': 7.28.6(@babel/core@7.23.9)
+      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.29.0)
+      '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.29.0)
+      '@babel/plugin-proposal-optional-chaining': 7.21.0(@babel/core@7.29.0)
+      '@babel/plugin-transform-modules-commonjs': 7.28.6(@babel/core@7.29.0)
       '@babel/preset-env': 7.28.5(@babel/core@7.23.9)
-      '@babel/preset-flow': 7.27.1(@babel/core@7.23.9)
-      '@babel/preset-typescript': 7.28.5(@babel/core@7.23.9)
-      '@babel/register': 7.28.6(@babel/core@7.23.9)
-      babel-core: 7.0.0-bridge.0(@babel/core@7.23.9)
+      '@babel/preset-flow': 7.27.1(@babel/core@7.29.0)
+      '@babel/preset-typescript': 7.28.5(@babel/core@7.29.0)
+      '@babel/register': 7.28.6(@babel/core@7.29.0)
+      babel-core: 7.0.0-bridge.0(@babel/core@7.29.0)
       chalk: 4.1.2
-      flow-parser: 0.206.0
+      flow-parser: 0.309.0
       graceful-fs: 4.2.11
       micromatch: 4.0.8
       neo-async: 2.6.2

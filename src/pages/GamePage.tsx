@@ -1,15 +1,15 @@
-import { useState, useCallback } from 'react';
-import { PageHeader } from '../components/PageHeader';
-import { ApiCard } from '../components/ApiCard';
-import { ResultView } from '../components/ResultView';
 import {
+  contactsViral,
+  getGameCenterGameProfile,
   grantPromotionReward,
   grantPromotionRewardForGame,
-  submitGameCenterLeaderBoardScore,
-  getGameCenterGameProfile,
   openGameCenterLeaderboard,
-  contactsViral,
+  submitGameCenterLeaderBoardScore,
 } from '@apps-in-toss/web-framework';
+import { useCallback, useState } from 'react';
+import { ApiCard } from '../components/ApiCard';
+import { PageHeader } from '../components/PageHeader';
+import { ResultView } from '../components/ResultView';
 
 function ContactsViralCard() {
   const [moduleId, setModuleId] = useState('test-module');
@@ -34,7 +34,9 @@ function ContactsViralCard() {
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-      <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">contactsViral</h3>
+      <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">
+        contactsViral
+      </h3>
       <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">연락처 바이럴 공유</p>
       <label className="block py-1.5 mt-2">
         <span className="text-sm text-gray-700 dark:text-gray-300">Module ID</span>
@@ -68,19 +70,49 @@ export function GamePage() {
           name="grantPromotionReward"
           description="프로모션 리워드 지급"
           params={[
-            { name: 'promotionCode', label: 'Promotion Code', placeholder: 'PROMO_001', defaultValue: 'PROMO_001' },
-            { name: 'amount', label: 'Amount', type: 'number', defaultValue: '100', parse: (v) => Number(v) },
+            {
+              name: 'promotionCode',
+              label: 'Promotion Code',
+              placeholder: 'PROMO_001',
+              defaultValue: 'PROMO_001',
+            },
+            {
+              name: 'amount',
+              label: 'Amount',
+              type: 'number',
+              defaultValue: '100',
+              parse: (v) => Number(v),
+            },
           ]}
-          execute={async (p) => await grantPromotionReward({ params: { promotionCode: p.promotionCode, amount: p.amount } })}
+          execute={async (p) =>
+            await grantPromotionReward({
+              params: { promotionCode: p.promotionCode, amount: p.amount },
+            })
+          }
         />
         <ApiCard
           name="grantPromotionRewardForGame"
           description="게임 프로모션 리워드 지급"
           params={[
-            { name: 'promotionCode', label: 'Promotion Code', placeholder: 'GAME_001', defaultValue: 'GAME_001' },
-            { name: 'amount', label: 'Amount', type: 'number', defaultValue: '100', parse: (v) => Number(v) },
+            {
+              name: 'promotionCode',
+              label: 'Promotion Code',
+              placeholder: 'GAME_001',
+              defaultValue: 'GAME_001',
+            },
+            {
+              name: 'amount',
+              label: 'Amount',
+              type: 'number',
+              defaultValue: '100',
+              parse: (v) => Number(v),
+            },
           ]}
-          execute={async (p) => await grantPromotionRewardForGame({ params: { promotionCode: p.promotionCode, amount: p.amount } })}
+          execute={async (p) =>
+            await grantPromotionRewardForGame({
+              params: { promotionCode: p.promotionCode, amount: p.amount },
+            })
+          }
         />
         <ApiCard
           name="submitGameCenterLeaderBoardScore"
@@ -88,8 +120,20 @@ export function GamePage() {
           params={[{ name: 'score', label: 'Score', placeholder: '1000', defaultValue: '1000' }]}
           execute={async (p) => await submitGameCenterLeaderBoardScore({ score: p.score })}
         />
-        <ApiCard name="getGameCenterGameProfile" description="게임 프로필 조회" params={[]} execute={async () => await getGameCenterGameProfile()} />
-        <ApiCard name="openGameCenterLeaderboard" description="리더보드 열기" params={[]} execute={async () => { await openGameCenterLeaderboard(); }} />
+        <ApiCard
+          name="getGameCenterGameProfile"
+          description="게임 프로필 조회"
+          params={[]}
+          execute={async () => await getGameCenterGameProfile()}
+        />
+        <ApiCard
+          name="openGameCenterLeaderboard"
+          description="리더보드 열기"
+          params={[]}
+          execute={async () => {
+            await openGameCenterLeaderboard();
+          }}
+        />
         <ContactsViralCard />
       </div>
     </div>

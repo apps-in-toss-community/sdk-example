@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import QRCode from 'qrcode';
 import { getOperationalEnvironment } from '@apps-in-toss/web-framework';
+import QRCode from 'qrcode';
+import { useEffect, useState } from 'react';
 import { APP_IN_TOSS_URL } from '../constants';
 
 /**
@@ -43,7 +43,9 @@ export function DemoBanner() {
         aria-label="데모 안내"
       >
         <span>
-          <span className="inline-block mr-1.5 text-[10px] font-bold bg-white/20 px-1.5 py-0.5 rounded">DEMO</span>
+          <span className="inline-block mr-1.5 text-[10px] font-bold bg-white/20 px-1.5 py-0.5 rounded">
+            DEMO
+          </span>
           <span className="opacity-90">@ait-co/devtools mock으로 동작하는 웹 데모</span>
         </span>
         <span className="text-white/60 text-[10px]">{open ? '접기' : '자세히'}</span>
@@ -52,8 +54,8 @@ export function DemoBanner() {
       {open && (
         <div className="px-4 pb-4 pt-1 text-xs">
           <p className="text-white/80 leading-relaxed">
-            이 앱은 실제 SDK 동작을 모사하는 mock 레이어 위에서 동작합니다.
-            네이티브 API의 실제 동작은 앱인토스에서 확인하세요.
+            이 앱은 실제 SDK 동작을 모사하는 mock 레이어 위에서 동작합니다. 네이티브 API의 실제
+            동작은 앱인토스에서 확인하세요.
           </p>
           {APP_IN_TOSS_URL ? (
             <div className="mt-3 flex items-start gap-3">

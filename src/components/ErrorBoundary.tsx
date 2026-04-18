@@ -42,7 +42,9 @@ export class ErrorBoundary extends Component<Props, State> {
       <div className="bg-gray-100 dark:bg-gray-950">
         <div className="mx-auto max-w-[430px] min-h-screen bg-white shadow-sm flex items-center justify-center p-4 dark:bg-gray-900 dark:shadow-none">
           <div className="w-full rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
-            <h1 className="text-base font-semibold text-gray-900 dark:text-gray-100">문제가 발생했어요</h1>
+            <h1 className="text-base font-semibold text-gray-900 dark:text-gray-100">
+              문제가 발생했어요
+            </h1>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
               렌더링 중 예기치 않은 에러가 발생했습니다.
             </p>

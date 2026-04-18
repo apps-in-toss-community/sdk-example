@@ -14,7 +14,14 @@ interface ParamInputProps {
   placeholder?: string;
 }
 
-export function ParamInput({ label, value, onChange, type = 'text', options, placeholder }: ParamInputProps) {
+export function ParamInput({
+  label,
+  value,
+  onChange,
+  type = 'text',
+  options,
+  placeholder,
+}: ParamInputProps) {
   if (type === 'toggle') {
     return (
       <label className="flex items-center justify-between py-1.5">
@@ -26,7 +33,9 @@ export function ParamInput({ label, value, onChange, type = 'text', options, pla
           onClick={() => onChange(value === 'true' ? 'false' : 'true')}
           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${value === 'true' ? 'bg-gray-900 dark:bg-gray-100' : 'bg-gray-300 dark:bg-gray-700'}`}
         >
-          <span className={`inline-block h-4 w-4 rounded-full bg-white transition-transform dark:bg-gray-900 ${value === 'true' ? 'translate-x-6' : 'translate-x-1'}`} />
+          <span
+            className={`inline-block h-4 w-4 rounded-full bg-white transition-transform dark:bg-gray-900 ${value === 'true' ? 'translate-x-6' : 'translate-x-1'}`}
+          />
         </button>
       </label>
     );
@@ -42,7 +51,9 @@ export function ParamInput({ label, value, onChange, type = 'text', options, pla
           className="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:focus:border-gray-500"
         >
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value}>{opt.label}</option>
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
           ))}
         </select>
       </label>

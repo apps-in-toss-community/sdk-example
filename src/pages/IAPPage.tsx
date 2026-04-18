@@ -1,16 +1,18 @@
-import { useState, useCallback } from 'react';
+import type { IapProductListItem } from '@apps-in-toss/web-framework';
+import { checkoutPayment, IAP } from '@apps-in-toss/web-framework';
+import { useCallback, useState } from 'react';
+import { ApiCard } from '../components/ApiCard';
+import { type HistoryEntry, HistoryLog } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
 import { WorkflowStepper } from '../components/WorkflowStepper';
-import { ApiCard } from '../components/ApiCard';
-import { HistoryLog, type HistoryEntry } from '../components/HistoryLog';
-import { IAP, checkoutPayment } from '@apps-in-toss/web-framework';
-import type { IapProductListItem } from '@apps-in-toss/web-framework';
 
 export function IAPPage() {
   const [activeStep, setActiveStep] = useState(0);
   const [products, setProducts] = useState<IapProductListItem[]>([]);
   const [selectedSku, setSelectedSku] = useState('');
-  const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
+    'idle',
+  );
   const [purchaseError, setPurchaseError] = useState('');
   const [eventLog, setEventLog] = useState<HistoryEntry[]>([]);
 
@@ -18,33 +20,35 @@ export function IAPPage() {
     setEventLog((prev) => [{ timestamp: Date.now(), status, data, error }, ...prev].slice(0, 20));
   }, []);
 
-  const handlePurchase = useCallback((type: 'onetime' | 'subscription') => {
-    if (!selectedSku) return;
-    setPurchaseStatus('loading');
-    const method = type === 'onetime'
-      ? IAP.createOneTimePurchaseOrder
-      : IAP.createSubscriptionPurchaseOrder;
-    method({
-      options: {
-        sku: selectedSku,
-        processProductGrant: async () => {
-          addLog('success', { event: 'processProductGrant', sku: selectedSku });
-          return true;
+  const handlePurchase = useCallback(
+    (type: 'onetime' | 'subscription') => {
+      if (!selectedSku) return;
+      setPurchaseStatus('loading');
+      const method =
+        type === 'onetime' ? IAP.createOneTimePurchaseOrder : IAP.createSubscriptionPurchaseOrder;
+      method({
+        options: {
+          sku: selectedSku,
+          processProductGrant: async () => {
+            addLog('success', { event: 'processProductGrant', sku: selectedSku });
+            return true;
+          },
         },
-      },
-      onEvent: (event) => {
-        setPurchaseStatus('success');
-        addLog('success', event);
-        // Auto-advance to order management after successful purchase
-        setActiveStep(2);
-      },
-      onError: (error) => {
-        setPurchaseStatus('error');
-        setPurchaseError(String(error));
-        addLog('error', undefined, String(error));
-      },
-    });
-  }, [selectedSku, addLog]);
+        onEvent: (event) => {
+          setPurchaseStatus('success');
+          addLog('success', event);
+          // Auto-advance to order management after successful purchase
+          setActiveStep(2);
+        },
+        onError: (error) => {
+          setPurchaseStatus('error');
+          setPurchaseError(String(error));
+          addLog('error', undefined, String(error));
+        },
+      });
+    },
+    [selectedSku, addLog],
+  );
 
   const handleReset = useCallback(() => {
     setActiveStep(0);
@@ -82,7 +86,10 @@ export function IAPPage() {
                   <button
                     type="button"
                     key={`${p.sku ?? 'unknown'}-${i}`}
-                    onClick={() => { setSelectedSku(sku); setActiveStep(1); }}
+                    onClick={() => {
+                      setSelectedSku(sku);
+                      setActiveStep(1);
+                    }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${
                       selectedSku === sku
                         ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
@@ -100,11 +107,15 @@ export function IAPPage() {
     },
     {
       title: '구매',
-      description: selectedSku ? `선택한 상품(${selectedSku})을 구매합니다` : '상품을 먼저 선택하세요',
+      description: selectedSku
+        ? `선택한 상품(${selectedSku})을 구매합니다`
+        : '상품을 먼저 선택하세요',
       content: (
         <div className="space-y-3 py-2">
           {selectedSku ? (
-            <p className="text-sm text-gray-700 dark:text-gray-300">SKU: <span className="font-mono font-semibold">{selectedSku}</span></p>
+            <p className="text-sm text-gray-700 dark:text-gray-300">
+              SKU: <span className="font-mono font-semibold">{selectedSku}</span>
+            </p>
           ) : (
             <p className="text-sm text-gray-500 dark:text-gray-400">상품을 먼저 선택하세요</p>
           )}
@@ -139,8 +150,18 @@ export function IAPPage() {
       description: '미완료 주문 조회, 완료/환불 내역, 구독 정보',
       content: (
         <div className="space-y-3 py-2">
-          <ApiCard name="IAP.getPendingOrders" description="미완료 주문 조회" params={[]} execute={async () => await IAP.getPendingOrders()} />
-          <ApiCard name="IAP.getCompletedOrRefundedOrders" description="완료/환불 주문 조회" params={[]} execute={async () => await IAP.getCompletedOrRefundedOrders()} />
+          <ApiCard
+            name="IAP.getPendingOrders"
+            description="미완료 주문 조회"
+            params={[]}
+            execute={async () => await IAP.getPendingOrders()}
+          />
+          <ApiCard
+            name="IAP.getCompletedOrRefundedOrders"
+            description="완료/환불 주문 조회"
+            params={[]}
+            execute={async () => await IAP.getCompletedOrRefundedOrders()}
+          />
           <ApiCard
             name="IAP.getSubscriptionInfo"
             description="구독 정보 조회"

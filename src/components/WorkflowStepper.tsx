@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 interface Step {
   title: string;
@@ -33,19 +33,25 @@ export function WorkflowStepper({ steps, activeStep, onStepClick }: WorkflowStep
               }`}
             >
               <div className="flex items-center gap-2">
-                <span className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
-                  isDone
-                    ? 'bg-green-500 text-white dark:bg-green-600'
-                    : isActive
-                      ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
-                      : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
-                }`}>
+                <span
+                  className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
+                    isDone
+                      ? 'bg-green-500 text-white dark:bg-green-600'
+                      : isActive
+                        ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
+                        : 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400'
+                  }`}
+                >
                   {isDone ? '✓' : i + 1}
                 </span>
-                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{step.title}</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                  {step.title}
+                </span>
               </div>
               {step.description && (
-                <p className="mt-1 ml-8 text-xs text-gray-500 dark:text-gray-400">{step.description}</p>
+                <p className="mt-1 ml-8 text-xs text-gray-500 dark:text-gray-400">
+                  {step.description}
+                </p>
               )}
             </button>
 

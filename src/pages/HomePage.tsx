@@ -2,22 +2,157 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const domains = [
-  { path: '/auth', name: 'Auth', description: 'appLogin, getUserKeyForGame 등', apis: ['appLogin', 'getIsTossLoginIntegratedService', 'getUserKeyForGame', 'appsInTossSignTossCert'] },
-  { path: '/navigation', name: 'Navigation', description: 'closeView, openURL, share 등', apis: ['closeView', 'openURL', 'share', 'getTossShareLink', 'setIosSwipeGestureEnabled', 'setDeviceOrientation', 'setScreenAwakeMode', 'setSecureScreen', 'requestReview'] },
-  { path: '/environment', name: 'Environment', description: 'getPlatformOS, getNetworkStatus 등', apis: ['getPlatformOS', 'getOperationalEnvironment', 'getNetworkStatus', 'getTossAppVersion', 'isMinVersionSupported', 'getSchemeUri', 'getLocale', 'getDeviceId', 'getGroupId', 'getServerTime', 'env.getDeploymentId', 'getAppsInTossGlobals', 'SafeAreaInsets', 'getSafeAreaInsets'] },
-  { path: '/permissions', name: 'Permissions', description: 'getPermission, openPermissionDialog 등', apis: ['getPermission', 'openPermissionDialog', 'requestPermission'] },
-  { path: '/storage', name: 'Storage', description: 'setItem, getItem, removeItem 등', apis: ['setItem', 'getItem', 'removeItem', 'clearItems'] },
-  { path: '/location', name: 'Location', description: 'getCurrentLocation, startUpdateLocation', apis: ['getCurrentLocation', 'startUpdateLocation'] },
-  { path: '/camera', name: 'Camera & Photos', description: 'openCamera, fetchAlbumPhotos', apis: ['openCamera', 'fetchAlbumPhotos'] },
+  {
+    path: '/auth',
+    name: 'Auth',
+    description: 'appLogin, getUserKeyForGame 등',
+    apis: [
+      'appLogin',
+      'getIsTossLoginIntegratedService',
+      'getUserKeyForGame',
+      'appsInTossSignTossCert',
+    ],
+  },
+  {
+    path: '/navigation',
+    name: 'Navigation',
+    description: 'closeView, openURL, share 등',
+    apis: [
+      'closeView',
+      'openURL',
+      'share',
+      'getTossShareLink',
+      'setIosSwipeGestureEnabled',
+      'setDeviceOrientation',
+      'setScreenAwakeMode',
+      'setSecureScreen',
+      'requestReview',
+    ],
+  },
+  {
+    path: '/environment',
+    name: 'Environment',
+    description: 'getPlatformOS, getNetworkStatus 등',
+    apis: [
+      'getPlatformOS',
+      'getOperationalEnvironment',
+      'getNetworkStatus',
+      'getTossAppVersion',
+      'isMinVersionSupported',
+      'getSchemeUri',
+      'getLocale',
+      'getDeviceId',
+      'getGroupId',
+      'getServerTime',
+      'env.getDeploymentId',
+      'getAppsInTossGlobals',
+      'SafeAreaInsets',
+      'getSafeAreaInsets',
+    ],
+  },
+  {
+    path: '/permissions',
+    name: 'Permissions',
+    description: 'getPermission, openPermissionDialog 등',
+    apis: ['getPermission', 'openPermissionDialog', 'requestPermission'],
+  },
+  {
+    path: '/storage',
+    name: 'Storage',
+    description: 'setItem, getItem, removeItem 등',
+    apis: ['setItem', 'getItem', 'removeItem', 'clearItems'],
+  },
+  {
+    path: '/location',
+    name: 'Location',
+    description: 'getCurrentLocation, startUpdateLocation',
+    apis: ['getCurrentLocation', 'startUpdateLocation'],
+  },
+  {
+    path: '/camera',
+    name: 'Camera & Photos',
+    description: 'openCamera, fetchAlbumPhotos',
+    apis: ['openCamera', 'fetchAlbumPhotos'],
+  },
   { path: '/contacts', name: 'Contacts', description: 'fetchContacts', apis: ['fetchContacts'] },
-  { path: '/clipboard', name: 'Clipboard', description: 'getClipboardText, setClipboardText', apis: ['getClipboardText', 'setClipboardText'] },
-  { path: '/haptic', name: 'Haptic', description: 'generateHapticFeedback, saveBase64Data', apis: ['generateHapticFeedback', 'saveBase64Data'] },
-  { path: '/iap', name: 'IAP', description: '상품 조회, 구매, 주문 관리', apis: ['getProductItemList', 'createOneTimePurchaseOrder', 'createSubscriptionPurchaseOrder', 'getPendingOrders', 'getCompletedOrRefundedOrders', 'getSubscriptionInfo', 'checkoutPayment'] },
-  { path: '/ads', name: 'Ads', description: 'GoogleAdMob, TossAds, FullScreenAd', apis: ['loadAppsInTossAdMob', 'showAppsInTossAdMob', 'isAppsInTossAdMobLoaded', 'initialize', 'attach', 'attachBanner', 'destroy', 'destroyAll', 'loadFullScreenAd', 'showFullScreenAd'] },
-  { path: '/game', name: 'Game', description: '게임센터, 프로모션, contactsViral', apis: ['grantPromotionReward', 'grantPromotionRewardForGame', 'submitGameCenterLeaderBoardScore', 'getGameCenterGameProfile', 'openGameCenterLeaderboard', 'contactsViral'] },
-  { path: '/analytics', name: 'Analytics', description: 'screen, impression, click, eventLog', apis: ['screen', 'impression', 'click', 'eventLog'] },
-  { path: '/partner', name: 'Partner', description: 'addAccessoryButton, removeAccessoryButton', apis: ['addAccessoryButton', 'removeAccessoryButton'] },
-  { path: '/events', name: 'Events', description: 'graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb', apis: ['graniteEvent.addEventListener', 'tdsEvent.addEventListener', 'onVisibilityChangedByTransparentServiceWeb'] },
+  {
+    path: '/clipboard',
+    name: 'Clipboard',
+    description: 'getClipboardText, setClipboardText',
+    apis: ['getClipboardText', 'setClipboardText'],
+  },
+  {
+    path: '/haptic',
+    name: 'Haptic',
+    description: 'generateHapticFeedback, saveBase64Data',
+    apis: ['generateHapticFeedback', 'saveBase64Data'],
+  },
+  {
+    path: '/iap',
+    name: 'IAP',
+    description: '상품 조회, 구매, 주문 관리',
+    apis: [
+      'getProductItemList',
+      'createOneTimePurchaseOrder',
+      'createSubscriptionPurchaseOrder',
+      'getPendingOrders',
+      'getCompletedOrRefundedOrders',
+      'getSubscriptionInfo',
+      'checkoutPayment',
+    ],
+  },
+  {
+    path: '/ads',
+    name: 'Ads',
+    description: 'GoogleAdMob, TossAds, FullScreenAd',
+    apis: [
+      'loadAppsInTossAdMob',
+      'showAppsInTossAdMob',
+      'isAppsInTossAdMobLoaded',
+      'initialize',
+      'attach',
+      'attachBanner',
+      'destroy',
+      'destroyAll',
+      'loadFullScreenAd',
+      'showFullScreenAd',
+    ],
+  },
+  {
+    path: '/game',
+    name: 'Game',
+    description: '게임센터, 프로모션, contactsViral',
+    apis: [
+      'grantPromotionReward',
+      'grantPromotionRewardForGame',
+      'submitGameCenterLeaderBoardScore',
+      'getGameCenterGameProfile',
+      'openGameCenterLeaderboard',
+      'contactsViral',
+    ],
+  },
+  {
+    path: '/analytics',
+    name: 'Analytics',
+    description: 'screen, impression, click, eventLog',
+    apis: ['screen', 'impression', 'click', 'eventLog'],
+  },
+  {
+    path: '/partner',
+    name: 'Partner',
+    description: 'addAccessoryButton, removeAccessoryButton',
+    apis: ['addAccessoryButton', 'removeAccessoryButton'],
+  },
+  {
+    path: '/events',
+    name: 'Events',
+    description: 'graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb',
+    apis: [
+      'graniteEvent.addEventListener',
+      'tdsEvent.addEventListener',
+      'onVisibilityChangedByTransparentServiceWeb',
+    ],
+  },
 ];
 
 export function HomePage() {
@@ -28,7 +163,7 @@ export function HomePage() {
     (d) =>
       d.name.toLowerCase().includes(query) ||
       d.description.toLowerCase().includes(query) ||
-      d.apis.some((api) => api.toLowerCase().includes(query))
+      d.apis.some((api) => api.toLowerCase().includes(query)),
   );
 
   return (
@@ -74,7 +209,9 @@ export function HomePage() {
           </Link>
         ))}
         {filtered.length === 0 && (
-          <p className="py-8 text-center text-sm text-gray-400 dark:text-gray-500">검색 결과가 없습니다</p>
+          <p className="py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+            검색 결과가 없습니다
+          </p>
         )}
       </div>
     </div>

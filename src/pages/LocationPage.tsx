@@ -1,7 +1,7 @@
-import { PageHeader } from '../components/PageHeader';
-import { ApiCard } from '../components/ApiCard';
-import { Accuracy, getCurrentLocation, startUpdateLocation } from '@apps-in-toss/web-framework';
 import type { StartUpdateLocationEventParams } from '@apps-in-toss/web-framework';
+import { Accuracy, getCurrentLocation, startUpdateLocation } from '@apps-in-toss/web-framework';
+import { ApiCard } from '../components/ApiCard';
+import { PageHeader } from '../components/PageHeader';
 
 export function LocationPage() {
   return (

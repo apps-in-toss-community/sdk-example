@@ -22,6 +22,7 @@
 - **Tailwind CSS v4** — 스타일 (CSS-only, 별도 config 없음)
 - **react-router-dom v7** — 페이지 라우팅
 - **pnpm** — 패키지 매니저
+- **Biome** — lint + formatter (조직 표준). 기존 코드 맥락으로 `noArrayIndexKey`, `noSvgWithoutTitle`는 우선 off, 후속 PR에서 점진 개선.
 
 ## 의존성
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
+import { type HistoryEntry, HistoryLog } from './HistoryLog';
 import { ParamInput } from './ParamInput';
 import { ResultView } from './ResultView';
-import { HistoryLog, type HistoryEntry } from './HistoryLog';
 
 export interface ParamDef<T = string> {
   name: string;
@@ -27,10 +27,14 @@ type AnyParamDef = ParamDef<any>;
  * `parse: infer F` to avoid matching `parse: undefined` — if `ParamDef.parse`
  * ever becomes `((raw: string) => T) | undefined` this conditional stays correct.
  */
-type ParsedParam<P extends AnyParamDef> = P extends { parse: (raw: string) => infer T } ? T : string;
+type ParsedParam<P extends AnyParamDef> = P extends { parse: (raw: string) => infer T }
+  ? T
+  : string;
 
 /** Merge a union of types into a single intersection type. */
-type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void
+  ? I
+  : never;
 
 /**
  * Map a single ParamDef to `{ [literalName]: parsedType }`.
@@ -73,7 +77,7 @@ export function ApiCard<const Params extends AnyParamDef[]>({
   execute,
 }: ApiCardProps<Params>) {
   const [values, setValues] = useState<Record<string, string>>(() =>
-    Object.fromEntries(params.map((p) => [p.name, p.defaultValue ?? '']))
+    Object.fromEntries(params.map((p) => [p.name, p.defaultValue ?? ''])),
   );
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [result, setResult] = useState<unknown>(undefined);
@@ -92,12 +96,16 @@ export function ApiCard<const Params extends AnyParamDef[]>({
       const data = await execute(parsed as ParamsRecord<Params>);
       setStatus('success');
       setResult(data);
-      setHistory((prev) => [{ timestamp: Date.now(), status: 'success' as const, data }, ...prev].slice(0, 20));
+      setHistory((prev) =>
+        [{ timestamp: Date.now(), status: 'success' as const, data }, ...prev].slice(0, 20),
+      );
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setStatus('error');
       setError(msg);
-      setHistory((prev) => [{ timestamp: Date.now(), status: 'error' as const, error: msg }, ...prev].slice(0, 20));
+      setHistory((prev) =>
+        [{ timestamp: Date.now(), status: 'error' as const, error: msg }, ...prev].slice(0, 20),
+      );
     }
   }
 
@@ -106,7 +114,9 @@ export function ApiCard<const Params extends AnyParamDef[]>({
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">{name}</h3>
       </div>
-      {description && <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{description}</p>}
+      {description && (
+        <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{description}</p>
+      )}
 
       {params.length > 0 && (
         <div className="mt-3 space-y-1">
