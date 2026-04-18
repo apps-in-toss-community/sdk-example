@@ -1,8 +1,6 @@
 # TODO
 
 ## High Priority
-- [ ] Add CI workflow for PRs (typecheck + build on every pull_request) — currently only `check-sdk-update.yml` exists; no gating on typos/build breaks in PRs
-  - [ ] Pin Node/pnpm version via `.nvmrc` or `packageManager` field for reproducibility
 - [ ] Add ErrorBoundary at `App.tsx` root — SDK calls that throw currently produce a white screen; catch errors, show a recovery UI, log to console
 
 ## Medium Priority
