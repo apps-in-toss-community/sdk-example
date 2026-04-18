@@ -121,7 +121,7 @@ export function IAPPage() {
               type="button"
               onClick={() => handlePurchase('subscription')}
               disabled={!selectedSku || purchaseStatus === 'loading'}
-              className="flex-1 rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-600 disabled:opacity-50 transition-colors dark:bg-gray-300 dark:text-gray-900 dark:hover:bg-gray-400"
+              className="flex-1 rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-600 disabled:opacity-50 transition-colors dark:bg-gray-400 dark:text-gray-900 dark:hover:bg-gray-500"
             >
               구독 구매
             </button>

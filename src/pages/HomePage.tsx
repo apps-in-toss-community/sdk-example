@@ -33,7 +33,10 @@ export function HomePage() {
 
   return (
     <div className="px-4 pb-8">
-      <div className="sticky top-0 z-10 bg-white pt-4 pb-3 border-b border-gray-100 dark:bg-gray-900 dark:border-gray-800">
+      <div
+        className="sticky z-10 bg-white pt-4 pb-3 border-b border-gray-100 dark:bg-gray-900 dark:border-gray-800"
+        style={{ top: 'var(--safe-top, 0px)' }}
+      >
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">SDK Example</h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">@apps-in-toss/web-framework</p>
         <div className="mt-3 flex gap-2">

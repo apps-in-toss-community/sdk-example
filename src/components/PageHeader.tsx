@@ -4,7 +4,10 @@ export function PageHeader({ title }: { title: string }) {
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-10 flex items-center gap-3 bg-white px-4 py-3 border-b border-gray-100 dark:bg-gray-900 dark:border-gray-800">
+    <header
+      className="sticky z-10 flex items-center gap-3 bg-white px-4 py-3 border-b border-gray-100 dark:bg-gray-900 dark:border-gray-800"
+      style={{ top: 'var(--safe-top, 0px)' }}
+    >
       <button
         type="button"
         onClick={() => navigate(-1)}

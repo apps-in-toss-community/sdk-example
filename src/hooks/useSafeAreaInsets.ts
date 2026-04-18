@@ -8,7 +8,9 @@ export interface Insets {
   right: number;
 }
 
-const ZERO: Insets = { top: 0, bottom: 0, left: 0, right: 0 };
+// Frozen so a consumer accidentally mutating `insets.top` can't corrupt the
+// shared fallback used across every non-Toss render.
+const ZERO: Readonly<Insets> = Object.freeze({ top: 0, bottom: 0, left: 0, right: 0 });
 
 function safeGet(): Insets {
   try {
@@ -20,8 +22,8 @@ function safeGet(): Insets {
 
 /**
  * Subscribes to SDK safe-area insets. Non-Toss environments (web demo) fall
- * back to zeros — the shell still applies CSS `env(safe-area-inset-*)` via
- * `max(<sdk>px, env())` so notched browsers like iOS Safari still work.
+ * back to zeros — Layout then applies CSS `env(safe-area-inset-*)` when the
+ * SDK value is zero, so notched browsers like iOS Safari still work.
  */
 export function useSafeAreaInsets(): Insets {
   const [insets, setInsets] = useState<Insets>(safeGet);
