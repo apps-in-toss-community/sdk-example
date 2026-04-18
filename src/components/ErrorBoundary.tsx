@@ -19,12 +19,14 @@ export class ErrorBoundary extends Component<Props, State> {
     console.error('[ErrorBoundary]', error, info);
   }
 
-  handleRetry = () => {
+  // Best-effort re-render. If the underlying fault is deterministic
+  // (e.g. bad storage, stuck state), the boundary will re-catch — use 홈으로 to escape.
+  private readonly handleRetry = () => {
     this.setState({ error: null });
   };
 
-  handleGoHome = () => {
-    window.location.href = import.meta.env.BASE_URL;
+  private readonly handleGoHome = () => {
+    window.location.assign(import.meta.env.BASE_URL);
   };
 
   override render() {
@@ -39,7 +41,7 @@ export class ErrorBoundary extends Component<Props, State> {
             <p className="mt-1 text-xs text-gray-500">
               렌더링 중 예기치 않은 에러가 발생했습니다.
             </p>
-            <pre className="mt-3 bg-gray-50 rounded p-3 text-sm text-red-600 overflow-auto whitespace-pre-wrap font-mono">
+            <pre className="mt-3 bg-gray-50 rounded p-3 text-sm text-red-600 overflow-auto whitespace-pre-wrap">
               {error.message}
             </pre>
             <div className="mt-4 flex gap-2">
