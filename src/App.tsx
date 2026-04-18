@@ -1,23 +1,23 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/Layout';
-import { HomePage } from './pages/HomePage';
+import { AdsPage } from './pages/AdsPage';
+import { AnalyticsPage } from './pages/AnalyticsPage';
 import { AuthPage } from './pages/AuthPage';
-import { NavigationPage } from './pages/NavigationPage';
+import { CameraPage } from './pages/CameraPage';
+import { ClipboardPage } from './pages/ClipboardPage';
+import { ContactsPage } from './pages/ContactsPage';
 import { EnvironmentPage } from './pages/EnvironmentPage';
+import { EventsPage } from './pages/EventsPage';
+import { GamePage } from './pages/GamePage';
+import { HapticPage } from './pages/HapticPage';
+import { HomePage } from './pages/HomePage';
+import { IAPPage } from './pages/IAPPage';
+import { LocationPage } from './pages/LocationPage';
+import { NavigationPage } from './pages/NavigationPage';
+import { PartnerPage } from './pages/PartnerPage';
 import { PermissionsPage } from './pages/PermissionsPage';
 import { StoragePage } from './pages/StoragePage';
-import { LocationPage } from './pages/LocationPage';
-import { CameraPage } from './pages/CameraPage';
-import { ContactsPage } from './pages/ContactsPage';
-import { ClipboardPage } from './pages/ClipboardPage';
-import { HapticPage } from './pages/HapticPage';
-import { IAPPage } from './pages/IAPPage';
-import { AdsPage } from './pages/AdsPage';
-import { GamePage } from './pages/GamePage';
-import { AnalyticsPage } from './pages/AnalyticsPage';
-import { PartnerPage } from './pages/PartnerPage';
-import { EventsPage } from './pages/EventsPage';
 
 export function App() {
   // Honors Vite's BASE_URL so Pages (e.g. /sdk-example/) and 앱인토스 배포 (/) both work.

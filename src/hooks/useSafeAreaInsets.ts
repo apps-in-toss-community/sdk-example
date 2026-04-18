@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
 import { SafeAreaInsets } from '@apps-in-toss/web-framework';
+import { useEffect, useState } from 'react';
 
 export interface Insets {
   top: number;

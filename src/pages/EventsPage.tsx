@@ -1,7 +1,11 @@
+import {
+  graniteEvent,
+  onVisibilityChangedByTransparentServiceWeb,
+  tdsEvent,
+} from '@apps-in-toss/web-framework';
 import { useEffect, useRef, useState } from 'react';
+import { type HistoryEntry, HistoryLog } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
-import { HistoryLog, type HistoryEntry } from '../components/HistoryLog';
-import { graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb } from '@apps-in-toss/web-framework';
 
 interface EventSubscriberCardProps {
   name: string;
@@ -25,7 +29,12 @@ function EventSubscriberCard({ name, description, subscribe }: EventSubscriberCa
       setIsSubscribed(false);
     } else {
       const unsub = subscribe((payload) => {
-        setEvents((prev) => [{ timestamp: Date.now(), status: 'success' as const, data: payload }, ...prev].slice(0, 20));
+        setEvents((prev) =>
+          [{ timestamp: Date.now(), status: 'success' as const, data: payload }, ...prev].slice(
+            0,
+            20,
+          ),
+        );
       });
       unsubRef.current = unsub;
       setIsSubscribed(true);

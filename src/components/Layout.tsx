@@ -1,7 +1,7 @@
-import { Outlet } from 'react-router-dom';
 import type { CSSProperties } from 'react';
-import { DemoBanner } from './DemoBanner';
+import { Outlet } from 'react-router-dom';
 import { useSafeAreaInsets } from '../hooks/useSafeAreaInsets';
+import { DemoBanner } from './DemoBanner';
 
 function insetValue(sdk: number, edge: 'top' | 'bottom' | 'left' | 'right'): string {
   return sdk > 0 ? `${sdk}px` : `env(safe-area-inset-${edge})`;

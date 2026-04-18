@@ -15,7 +15,13 @@ export function PageHeader({ title }: { title: string }) {
         aria-label="뒤로가기"
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-          <path d="M12.5 15L7.5 10L12.5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          <path
+            d="M12.5 15L7.5 10L12.5 5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
         </svg>
       </button>
       <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h1>

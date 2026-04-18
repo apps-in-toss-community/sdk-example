@@ -1,10 +1,15 @@
-import { useState, useCallback } from 'react';
-import { PageHeader } from '../components/PageHeader';
-import { WorkflowStepper } from '../components/WorkflowStepper';
-import { HistoryLog, type HistoryEntry } from '../components/HistoryLog';
+import {
+  GoogleAdMob,
+  loadFullScreenAd,
+  showFullScreenAd,
+  TossAds,
+} from '@apps-in-toss/web-framework';
+import { useCallback, useState } from 'react';
 import { ApiCard } from '../components/ApiCard';
-import { GoogleAdMob, TossAds, loadFullScreenAd, showFullScreenAd } from '@apps-in-toss/web-framework';
+import { type HistoryEntry, HistoryLog } from '../components/HistoryLog';
+import { PageHeader } from '../components/PageHeader';
 import { ResultView } from '../components/ResultView';
+import { WorkflowStepper } from '../components/WorkflowStepper';
 
 export function AdsPage() {
   // --- GoogleAdMob state ---
@@ -92,10 +97,14 @@ export function AdsPage() {
 
   // --- FullScreen Ad state ---
   const [fsEventLog, setFsEventLog] = useState<HistoryEntry[]>([]);
-  const [fsLoadStatus, setFsLoadStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [fsLoadStatus, setFsLoadStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
+    'idle',
+  );
   const [fsLoadResult, setFsLoadResult] = useState<unknown>(undefined);
   const [fsLoadError, setFsLoadError] = useState('');
-  const [fsShowStatus, setFsShowStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [fsShowStatus, setFsShowStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
+    'idle',
+  );
   const [fsShowResult, setFsShowResult] = useState<unknown>(undefined);
   const [fsShowError, setFsShowError] = useState('');
 
@@ -161,12 +170,18 @@ export function AdsPage() {
 
         {/* FullScreen Ad — dedicated event-log cards */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-300">FullScreen Ad</h2>
+          <h2 className="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-300">
+            FullScreen Ad
+          </h2>
           <div className="space-y-3">
             {/* loadFullScreenAd */}
             <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-              <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">loadFullScreenAd</h3>
-              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">전면 광고 로드 — 여러 이벤트를 수신합니다</p>
+              <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">
+                loadFullScreenAd
+              </h3>
+              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                전면 광고 로드 — 여러 이벤트를 수신합니다
+              </p>
               <button
                 type="button"
                 onClick={handleFsLoad}
@@ -179,8 +194,12 @@ export function AdsPage() {
             </div>
             {/* showFullScreenAd */}
             <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-              <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">showFullScreenAd</h3>
-              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">전면 광고 표시 — 여러 이벤트를 수신합니다</p>
+              <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">
+                showFullScreenAd
+              </h3>
+              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                전면 광고 표시 — 여러 이벤트를 수신합니다
+              </p>
               <button
                 type="button"
                 onClick={handleFsShow}
@@ -204,13 +223,17 @@ export function AdsPage() {
               name="TossAds.initialize"
               description="TossAds 초기화"
               params={[]}
-              execute={async () => { TossAds.initialize({}); }}
+              execute={async () => {
+                TossAds.initialize({});
+              }}
             />
             <ApiCard
               name="TossAds.destroyAll"
               description="모든 TossAds 슬롯 제거"
               params={[]}
-              execute={async () => { TossAds.destroyAll(); }}
+              execute={async () => {
+                TossAds.destroyAll();
+              }}
             />
           </div>
         </div>
