@@ -1,7 +1,10 @@
 {
   "name": "sdk-example",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "Community-built interactive reference app for the @apps-in-toss/web-framework SDK.",
+  "author": "apps-in-toss-community",
+  "license": "MIT",
   "type": "module",
   "engines": {
     "node": ">=24"
