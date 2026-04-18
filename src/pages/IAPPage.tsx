@@ -74,8 +74,8 @@ export function IAPPage() {
             }}
           />
           {products.length > 0 && (
-            <div className="rounded-lg border border-gray-200 p-3">
-              <p className="text-xs font-medium text-gray-500 mb-2">상품 선택</p>
+            <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-800">
+              <p className="text-xs font-medium text-gray-500 mb-2 dark:text-gray-400">상품 선택</p>
               {products.map((p, i) => {
                 const sku = p.sku ?? '';
                 return (
@@ -84,7 +84,9 @@ export function IAPPage() {
                     key={`${p.sku ?? 'unknown'}-${i}`}
                     onClick={() => { setSelectedSku(sku); setActiveStep(1); }}
                     className={`w-full text-left px-3 py-2 rounded-lg text-sm mb-1 transition-colors ${
-                      selectedSku === sku ? 'bg-gray-900 text-white' : 'bg-gray-50 hover:bg-gray-100'
+                      selectedSku === sku
+                        ? 'bg-gray-900 text-white dark:bg-gray-100 dark:text-gray-900'
+                        : 'bg-gray-50 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700'
                     }`}
                   >
                     {p.displayName ?? p.sku} — {p.displayAmount ?? '?'}
@@ -102,16 +104,16 @@ export function IAPPage() {
       content: (
         <div className="space-y-3 py-2">
           {selectedSku ? (
-            <p className="text-sm text-gray-700">SKU: <span className="font-mono font-semibold">{selectedSku}</span></p>
+            <p className="text-sm text-gray-700 dark:text-gray-300">SKU: <span className="font-mono font-semibold">{selectedSku}</span></p>
           ) : (
-            <p className="text-sm text-gray-500">상품을 먼저 선택하세요</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">상품을 먼저 선택하세요</p>
           )}
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => handlePurchase('onetime')}
               disabled={!selectedSku || purchaseStatus === 'loading'}
-              className="flex-1 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+              className="flex-1 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
             >
               일회성 구매
             </button>
@@ -119,13 +121,13 @@ export function IAPPage() {
               type="button"
               onClick={() => handlePurchase('subscription')}
               disabled={!selectedSku || purchaseStatus === 'loading'}
-              className="flex-1 rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-600 disabled:opacity-50 transition-colors"
+              className="flex-1 rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-600 disabled:opacity-50 transition-colors dark:bg-gray-400 dark:text-gray-900 dark:hover:bg-gray-500"
             >
               구독 구매
             </button>
           </div>
           {purchaseStatus === 'error' && (
-            <p className="text-sm text-red-600">{purchaseError}</p>
+            <p className="text-sm text-red-600 dark:text-red-400">{purchaseError}</p>
           )}
           {/* HistoryLog is the primary result source — shows all purchase events in order */}
           <HistoryLog entries={eventLog} />
@@ -164,7 +166,7 @@ export function IAPPage() {
           <button
             type="button"
             onClick={handleReset}
-            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+            className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           >
             초기화
           </button>

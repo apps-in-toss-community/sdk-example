@@ -63,7 +63,7 @@ export function AdsPage() {
             type="button"
             onClick={handleLoad}
             disabled={loadStatus === 'loading'}
-            className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+            className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
           >
             GoogleAdMob.loadAppsInTossAdMob
           </button>
@@ -80,7 +80,7 @@ export function AdsPage() {
             type="button"
             onClick={handleShow}
             disabled={!adLoaded}
-            className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+            className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
           >
             GoogleAdMob.showAppsInTossAdMob
           </button>
@@ -146,12 +146,12 @@ export function AdsPage() {
         {/* GoogleAdMob — stepper workflow */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-gray-700">GoogleAdMob</h2>
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">GoogleAdMob</h2>
             <button
               type="button"
               onClick={handleReset}
               aria-label="GoogleAdMob 워크플로우 초기화"
-              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+              className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
               초기화
             </button>
@@ -161,31 +161,31 @@ export function AdsPage() {
 
         {/* FullScreen Ad — dedicated event-log cards */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">FullScreen Ad</h2>
+          <h2 className="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-300">FullScreen Ad</h2>
           <div className="space-y-3">
             {/* loadFullScreenAd */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4">
-              <h3 className="text-sm font-semibold text-gray-900 font-mono">loadFullScreenAd</h3>
-              <p className="mt-0.5 text-xs text-gray-500">전면 광고 로드 — 여러 이벤트를 수신합니다</p>
+            <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+              <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">loadFullScreenAd</h3>
+              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">전면 광고 로드 — 여러 이벤트를 수신합니다</p>
               <button
                 type="button"
                 onClick={handleFsLoad}
                 disabled={fsLoadStatus === 'loading'}
-                className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
               >
                 실행
               </button>
               <ResultView status={fsLoadStatus} data={fsLoadResult} error={fsLoadError} />
             </div>
             {/* showFullScreenAd */}
-            <div className="rounded-xl border border-gray-200 bg-white p-4">
-              <h3 className="text-sm font-semibold text-gray-900 font-mono">showFullScreenAd</h3>
-              <p className="mt-0.5 text-xs text-gray-500">전면 광고 표시 — 여러 이벤트를 수신합니다</p>
+            <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+              <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">showFullScreenAd</h3>
+              <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">전면 광고 표시 — 여러 이벤트를 수신합니다</p>
               <button
                 type="button"
                 onClick={handleFsShow}
                 disabled={fsShowStatus === 'loading'}
-                className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+                className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
               >
                 실행
               </button>
@@ -198,7 +198,7 @@ export function AdsPage() {
 
         {/* TossAds */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3">TossAds</h2>
+          <h2 className="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-300">TossAds</h2>
           <div className="space-y-3">
             <ApiCard
               name="TossAds.initialize"

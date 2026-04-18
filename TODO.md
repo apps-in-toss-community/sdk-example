@@ -9,9 +9,6 @@
   - [ ] Flat config (`eslint.config.js`) with React, React Hooks, TypeScript rules
   - [ ] `.prettierrc` for formatting consistency
   - [ ] Restore a `lint` script and wire into the new PR CI
-- [ ] Real-device UX
-  - [ ] Apply `SafeAreaInsets` in `Layout` so content respects notch / home indicator on real devices
-  - [ ] Dark mode support (토스 앱 다크 테마 대응)
 
 ## Low Priority
 - [ ] Set up Vitest + component tests — the repo currently has no test infrastructure; start with render smoke tests for `ApiCard`, `WorkflowStepper`, `HomePage` search filter
