@@ -26,7 +26,12 @@ export class ErrorBoundary extends Component<Props, State> {
   };
 
   private readonly handleGoHome = () => {
-    window.location.replace(import.meta.env.BASE_URL);
+    const base = import.meta.env.BASE_URL;
+    if (window.location.pathname === base) {
+      window.location.reload();
+    } else {
+      window.location.replace(base);
+    }
   };
 
   override render() {
@@ -34,7 +39,7 @@ export class ErrorBoundary extends Component<Props, State> {
     if (!error) return this.props.children;
 
     return (
-      <div className="min-h-screen bg-gray-100">
+      <div className="bg-gray-100">
         <div className="mx-auto max-w-[430px] min-h-screen bg-white shadow-sm flex items-center justify-center p-4">
           <div className="w-full rounded-xl border border-gray-200 bg-white p-5">
             <h1 className="text-base font-semibold text-gray-900">문제가 발생했어요</h1>
