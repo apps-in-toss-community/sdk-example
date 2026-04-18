@@ -19,6 +19,7 @@ export interface ParamDef<T = string> {
  * A `ParamDef<unknown>` cannot accept a `ParamDef<number>` in a covariant tuple position,
  * which would break type inference in the variadic helpers below.
  */
+// biome-ignore lint/suspicious/noExplicitAny: variance helper — unknown breaks inference
 type AnyParamDef = ParamDef<any>;
 
 /**
@@ -32,6 +33,7 @@ type ParsedParam<P extends AnyParamDef> = P extends { parse: (raw: string) => in
   : string;
 
 /** Merge a union of types into a single intersection type. */
+// biome-ignore lint/suspicious/noExplicitAny: UnionToIntersection idiom requires `any` distribution
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void
   ? I
   : never;
