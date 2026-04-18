@@ -1,8 +1,5 @@
 # TODO
 
-## High Priority
-- [ ] Add ErrorBoundary at `App.tsx` root — SDK calls that throw currently produce a white screen; catch errors, show a recovery UI, log to console
-
 ## Medium Priority
 - [ ] Deploy to 앱인토스 and capture the production URL
   - [ ] Install/configure `@apps-in-toss/cli` and required manifest files
