@@ -40,28 +40,32 @@ function EventSubscriberCard({ name, description, subscribe }: EventSubscriberCa
   }, []);
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
+    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900 font-mono">{name}</h3>
+        <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">{name}</h3>
         <span
           className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-            isSubscribed ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+            isSubscribed
+              ? 'bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-300'
+              : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
           }`}
         >
           <span
-            className={`inline-block h-1.5 w-1.5 rounded-full ${isSubscribed ? 'bg-green-500' : 'bg-gray-400'}`}
+            className={`inline-block h-1.5 w-1.5 rounded-full ${
+              isSubscribed ? 'bg-green-500' : 'bg-gray-400 dark:bg-gray-500'
+            }`}
           />
           {isSubscribed ? '구독 중' : '미구독'}
         </span>
       </div>
-      <p className="mt-0.5 text-xs text-gray-500">{description}</p>
+      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{description}</p>
       <button
         type="button"
         onClick={toggle}
         className={`mt-3 w-full rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-colors ${
           isSubscribed
-            ? 'bg-red-600 hover:bg-red-500'
-            : 'bg-gray-900 hover:bg-gray-800'
+            ? 'bg-red-600 hover:bg-red-500 dark:bg-red-700 dark:hover:bg-red-600'
+            : 'bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200'
         }`}
       >
         {isSubscribed ? '구독 해제' : '구독'}

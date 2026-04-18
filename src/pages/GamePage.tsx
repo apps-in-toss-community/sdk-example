@@ -33,24 +33,24 @@ function ContactsViralCard() {
   }, [moduleId]);
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4">
-      <h3 className="text-sm font-semibold text-gray-900 font-mono">contactsViral</h3>
-      <p className="mt-0.5 text-xs text-gray-500">연락처 바이럴 공유</p>
+    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+      <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">contactsViral</h3>
+      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">연락처 바이럴 공유</p>
       <label className="block py-1.5 mt-2">
-        <span className="text-sm text-gray-700">Module ID</span>
+        <span className="text-sm text-gray-700 dark:text-gray-300">Module ID</span>
         <input
           type="text"
           value={moduleId}
           onChange={(e) => setModuleId(e.target.value)}
           placeholder="test-module"
-          className="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none"
+          className="mt-1 block w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm focus:border-gray-400 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-gray-500"
         />
       </label>
       <button
         type="button"
         onClick={handleExecute}
         disabled={status === 'loading'}
-        className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors"
+        className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
       >
         실행
       </button>
