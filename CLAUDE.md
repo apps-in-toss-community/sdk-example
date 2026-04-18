@@ -6,8 +6,14 @@
 
 ## 짝 repo
 
+**sdk-example은 조직의 모든 repo가 수렴하는 downstream consumer / 살아있는 QA 타겟**이다. 각 repo가 완성될 때마다 여기에 통합해서 실제 동작을 증명하는 것이 조직 전체의 dog-fooding 품질 게이트.
+
 - **`devtools`** — SDK mock 제공자. sdk-example은 devtools의 reference consumer.
 - **`docs`** — docs의 각 섹션은 sdk-example의 대응 페이지로 deep-link되고, sdk-example의 ApiCard는 docs로 링크한다. 경로 구조 변경 시 반대쪽 링크 체크 필요.
+- **`polyfill`** (예정) — 완성되면 표준 Web API 경로로 예제 재작성 또는 토글 옵션 추가.
+- **`oidc-bridge`** (예정) — 완성되면 auth 섹션이 실제 로그인 → Supabase/Firebase 세션 흐름까지 데모.
+- **`console-cli`** (예정) — 완성되면 GitHub Pages 외에 **앱인토스 실제 미니앱으로도 배포** (E2E 검증용).
+- **`agent-plugin`** (예정) — 완성되면 sdk-example 유지보수(새 API 추가, 스크린샷 갱신)를 `/ait` 명령으로 자동화.
 
 ## 프로젝트 개요
 
