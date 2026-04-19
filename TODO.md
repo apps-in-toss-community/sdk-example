@@ -1,5 +1,8 @@
 # TODO
 
+## High Priority
+(None)
+
 ## Medium Priority
 - [ ] Deploy to 앱인토스 and capture the production URL
   - [ ] Install/configure `@apps-in-toss/cli` and required manifest files
@@ -25,6 +28,9 @@
   - [ ] "Copy result" button on `ResultView` — copy JSON output to clipboard
   - [ ] "Clear history" button — the 20-entry cap is enforced in 4 call sites (`ApiCard`, `AdsPage`, `IAPPage`, `EventsPage`); lift the clear control into a shared location rather than duplicating
   - [ ] Loading spinners on `ApiCard` (currently just a "Loading..." label)
+
+## Performance
+(None)
 
 ## Backlog
 - [ ] Workflow templates for new SDK domains — scaffold script that creates a new `XxxPage.tsx` + wires it into `App.tsx` + `HomePage.tsx` to reduce boilerplate
