@@ -14,7 +14,8 @@ export function PageHeader({ title }: { title: string }) {
         className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
         aria-label="뒤로가기"
       >
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <title>뒤로가기</title>
           <path
             d="M12.5 15L7.5 10L12.5 5"
             stroke="currentColor"

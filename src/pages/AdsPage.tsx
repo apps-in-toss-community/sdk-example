@@ -6,7 +6,7 @@ import {
 } from '@apps-in-toss/web-framework';
 import { useCallback, useState } from 'react';
 import { ApiCard } from '../components/ApiCard';
-import { type HistoryEntry, HistoryLog } from '../components/HistoryLog';
+import { createHistoryEntry, type HistoryEntry, HistoryLog } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
 import { ResultView } from '../components/ResultView';
 import { WorkflowStepper } from '../components/WorkflowStepper';
@@ -21,7 +21,7 @@ export function AdsPage() {
   const [loadError, setLoadError] = useState('');
 
   const addLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
-    setEventLog((prev) => [{ timestamp: Date.now(), status, data, error }, ...prev].slice(0, 20));
+    setEventLog((prev) => [createHistoryEntry({ status, data, error }), ...prev].slice(0, 20));
   }, []);
 
   const handleLoad = useCallback(() => {
@@ -60,6 +60,7 @@ export function AdsPage() {
 
   const steps = [
     {
+      id: 'load',
       title: '광고 로드',
       description: '광고를 미리 로드합니다',
       content: (
@@ -77,6 +78,7 @@ export function AdsPage() {
       ),
     },
     {
+      id: 'show',
       title: '광고 표시',
       description: '로드된 광고를 화면에 표시합니다',
       content: (
@@ -109,7 +111,7 @@ export function AdsPage() {
   const [fsShowError, setFsShowError] = useState('');
 
   const addFsLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
-    setFsEventLog((prev) => [{ timestamp: Date.now(), status, data, error }, ...prev].slice(0, 20));
+    setFsEventLog((prev) => [createHistoryEntry({ status, data, error }), ...prev].slice(0, 20));
   }, []);
 
   // NOTE: `status` in ResultView reflects only the *latest* event received from

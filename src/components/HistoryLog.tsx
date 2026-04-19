@@ -1,8 +1,13 @@
 export interface HistoryEntry {
+  id: string;
   timestamp: number;
   status: 'success' | 'error';
   data?: unknown;
   error?: string;
+}
+
+export function createHistoryEntry(fields: Omit<HistoryEntry, 'id' | 'timestamp'>): HistoryEntry {
+  return { id: crypto.randomUUID(), timestamp: Date.now(), ...fields };
 }
 
 interface HistoryLogProps {
@@ -26,8 +31,8 @@ export function HistoryLog({ entries }: HistoryLogProps) {
         History ({entries.length})
       </p>
       <div className="space-y-1 max-h-40 overflow-y-auto">
-        {entries.map((entry, i) => (
-          <div key={`${entry.timestamp}-${i}`} className="flex items-start gap-2 text-xs">
+        {entries.map((entry) => (
+          <div key={entry.id} className="flex items-start gap-2 text-xs">
             <span className="text-gray-400 shrink-0 dark:text-gray-500">
               {formatTime(entry.timestamp)}
             </span>

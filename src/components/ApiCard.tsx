@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { type HistoryEntry, HistoryLog } from './HistoryLog';
+import { createHistoryEntry, type HistoryEntry, HistoryLog } from './HistoryLog';
 import { ParamInput } from './ParamInput';
 import { ResultView } from './ResultView';
 
@@ -33,7 +33,7 @@ type ParsedParam<P extends AnyParamDef> = P extends { parse: (raw: string) => in
   : string;
 
 /** Merge a union of types into a single intersection type. */
-// biome-ignore lint/suspicious/noExplicitAny: UnionToIntersection idiom requires `any` distribution
+// biome-ignore lint/suspicious/noExplicitAny: idiomatic distributive-conditional pattern; using `unknown` changes inference semantics in subtle ways
 type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void
   ? I
   : never;
@@ -98,15 +98,13 @@ export function ApiCard<const Params extends AnyParamDef[]>({
       const data = await execute(parsed as ParamsRecord<Params>);
       setStatus('success');
       setResult(data);
-      setHistory((prev) =>
-        [{ timestamp: Date.now(), status: 'success' as const, data }, ...prev].slice(0, 20),
-      );
+      setHistory((prev) => [createHistoryEntry({ status: 'success', data }), ...prev].slice(0, 20));
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setStatus('error');
       setError(msg);
       setHistory((prev) =>
-        [{ timestamp: Date.now(), status: 'error' as const, error: msg }, ...prev].slice(0, 20),
+        [createHistoryEntry({ status: 'error', error: msg }), ...prev].slice(0, 20),
       );
     }
   }

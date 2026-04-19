@@ -4,7 +4,7 @@ import {
   tdsEvent,
 } from '@apps-in-toss/web-framework';
 import { useEffect, useRef, useState } from 'react';
-import { type HistoryEntry, HistoryLog } from '../components/HistoryLog';
+import { createHistoryEntry, type HistoryEntry, HistoryLog } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
 
 interface EventSubscriberCardProps {
@@ -30,10 +30,7 @@ function EventSubscriberCard({ name, description, subscribe }: EventSubscriberCa
     } else {
       const unsub = subscribe((payload) => {
         setEvents((prev) =>
-          [{ timestamp: Date.now(), status: 'success' as const, data: payload }, ...prev].slice(
-            0,
-            20,
-          ),
+          [createHistoryEntry({ status: 'success', data: payload }), ...prev].slice(0, 20),
         );
       });
       unsubRef.current = unsub;
