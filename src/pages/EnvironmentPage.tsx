@@ -16,27 +16,30 @@ import {
 } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import { PolyfillNotice } from '../components/PolyfillNotice';
 
 export function EnvironmentPage() {
   return (
     <div>
       <PageHeader title="Environment" />
       <div className="p-4 space-y-3">
+        <PolyfillNotice webApis="navigator.onLine / navigator.connection" />
+
         <ApiCard
           name="getPlatformOS"
-          description="플랫폼 OS"
+          description="SDK — 플랫폼 OS"
           params={[]}
           execute={async () => getPlatformOS()}
         />
         <ApiCard
           name="getOperationalEnvironment"
-          description="실행 환경"
+          description="SDK — 실행 환경"
           params={[]}
           execute={async () => getOperationalEnvironment()}
         />
         <ApiCard
           name="getNetworkStatus"
-          description="네트워크 상태"
+          description="SDK — 네트워크 상태"
           params={[]}
           execute={async () => await getNetworkStatus()}
         />
@@ -113,6 +116,29 @@ export function EnvironmentPage() {
           description="Safe Area Insets (legacy)"
           params={[]}
           execute={async () => getSafeAreaInsets()}
+        />
+
+        <ApiCard
+          name="navigator.onLine"
+          description="표준 Web API (via @ait-co/polyfill)"
+          params={[]}
+          execute={async () => navigator.onLine}
+        />
+        <ApiCard
+          name="navigator.connection"
+          description="표준 Web API (via @ait-co/polyfill) — NetworkInformation snapshot"
+          params={[]}
+          execute={async () => {
+            const c = navigator.connection;
+            if (!c) return { connection: undefined };
+            return {
+              type: c.type,
+              effectiveType: c.effectiveType,
+              downlink: c.downlink,
+              rtt: c.rtt,
+              saveData: c.saveData,
+            };
+          }}
         />
       </div>
     </div>

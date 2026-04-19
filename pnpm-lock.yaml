@@ -9,8 +9,11 @@ importers:
   .:
     dependencies:
       '@ait-co/devtools':
-        specifier: ^0.0.2
-        version: 0.0.2(@apps-in-toss/web-framework@2.4.5(@babel/preset-env@7.28.5(@babel/core@7.23.9))(@babel/runtime@7.29.2)(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@react-navigation/native@7.2.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(@swc/helpers@0.5.17)(@toss/tds-react-native@2.0.2(21ba540928d8a004e3482490a3618212))(@types/node@25.6.0)(@types/react@19.2.14)(jiti@2.6.1)(postcss@8.5.9)(react-native-safe-area-context@5.6.2(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native-screens@4.23.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5)(typanion@3.14.0)(typescript@6.0.2)(yaml@2.8.3))
+        specifier: ^0.1.2
+        version: 0.1.2(@apps-in-toss/web-framework@2.4.5(@babel/preset-env@7.28.5(@babel/core@7.23.9))(@babel/runtime@7.29.2)(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@react-navigation/native@7.2.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(@swc/helpers@0.5.17)(@toss/tds-react-native@2.0.2(21ba540928d8a004e3482490a3618212))(@types/node@25.6.0)(@types/react@19.2.14)(jiti@2.6.1)(postcss@8.5.9)(react-native-safe-area-context@5.6.2(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native-screens@4.23.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5)(typanion@3.14.0)(typescript@6.0.2)(yaml@2.8.3))
+      '@ait-co/polyfill':
+        specifier: ^0.1.4
+        version: 0.1.4(@apps-in-toss/web-framework@2.4.5(@babel/preset-env@7.28.5(@babel/core@7.23.9))(@babel/runtime@7.29.2)(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@react-navigation/native@7.2.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(@swc/helpers@0.5.17)(@toss/tds-react-native@2.0.2(21ba540928d8a004e3482490a3618212))(@types/node@25.6.0)(@types/react@19.2.14)(jiti@2.6.1)(postcss@8.5.9)(react-native-safe-area-context@5.6.2(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native-screens@4.23.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5)(typanion@3.14.0)(typescript@6.0.2)(yaml@2.8.3))
       '@apps-in-toss/web-framework':
         specifier: ^2.4.5
         version: 2.4.5(@babel/preset-env@7.28.5(@babel/core@7.23.9))(@babel/runtime@7.29.2)(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@react-navigation/native@7.2.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(@swc/helpers@0.5.17)(@toss/tds-react-native@2.0.2(21ba540928d8a004e3482490a3618212))(@types/node@25.6.0)(@types/react@19.2.14)(jiti@2.6.1)(postcss@8.5.9)(react-native-safe-area-context@5.6.2(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native-screens@4.23.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5)(typanion@3.14.0)(typescript@6.0.2)(yaml@2.8.3)
@@ -57,10 +60,17 @@ importers:
 
 packages:
 
-  '@ait-co/devtools@0.0.2':
-    resolution: {integrity: sha512-PoozTAZlULVwbXIUK1ASGQq+ZvQhyGQVFJVC5Z3vetH4qdH1KQ38VOhrKBkPJFbFEUI+1mLI5sadvXeREVXlWQ==}
+  '@ait-co/devtools@0.1.2':
+    resolution: {integrity: sha512-pgVBAqGNEDwbxzq8+S9HzWryPScw86HgB8ldev9UuIfXOtT/5TJGieJ3txfb9ykXZPEd7pj/05tsaFsP3Bhqsw==}
+    engines: {node: '>=24'}
     peerDependencies:
-      '@apps-in-toss/web-framework': ^2.0.0
+      '@apps-in-toss/web-framework': '>=2.4.0 <2.4.8'
+
+  '@ait-co/polyfill@0.1.4':
+    resolution: {integrity: sha512-plH4kGvAJciEFYplBzXzNqI78B6mSJkinMdVo/KlLtnseGPcs5UmBEDxnHWPWWpGrwhXNqxYuNrcJxVWr1V5DA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@apps-in-toss/web-framework': '>=2.4.0 <3.0.0'
     peerDependenciesMeta:
       '@apps-in-toss/web-framework':
         optional: true
@@ -6207,9 +6217,9 @@ packages:
     resolution: {integrity: sha512-pjy2bYhSsufwWlKwPc+l3cN7+wuJlK6uz0YdJEOlQDbl6jo/YlPi4mb8agUkVC8BF7V8NuzeyPNqRksA3hztKQ==}
     engines: {node: '>= 0.8'}
 
-  unplugin@2.3.11:
-    resolution: {integrity: sha512-5uKD0nqiYVzlmCRs01Fhs2BdkEgBS3SAVP6ndrBsuK42iC2+JHyxM05Rm9G8+5mkmRtzMZGY8Ct5+mliZxU/Ww==}
-    engines: {node: '>=18.12.0'}
+  unplugin@3.0.0:
+    resolution: {integrity: sha512-0Mqk3AT2TZCXWKdcoaufeXNukv2mTrEZExeXlHIOZXdqYoHHr4n51pymnwV8x2BOVxwXbK2HLlI7usrqMpycdg==}
+    engines: {node: ^20.19.0 || >=22.12.0}
 
   unzipper@0.12.3:
     resolution: {integrity: sha512-PZ8hTS+AqcGxsaQntl3IRBw65QrBI6lxzqDEL7IAo/XCEqRTKGfOX56Vea5TH9SZczRVxuzk1re04z/YjuYCJA==}
@@ -6484,9 +6494,12 @@ packages:
 
 snapshots:
 
-  '@ait-co/devtools@0.0.2(@apps-in-toss/web-framework@2.4.5(@babel/preset-env@7.28.5(@babel/core@7.23.9))(@babel/runtime@7.29.2)(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@react-navigation/native@7.2.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(@swc/helpers@0.5.17)(@toss/tds-react-native@2.0.2(21ba540928d8a004e3482490a3618212))(@types/node@25.6.0)(@types/react@19.2.14)(jiti@2.6.1)(postcss@8.5.9)(react-native-safe-area-context@5.6.2(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native-screens@4.23.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5)(typanion@3.14.0)(typescript@6.0.2)(yaml@2.8.3))':
+  '@ait-co/devtools@0.1.2(@apps-in-toss/web-framework@2.4.5(@babel/preset-env@7.28.5(@babel/core@7.23.9))(@babel/runtime@7.29.2)(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@react-navigation/native@7.2.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(@swc/helpers@0.5.17)(@toss/tds-react-native@2.0.2(21ba540928d8a004e3482490a3618212))(@types/node@25.6.0)(@types/react@19.2.14)(jiti@2.6.1)(postcss@8.5.9)(react-native-safe-area-context@5.6.2(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native-screens@4.23.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5)(typanion@3.14.0)(typescript@6.0.2)(yaml@2.8.3))':
     dependencies:
-      unplugin: 2.3.11
+      '@apps-in-toss/web-framework': 2.4.5(@babel/preset-env@7.28.5(@babel/core@7.23.9))(@babel/runtime@7.29.2)(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@react-navigation/native@7.2.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(@swc/helpers@0.5.17)(@toss/tds-react-native@2.0.2(21ba540928d8a004e3482490a3618212))(@types/node@25.6.0)(@types/react@19.2.14)(jiti@2.6.1)(postcss@8.5.9)(react-native-safe-area-context@5.6.2(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native-screens@4.23.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5)(typanion@3.14.0)(typescript@6.0.2)(yaml@2.8.3)
+      unplugin: 3.0.0
+
+  '@ait-co/polyfill@0.1.4(@apps-in-toss/web-framework@2.4.5(@babel/preset-env@7.28.5(@babel/core@7.23.9))(@babel/runtime@7.29.2)(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@react-navigation/native@7.2.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(@swc/helpers@0.5.17)(@toss/tds-react-native@2.0.2(21ba540928d8a004e3482490a3618212))(@types/node@25.6.0)(@types/react@19.2.14)(jiti@2.6.1)(postcss@8.5.9)(react-native-safe-area-context@5.6.2(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native-screens@4.23.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5)(typanion@3.14.0)(typescript@6.0.2)(yaml@2.8.3))':
     optionalDependencies:
       '@apps-in-toss/web-framework': 2.4.5(@babel/preset-env@7.28.5(@babel/core@7.23.9))(@babel/runtime@7.29.2)(@emnapi/core@1.9.2)(@emnapi/runtime@1.9.2)(@react-navigation/native@7.2.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(@swc/helpers@0.5.17)(@toss/tds-react-native@2.0.2(21ba540928d8a004e3482490a3618212))(@types/node@25.6.0)(@types/react@19.2.14)(jiti@2.6.1)(postcss@8.5.9)(react-native-safe-area-context@5.6.2(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native-screens@4.23.0(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5))(react-native@0.72.6(@babel/core@7.23.9)(@babel/preset-env@7.28.5(@babel/core@7.23.9))(react@19.2.5))(react@19.2.5)(typanion@3.14.0)(typescript@6.0.2)(yaml@2.8.3)
 
@@ -14716,10 +14729,9 @@ snapshots:
 
   unpipe@1.0.0: {}
 
-  unplugin@2.3.11:
+  unplugin@3.0.0:
     dependencies:
       '@jridgewell/remapping': 2.3.5
-      acorn: 8.16.0
       picomatch: 4.0.4
       webpack-virtual-modules: 0.6.2
 
