@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 
 interface Step {
+  id: string;
   title: string;
   description?: string;
   content: ReactNode;
@@ -20,7 +21,7 @@ export function WorkflowStepper({ steps, activeStep, onStepClick }: WorkflowStep
         const isDone = i < activeStep;
 
         return (
-          <div key={i} className="relative">
+          <div key={step.id} className="relative">
             <button
               type="button"
               onClick={() => onStepClick(i)}

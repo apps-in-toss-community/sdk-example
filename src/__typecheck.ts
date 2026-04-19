@@ -6,9 +6,10 @@
  * SDK가 업데이트되어 새 export가 추가됐는데 여기 없으면 tsc --noEmit이 실패한다.
  */
 
-// Value imports — `typeof X` only works for values (not pure types), so all SDK exports
-// must be imported as values here. They are re-exported as types to prevent "unused local" errors.
-import type {
+// biome-ignore-all lint/style/useImportType: this file's whole purpose is value-import coverage —
+// `typeof X` on a value import catches the "SDK export turned type-only" regression; converting
+// to `import type` would silently weaken that guarantee.
+import {
   Accuracy,
   Analytics,
   appsInTossEvent,

@@ -2,7 +2,7 @@ import type { IapProductListItem } from '@apps-in-toss/web-framework';
 import { checkoutPayment, IAP } from '@apps-in-toss/web-framework';
 import { useCallback, useState } from 'react';
 import { ApiCard } from '../components/ApiCard';
-import { type HistoryEntry, HistoryLog } from '../components/HistoryLog';
+import { createHistoryEntry, type HistoryEntry, HistoryLog } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
 import { WorkflowStepper } from '../components/WorkflowStepper';
 
@@ -17,7 +17,7 @@ export function IAPPage() {
   const [eventLog, setEventLog] = useState<HistoryEntry[]>([]);
 
   const addLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
-    setEventLog((prev) => [{ timestamp: Date.now(), status, data, error }, ...prev].slice(0, 20));
+    setEventLog((prev) => [createHistoryEntry({ status, data, error }), ...prev].slice(0, 20));
   }, []);
 
   const handlePurchase = useCallback(
@@ -61,6 +61,7 @@ export function IAPPage() {
 
   const steps = [
     {
+      id: 'products',
       title: '상품 조회',
       description: 'getProductItemList()로 상품 목록을 가져옵니다',
       content: (
@@ -80,12 +81,12 @@ export function IAPPage() {
           {products.length > 0 && (
             <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-800">
               <p className="text-xs font-medium text-gray-500 mb-2 dark:text-gray-400">상품 선택</p>
-              {products.map((p, i) => {
+              {products.map((p) => {
                 const sku = p.sku ?? '';
                 return (
                   <button
                     type="button"
-                    key={`${p.sku ?? 'unknown'}-${i}`}
+                    key={sku || JSON.stringify(p)}
                     onClick={() => {
                       setSelectedSku(sku);
                       setActiveStep(1);
@@ -106,6 +107,7 @@ export function IAPPage() {
       ),
     },
     {
+      id: 'purchase',
       title: '구매',
       description: selectedSku
         ? `선택한 상품(${selectedSku})을 구매합니다`
@@ -146,6 +148,7 @@ export function IAPPage() {
       ),
     },
     {
+      id: 'orders',
       title: '주문 관리',
       description: '미완료 주문 조회, 완료/환불 내역, 구독 정보',
       content: (

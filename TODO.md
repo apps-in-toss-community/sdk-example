@@ -8,18 +8,6 @@
   - [ ] Install/configure `@apps-in-toss/cli` and required manifest files
   - [ ] Reflect the URL in `src/constants.ts` (`APP_IN_TOSS_URL`) so `DemoBanner` renders the QR + link in the web demo
   - [ ] Document the deploy procedure in `DEPLOY.md` (or a section in `CLAUDE.md`)
-- [ ] Clean up Biome rules currently disabled in `biome.json`
-  - Biome is the org-wide standard (see umbrella `../CLAUDE.md`). A few `recommended` rules are turned off here only because existing code predates the adoption. Re-enable each one after fixing the underlying violation.
-  - [ ] `suspicious/noArrayIndexKey` — 3 call sites using `index` as React key:
-    - `src/components/HistoryLog.tsx:30`
-    - `src/components/WorkflowStepper.tsx:23`
-    - `src/pages/IAPPage.tsx:88`
-    - Fix: derive a stable key (timestamp, id, content hash, etc.) or render via `Fragment` where key isn't needed.
-  - [ ] `a11y/noSvgWithoutTitle` — 1 call site:
-    - `src/components/PageHeader.tsx:17` (back-arrow icon)
-    - Fix: add a non-empty `<title>` inside the `<svg>`, or mark it decorative with `aria-hidden="true"` + a separate `aria-label` on the clickable wrapper.
-  - [ ] After both are fixed, remove the two off overrides from `biome.json` and run `pnpm lint` to confirm `recommended` passes clean.
-
 ## Low Priority
 - [ ] Set up Vitest + component tests — the repo currently has no test infrastructure; start with render smoke tests for `ApiCard`, `WorkflowStepper`, `HomePage` search filter
 - [ ] Playwright smoke tests for the web demo — home search filter, each domain page renders, DemoBanner expand/collapse in web mode

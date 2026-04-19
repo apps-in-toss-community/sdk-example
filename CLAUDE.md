@@ -28,7 +28,7 @@
 - **Tailwind CSS v4** — 스타일 (CSS-only, 별도 config 없음)
 - **react-router-dom v7** — 페이지 라우팅
 - **pnpm** — 패키지 매니저
-- **Biome** — lint + formatter (조직 표준). 기존 코드 맥락으로 `noArrayIndexKey`, `noSvgWithoutTitle`는 우선 off, 후속 PR에서 점진 개선.
+- **Biome** — lint + formatter (조직 표준).
 
 ## 의존성
 
@@ -48,6 +48,9 @@ pnpm dev          # Vite dev 서버 (기본 :5173)
 pnpm build        # tsc --noEmit + vite build → dist/
 pnpm preview      # 빌드 결과 미리보기
 pnpm typecheck    # tsc --noEmit (SDK export 커버리지 검증 포함)
+pnpm lint         # biome check .
+pnpm lint:fix     # biome check --write .
+pnpm format       # biome format --write .
 ```
 
 ## 프로젝트 구조
