@@ -11,15 +11,18 @@ import {
 } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import { PolyfillNotice } from '../components/PolyfillNotice';
 
 export function NavigationPage() {
   return (
     <div>
       <PageHeader title="Navigation" />
       <div className="p-4 space-y-3">
+        <PolyfillNotice webApis="navigator.share" />
+
         <ApiCard
           name="closeView"
-          description="현재 뷰 닫기"
+          description="SDK — 현재 뷰 닫기"
           params={[]}
           execute={async () => {
             closeView();
@@ -27,7 +30,7 @@ export function NavigationPage() {
         />
         <ApiCard
           name="openURL"
-          description="URL 열기"
+          description="SDK — URL 열기"
           params={[{ name: 'url', label: 'URL', placeholder: 'https://example.com' }]}
           execute={async (p) => {
             openURL(p.url);
@@ -35,7 +38,7 @@ export function NavigationPage() {
         />
         <ApiCard
           name="share"
-          description="메시지 공유"
+          description="SDK — 메시지 공유"
           params={[{ name: 'message', label: 'Message', placeholder: '공유할 메시지' }]}
           execute={async (p) => {
             await share({ message: p.message });
@@ -121,6 +124,23 @@ export function NavigationPage() {
           params={[]}
           execute={async () => {
             await requestReview();
+          }}
+        />
+
+        <ApiCard
+          name="navigator.share"
+          description="표준 Web API (via @ait-co/polyfill)"
+          params={[
+            { name: 'title', label: 'Title (optional)', placeholder: '공유 제목' },
+            { name: 'text', label: 'Text', placeholder: '공유할 본문' },
+            { name: 'url', label: 'URL (optional)', placeholder: 'https://example.com' },
+          ]}
+          execute={async (p) => {
+            const payload: ShareData = {};
+            if (p.title) payload.title = p.title;
+            if (p.text) payload.text = p.text;
+            if (p.url) payload.url = p.url;
+            await navigator.share(payload);
           }}
         />
       </div>

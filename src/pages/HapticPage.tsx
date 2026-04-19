@@ -2,6 +2,7 @@ import type { HapticFeedbackType } from '@apps-in-toss/web-framework';
 import { generateHapticFeedback, saveBase64Data } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import { PolyfillNotice } from '../components/PolyfillNotice';
 
 const hapticOptions: { label: string; value: HapticFeedbackType }[] = [
   { label: 'tickWeak', value: 'tickWeak' },
@@ -21,9 +22,11 @@ export function HapticPage() {
     <div>
       <PageHeader title="Haptic" />
       <div className="p-4 space-y-3">
+        <PolyfillNotice webApis="navigator.vibrate" />
+
         <ApiCard
           name="generateHapticFeedback"
-          description="햅틱 피드백 생성"
+          description="SDK — 햅틱 피드백 생성"
           params={[
             {
               name: 'type',
@@ -40,7 +43,7 @@ export function HapticPage() {
         />
         <ApiCard
           name="saveBase64Data"
-          description="Base64 데이터 저장"
+          description="SDK — Base64 데이터 저장"
           params={[
             {
               name: 'data',
@@ -63,6 +66,32 @@ export function HapticPage() {
           ]}
           execute={async (p) => {
             await saveBase64Data({ data: p.data, fileName: p.fileName, mimeType: p.mimeType });
+          }}
+        />
+
+        <ApiCard
+          name="navigator.vibrate"
+          description="표준 Web API (via @ait-co/polyfill) — ms 단위 pattern. 쉼표로 구분하면 vibrate/pause 시퀀스."
+          params={[
+            {
+              name: 'pattern',
+              label: 'Pattern (ms, 쉼표 구분)',
+              placeholder: '200,100,200',
+              defaultValue: '200',
+            },
+          ]}
+          execute={async (p) => {
+            const parsed = p.pattern
+              .split(',')
+              .map((s) => Number(s.trim()))
+              .filter((n) => !Number.isNaN(n));
+            if (parsed.length === 0) {
+              throw new Error('pattern에 숫자를 하나 이상 입력하세요. 예: 200 또는 200,100,200');
+            }
+            const first = parsed[0];
+            const arg: number | number[] =
+              parsed.length === 1 && first !== undefined ? first : parsed;
+            return { scheduled: navigator.vibrate(arg), pattern: arg };
           }}
         />
       </div>
