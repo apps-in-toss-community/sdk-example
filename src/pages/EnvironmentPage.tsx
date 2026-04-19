@@ -130,8 +130,9 @@ export function EnvironmentPage() {
           params={[]}
           execute={async () => {
             const c = navigator.connection;
-            if (!c) return { connection: undefined };
+            if (!c) return { available: false };
             return {
+              available: true,
               type: c.type,
               effectiveType: c.effectiveType,
               downlink: c.downlink,
