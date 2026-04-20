@@ -20,7 +20,7 @@
     "format": "biome format --write ."
   },
   "dependencies": {
-    "@ait-co/devtools": "^0.1.2",
+    "@ait-co/devtools": "^0.1.3",
     "@ait-co/polyfill": "^0.1.4",
     "@apps-in-toss/web-framework": "^2.4.5",
     "qrcode": "^1.5.4",
