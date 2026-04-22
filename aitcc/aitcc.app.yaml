@@ -15,7 +15,10 @@ titleEn: "SDK Reference Community"
 
 # appName: kebab-case slug the UI calls "appName". Must be unique across
 # all apps-in-toss mini-apps. Placeholder shown in the form was `my-miniApp`.
-appName: ait-sdk-example
+# The first dog-food run (#23) used `ait-sdk-example` (appId 29349, only
+# 4/11 fields persisted due to the payload-nesting bug). Bumping to -2 so
+# the rerun against console-cli #25's fix is a clean before/after.
+appName: ait-sdk-example-2
 
 homePageUri: "https://apps-in-toss-community.github.io/sdk-example/"
 csEmail: helloworld4625@gmail.com
