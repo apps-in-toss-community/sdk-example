@@ -1,0 +1,71 @@
+# aitcc app register config — sdk-example dog-food (#23)
+#
+# This file feeds `aitcc app register --config ./aitcc/aitcc.app.yaml`
+# to submit sdk-example as a real mini-app on workspace 3095. It is the
+# first end-to-end test of the inferred submit payload (console-cli #22),
+# so expect field names / enum values to be corrected after the dog-food
+# XHR capture confirms or refutes the shape.
+#
+# Relative paths are resolved from THIS file's location (aitcc/).
+
+titleKo: "SDK 레퍼런스 커뮤니티"
+# titleEn allowed chars: English letters, numbers, spaces, colon (:) only.
+# Parentheses/hyphens/etc are rejected by the server (errorCode 4000).
+titleEn: "SDK Reference Community"
+
+# appName: kebab-case slug the UI calls "appName". Must be unique across
+# all apps-in-toss mini-apps. Placeholder shown in the form was `my-miniApp`.
+appName: ait-sdk-example
+
+homePageUri: "https://apps-in-toss-community.github.io/sdk-example/"
+csEmail: helloworld4625@gmail.com
+
+# ageRating: UI shows only "만 19세 이상" (disabled combobox). The console-cli
+# manifest loader (#22) currently ignores this field and lets the server
+# apply its default — no `ageRating` key is in the submit payload builder.
+# Once dog-food (#23) confirms or refutes the enum, this will either be
+# surfaced in the manifest or deleted from this comment.
+# ageRating: AGE_19_PLUS
+
+# Images — all paths relative to this YAML.
+# Dimensions are hard-validated locally (image-size) before upload to fail fast.
+logo: ./assets/logo.png                         # 600×600 ✓
+# logoDarkMode: ./assets/logo-dark.png          # optional, omit for now
+horizontalThumbnail: ./assets/thumbnail.png     # 1932×828 ✓
+
+# categoryIds — must be ≥1. Loaded from GET /impression/category-list
+# (fetched on 2026-04-22 against workspace 3095).
+# 3882 = 생활 > 정보. Best fit for a technical SDK reference app —
+# "개발자 도구" is not a category in the public console.
+categoryIds: [3882]
+
+subtitle: "앱인토스 SDK 인터랙티브 레퍼런스"  # ≤20 chars (checked: 18)
+# Detail description — hard max 500 chars enforced server-side (errorCode 4000).
+description: |-
+  @apps-in-toss/web-framework SDK의 모든 public API를 직접 호출해볼 수 있는
+  비공식 커뮤니티 레퍼런스 앱입니다.
+
+  - 16개 SDK 도메인(Auth, Navigation, Environment, Permissions, Storage, Location,
+    Camera, Contacts, Clipboard, Haptic, IAP, Ads, Game, Analytics, Partner, Events)의
+    API를 폼으로 실행하고 응답을 확인할 수 있어요.
+  - IAP·Ads는 워크플로우 단위로 구성됐어요.
+  - Events 탭에서는 이벤트를 실시간 구독해요.
+
+  토스와 제휴 관계 없는 오픈소스 프로젝트입니다.
+  소스: github.com/apps-in-toss-community/sdk-example
+
+keywords:
+  - sdk
+  - reference
+  - example
+  - community
+  - api
+  - test
+
+verticalScreenshots:
+  - ./assets/screenshot-1-home.png        # 636×1048 ✓
+  - ./assets/screenshot-2-auth.png        # 636×1048 ✓
+  - ./assets/screenshot-3-auth-result.png # 636×1048 ✓
+
+# horizontalScreenshots is optional per VALIDATION-RULES.md; omitted for dog-food.
+horizontalScreenshots: []
