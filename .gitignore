@@ -13,3 +13,6 @@ playwright-report/
 .claude/settings.local.json
 .claude/*.lock
 .claude.lock
+
+# aitcc dog-food per-run artifacts (not fixtures)
+aitcc/submit-*.json
