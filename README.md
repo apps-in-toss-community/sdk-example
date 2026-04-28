@@ -51,6 +51,19 @@ pnpm dev        # Vite dev 서버 → http://localhost:5173
 | `pnpm build` | 타입 체크 + 프로덕션 빌드 → `dist/` |
 | `pnpm preview` | 빌드 결과 로컬 서빙 |
 | `pnpm typecheck` | `tsc --noEmit` (SDK export 커버리지 검증 포함) |
+| `pnpm lint` | `biome check .` |
+| `pnpm lint:fix` | `biome check --write .` |
+| `pnpm format` | `biome format --write .` |
+
+## Pre-commit hook
+
+선택 사항이지만 권장. clone 후 다음 한 줄로 표준 pre-commit hook(스테이지된 파일에 `biome check` 실행)을 활성화한다:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+push 전에 빠른 피드백을 주기 위한 개발자 편의 장치다. 실제 강제 계층은 CI(`pnpm lint`)이므로, hook을 활성화하지 않은 contributor도 PR 단계에서 lint 실패로 막힌다.
 
 ## 프로젝트 구조
 

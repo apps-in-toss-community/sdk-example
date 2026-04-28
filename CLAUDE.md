@@ -132,6 +132,21 @@ src/
 
 Claude Code의 Playwright MCP 플러그인을 사용하면 브라우저를 직접 제어하여 앱의 E2E QA를 수행할 수 있다.
 
+### UI 변경 시 회귀 검증 (필수)
+
+이 repo의 시각적 산출물(컴포넌트, 페이지, ApiCard, WorkflowStepper 등)을 변경한 후에는 **반드시 Playwright MCP로 브라우저에서 동작 확인**한다. 단순 prop 변경이라도 렌더 깨짐 가능성 있음. 타입 체크와 빌드 통과만으로는 UI 회귀를 못 잡는다 — 시각 검증을 건너뛴 채 "완료" 보고 금지.
+
+워크플로:
+
+1. dev server 띄우기 (`pnpm dev`)
+2. `browser_navigate`로 변경 페이지로 이동
+3. `browser_snapshot`으로 DOM tree 확인 (텍스트/구조 회귀 체크)
+4. `browser_take_screenshot`으로 시각 확인 (필요 시 변경 전후 비교)
+5. `browser_console_messages`로 런타임 에러/경고 체크
+6. 인터랙션이 있으면 `browser_click` / `browser_fill_form` 등으로 시뮬레이션
+
+전체 앱 회귀 검증 절차는 아래 "QA 절차" 참고.
+
 ### 사전 준비
 
 1. Claude Code에 Playwright 플러그인이 설치되어 있어야 한다 (`.claude/settings.json`의 `enabledPlugins` 확인)
