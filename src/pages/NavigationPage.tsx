@@ -12,6 +12,16 @@ import {
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
+import closeViewSnippet from '../snippets/navigation/closeView.ts?raw';
+import getTossShareLinkSnippet from '../snippets/navigation/getTossShareLink.ts?raw';
+import navigatorShareSnippet from '../snippets/navigation/navigatorShare.ts?raw';
+import openURLSnippet from '../snippets/navigation/openURL.ts?raw';
+import requestReviewSnippet from '../snippets/navigation/requestReview.ts?raw';
+import setDeviceOrientationSnippet from '../snippets/navigation/setDeviceOrientation.ts?raw';
+import setIosSwipeGestureEnabledSnippet from '../snippets/navigation/setIosSwipeGestureEnabled.ts?raw';
+import setScreenAwakeModeSnippet from '../snippets/navigation/setScreenAwakeMode.ts?raw';
+import setSecureScreenSnippet from '../snippets/navigation/setSecureScreen.ts?raw';
+import shareSnippet from '../snippets/navigation/share.ts?raw';
 
 export function NavigationPage() {
   return (
@@ -27,6 +37,7 @@ export function NavigationPage() {
           execute={async () => {
             closeView();
           }}
+          snippet={closeViewSnippet}
         />
         <ApiCard
           name="openURL"
@@ -35,6 +46,7 @@ export function NavigationPage() {
           execute={async (p) => {
             openURL(p.url);
           }}
+          snippet={openURLSnippet}
         />
         <ApiCard
           name="share"
@@ -43,6 +55,7 @@ export function NavigationPage() {
           execute={async (p) => {
             await share({ message: p.message });
           }}
+          snippet={shareSnippet}
         />
         <ApiCard
           name="getTossShareLink"
@@ -52,6 +65,7 @@ export function NavigationPage() {
             { name: 'ogImageUrl', label: 'OG Image URL (optional)', placeholder: 'https://...' },
           ]}
           execute={async (p) => await getTossShareLink(p.path, p.ogImageUrl || undefined)}
+          snippet={getTossShareLinkSnippet}
         />
         <ApiCard
           name="setIosSwipeGestureEnabled"
@@ -68,6 +82,7 @@ export function NavigationPage() {
           execute={async (p) => {
             setIosSwipeGestureEnabled({ isEnabled: p.isEnabled });
           }}
+          snippet={setIosSwipeGestureEnabledSnippet}
         />
         <ApiCard
           name="setDeviceOrientation"
@@ -89,6 +104,7 @@ export function NavigationPage() {
           execute={async (p) => {
             setDeviceOrientation({ type: p.type });
           }}
+          snippet={setDeviceOrientationSnippet}
         />
         <ApiCard
           name="setScreenAwakeMode"
@@ -103,6 +119,7 @@ export function NavigationPage() {
             },
           ]}
           execute={async (p) => await setScreenAwakeMode({ enabled: p.enabled })}
+          snippet={setScreenAwakeModeSnippet}
         />
         <ApiCard
           name="setSecureScreen"
@@ -117,6 +134,7 @@ export function NavigationPage() {
             },
           ]}
           execute={async (p) => await setSecureScreen({ enabled: p.enabled })}
+          snippet={setSecureScreenSnippet}
         />
         <ApiCard
           name="requestReview"
@@ -125,6 +143,7 @@ export function NavigationPage() {
           execute={async () => {
             await requestReview();
           }}
+          snippet={requestReviewSnippet}
         />
 
         <ApiCard
@@ -142,6 +161,7 @@ export function NavigationPage() {
             if (p.url) payload.url = p.url;
             await navigator.share(payload);
           }}
+          snippet={navigatorShareSnippet}
         />
       </div>
     </div>

@@ -6,6 +6,9 @@ import {
 } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import getPermissionSnippet from '../snippets/permissions/getPermission.ts?raw';
+import openPermissionDialogSnippet from '../snippets/permissions/openPermissionDialog.ts?raw';
+import requestPermissionSnippet from '../snippets/permissions/requestPermission.ts?raw';
 
 const permissionOptions: { label: string; value: PermissionName }[] = [
   { label: 'camera', value: 'camera' },
@@ -35,6 +38,7 @@ export function PermissionsPage() {
             },
           ]}
           execute={async (p) => await getPermission({ name: p.name, access: 'read' })}
+          snippet={getPermissionSnippet}
         />
         <ApiCard
           name="openPermissionDialog"
@@ -50,6 +54,7 @@ export function PermissionsPage() {
             },
           ]}
           execute={async (p) => await openPermissionDialog({ name: p.name, access: 'read' })}
+          snippet={openPermissionDialogSnippet}
         />
         <ApiCard
           name="requestPermission"
@@ -76,6 +81,7 @@ export function PermissionsPage() {
             },
           ]}
           execute={async (p) => await requestPermission({ name: p.name, access: p.access })}
+          snippet={requestPermissionSnippet}
         />
       </div>
     </div>

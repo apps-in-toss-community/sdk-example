@@ -1,6 +1,8 @@
 import { fetchAlbumPhotos, openCamera } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import fetchAlbumPhotosSnippet from '../snippets/camera/fetchAlbumPhotos.ts?raw';
+import openCameraSnippet from '../snippets/camera/openCamera.ts?raw';
 
 export function CameraPage() {
   return (
@@ -12,6 +14,7 @@ export function CameraPage() {
           description="카메라 열기"
           params={[]}
           execute={async () => await openCamera()}
+          snippet={openCameraSnippet}
         />
         <ApiCard
           name="fetchAlbumPhotos"
@@ -26,6 +29,7 @@ export function CameraPage() {
             },
           ]}
           execute={async (p) => await fetchAlbumPhotos({ maxCount: p.maxCount })}
+          snippet={fetchAlbumPhotosSnippet}
         />
       </div>
     </div>

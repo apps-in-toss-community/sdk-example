@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { CodeSnippet } from './CodeSnippet';
 import { createHistoryEntry, type HistoryEntry, HistoryLog } from './HistoryLog';
 import { ParamInput } from './ParamInput';
 import { ResultView } from './ResultView';
@@ -64,6 +65,13 @@ interface ApiCardProps<Params extends AnyParamDef[]> {
   description?: string;
   params: readonly [...Params];
   execute: (params: ParamsRecord<Params>) => Promise<unknown>;
+  /**
+   * Source code for the call this card runs. Typically loaded via Vite's
+   * `?raw` import suffix (`import snippet from './foo.ts?raw'`). When provided,
+   * the snippet renders alongside the result panel (desktop) or below it
+   * (mobile), so the user sees the runnable example next to its output.
+   */
+  snippet?: string;
 }
 
 /**
@@ -77,6 +85,7 @@ export function ApiCard<const Params extends AnyParamDef[]>({
   description,
   params,
   execute,
+  snippet,
 }: ApiCardProps<Params>) {
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(params.map((p) => [p.name, p.defaultValue ?? ''])),
@@ -143,8 +152,20 @@ export function ApiCard<const Params extends AnyParamDef[]>({
         실행
       </button>
 
-      <ResultView status={status} data={result} error={error} />
-      <HistoryLog entries={history} />
+      {snippet ? (
+        <div className="mt-2 grid gap-2 md:grid-cols-2 md:items-start">
+          <div>
+            <ResultView status={status} data={result} error={error} />
+            <HistoryLog entries={history} />
+          </div>
+          <CodeSnippet code={snippet} label={`${name} source snippet`} />
+        </div>
+      ) : (
+        <>
+          <ResultView status={status} data={result} error={error} />
+          <HistoryLog entries={history} />
+        </>
+      )}
     </div>
   );
 }

@@ -8,8 +8,15 @@ import {
 } from '@apps-in-toss/web-framework';
 import { useCallback, useState } from 'react';
 import { ApiCard } from '../components/ApiCard';
+import { CodeSnippet } from '../components/CodeSnippet';
 import { PageHeader } from '../components/PageHeader';
 import { ResultView } from '../components/ResultView';
+import contactsViralSnippet from '../snippets/game/contactsViral.ts?raw';
+import getGameCenterGameProfileSnippet from '../snippets/game/getGameCenterGameProfile.ts?raw';
+import grantPromotionRewardSnippet from '../snippets/game/grantPromotionReward.ts?raw';
+import grantPromotionRewardForGameSnippet from '../snippets/game/grantPromotionRewardForGame.ts?raw';
+import openGameCenterLeaderboardSnippet from '../snippets/game/openGameCenterLeaderboard.ts?raw';
+import submitGameCenterLeaderBoardScoreSnippet from '../snippets/game/submitGameCenterLeaderBoardScore.ts?raw';
 
 function ContactsViralCard() {
   const [moduleId, setModuleId] = useState('test-module');
@@ -57,6 +64,7 @@ function ContactsViralCard() {
         실행
       </button>
       <ResultView status={status} data={result} error={error} />
+      <CodeSnippet code={contactsViralSnippet} label="contactsViral source snippet" />
     </div>
   );
 }
@@ -89,6 +97,7 @@ export function GamePage() {
               params: { promotionCode: p.promotionCode, amount: p.amount },
             })
           }
+          snippet={grantPromotionRewardSnippet}
         />
         <ApiCard
           name="grantPromotionRewardForGame"
@@ -113,18 +122,21 @@ export function GamePage() {
               params: { promotionCode: p.promotionCode, amount: p.amount },
             })
           }
+          snippet={grantPromotionRewardForGameSnippet}
         />
         <ApiCard
           name="submitGameCenterLeaderBoardScore"
           description="리더보드 점수 제출"
           params={[{ name: 'score', label: 'Score', placeholder: '1000', defaultValue: '1000' }]}
           execute={async (p) => await submitGameCenterLeaderBoardScore({ score: p.score })}
+          snippet={submitGameCenterLeaderBoardScoreSnippet}
         />
         <ApiCard
           name="getGameCenterGameProfile"
           description="게임 프로필 조회"
           params={[]}
           execute={async () => await getGameCenterGameProfile()}
+          snippet={getGameCenterGameProfileSnippet}
         />
         <ApiCard
           name="openGameCenterLeaderboard"
@@ -133,6 +145,7 @@ export function GamePage() {
           execute={async () => {
             await openGameCenterLeaderboard();
           }}
+          snippet={openGameCenterLeaderboardSnippet}
         />
         <ContactsViralCard />
       </div>

@@ -3,6 +3,10 @@ import { Accuracy, getCurrentLocation, startUpdateLocation } from '@apps-in-toss
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
+import getCurrentLocationSnippet from '../snippets/location/getCurrentLocation.ts?raw';
+import getCurrentPositionSnippet from '../snippets/location/getCurrentPosition.ts?raw';
+import startUpdateLocationSnippet from '../snippets/location/startUpdateLocation.ts?raw';
+import watchPositionSnippet from '../snippets/location/watchPosition.ts?raw';
 
 function pickStandardCoords(pos: GeolocationPosition) {
   return {
@@ -31,6 +35,7 @@ export function LocationPage() {
           description="SDK — 현재 위치 조회"
           params={[]}
           execute={async () => await getCurrentLocation({ accuracy: Accuracy.Highest })}
+          snippet={getCurrentLocationSnippet}
         />
         <ApiCard
           name="startUpdateLocation"
@@ -46,6 +51,7 @@ export function LocationPage() {
               startUpdateLocation(params);
             });
           }}
+          snippet={startUpdateLocationSnippet}
         />
 
         <ApiCard
@@ -62,6 +68,7 @@ export function LocationPage() {
               );
             });
           }}
+          snippet={getCurrentPositionSnippet}
         />
         <ApiCard
           name="navigator.geolocation.watchPosition"
@@ -82,6 +89,7 @@ export function LocationPage() {
               );
             });
           }}
+          snippet={watchPositionSnippet}
         />
       </div>
     </div>
