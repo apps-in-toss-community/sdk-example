@@ -2,6 +2,7 @@ import { getClipboardText, setClipboardText } from '@apps-in-toss/web-framework'
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
+import { docsLink } from '../lib/docs';
 import clipboardReadTextSnippet from '../snippets/clipboard/clipboardReadText.ts?raw';
 import clipboardWriteTextSnippet from '../snippets/clipboard/clipboardWriteText.ts?raw';
 import getClipboardTextSnippet from '../snippets/clipboard/getClipboardText.ts?raw';
@@ -22,6 +23,7 @@ export function ClipboardPage() {
             await setClipboardText(p.text);
           }}
           snippet={setClipboardTextSnippet}
+          docsUrl={docsLink('clipboard', 'setClipboardText')}
         />
         <ApiCard
           name="getClipboardText"
@@ -29,6 +31,7 @@ export function ClipboardPage() {
           params={[]}
           execute={async () => await getClipboardText()}
           snippet={getClipboardTextSnippet}
+          docsUrl={docsLink('clipboard', 'getClipboardText')}
         />
 
         <ApiCard
