@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-## 프로젝트 성격
+## 프로젝트 성격 (중요)
 
 `apps-in-toss-community`는 비공식(unofficial) 오픈소스 커뮤니티다. "공식/official/토스가 제공하는/powered by Toss" 등 제휴·후원·인증 암시 표현 금지. 상세는 umbrella `../CLAUDE.md`의 "프로젝트 성격" 참조.
 
@@ -19,9 +19,10 @@ React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`),
 ```
 @apps-in-toss/web-framework   # 원본 SDK (앱인토스 배포 시 사용)
 @ait-co/devtools              # Mock (개발 시 unplugin이 SDK를 alias)
+@ait-co/polyfill              # 표준 Web API shim (src/main.tsx에서 auto import)
 ```
 
-`@ait-co/devtools/unplugin`의 Vite 플러그인이 dev에서 SDK import를 mock으로 대체. 앱인토스 배포 시에는 원본 SDK 그대로 사용.
+`@ait-co/devtools/unplugin`의 Vite 플러그인이 dev에서 SDK import를 mock으로 대체. 앱인토스 배포 시에는 원본 SDK 그대로 사용. `@ait-co/polyfill/auto`는 `main.tsx`에서 import되어 SDK 미지원 환경에서 표준 Web API 경로를 제공하며, 일부 페이지(예: `LocationPage`)에서 `PolyfillNotice` 컴포넌트로 활성 상태를 표시.
 
 ## 환경 변수
 
@@ -33,7 +34,7 @@ React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`),
 
 ## 명령어
 
-핵심 5개: `pnpm dev` (Vite, :5173), `pnpm build` (tsc + vite build), `pnpm preview`, `pnpm typecheck` (SDK export 커버리지 포함), `pnpm lint`. 전체는 `package.json` 참조.
+핵심 5개: `pnpm dev` (Vite, :5173), `pnpm build` (`tsc -b` + `vite build`), `pnpm preview`, `pnpm typecheck` (`tsc --noEmit`, SDK export 커버리지 포함), `pnpm lint`. 전체는 `package.json` 참조.
 
 ## 프로젝트 구조
 
@@ -84,4 +85,4 @@ src/
 
 ## 외부 참조
 
-[`@apps-in-toss/web-framework`](https://www.npmjs.com/package/@apps-in-toss/web-framework) — 원본 SDK. 조직 컨텍스트는 umbrella `../CLAUDE.md`.
+[`@apps-in-toss/web-framework`](https://www.npmjs.com/package/@apps-in-toss/web-framework) — 원본 SDK.
