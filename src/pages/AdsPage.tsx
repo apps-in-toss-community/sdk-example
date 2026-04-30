@@ -81,7 +81,10 @@ export function AdsPage() {
             GoogleAdMob.loadAppsInTossAdMob
           </button>
           <ResultView status={loadStatus} data={loadResult} error={loadError} />
-          <CodeSnippet code={loadAppsInTossAdMobSnippet} />
+          <CodeSnippet
+            code={loadAppsInTossAdMobSnippet}
+            label="GoogleAdMob.loadAppsInTossAdMob source snippet"
+          />
         </div>
       ),
     },
@@ -100,7 +103,10 @@ export function AdsPage() {
             GoogleAdMob.showAppsInTossAdMob
           </button>
           <HistoryLog entries={eventLog} />
-          <CodeSnippet code={showAppsInTossAdMobSnippet} />
+          <CodeSnippet
+            code={showAppsInTossAdMobSnippet}
+            label="GoogleAdMob.showAppsInTossAdMob source snippet"
+          />
         </div>
       ),
     },
@@ -202,7 +208,7 @@ export function AdsPage() {
                 실행
               </button>
               <ResultView status={fsLoadStatus} data={fsLoadResult} error={fsLoadError} />
-              <CodeSnippet code={loadFullScreenAdSnippet} />
+              <CodeSnippet code={loadFullScreenAdSnippet} label="loadFullScreenAd source snippet" />
             </div>
             {/* showFullScreenAd */}
             <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
@@ -221,7 +227,7 @@ export function AdsPage() {
                 실행
               </button>
               <ResultView status={fsShowStatus} data={fsShowResult} error={fsShowError} />
-              <CodeSnippet code={showFullScreenAdSnippet} />
+              <CodeSnippet code={showFullScreenAdSnippet} label="showFullScreenAd source snippet" />
             </div>
             {/* Shared event log for FullScreen Ad */}
             <HistoryLog entries={fsEventLog} />

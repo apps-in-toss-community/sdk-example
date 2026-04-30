@@ -152,7 +152,10 @@ export function IAPPage() {
           )}
           {/* HistoryLog is the primary result source — shows all purchase events in order */}
           <HistoryLog entries={eventLog} />
-          <CodeSnippet code={createPurchaseOrderSnippet} />
+          <CodeSnippet
+            code={createPurchaseOrderSnippet}
+            label="createPurchaseOrder source snippet"
+          />
         </div>
       ),
     },

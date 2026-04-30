@@ -87,7 +87,7 @@ function EventSubscriberCard({ name, description, subscribe, snippet }: EventSub
       {snippet ? (
         <div className="mt-2 grid gap-2 md:grid-cols-2 md:items-start">
           <HistoryLog entries={events} />
-          <CodeSnippet code={snippet} />
+          <CodeSnippet code={snippet} label={`${name} source snippet`} />
         </div>
       ) : (
         <HistoryLog entries={events} />

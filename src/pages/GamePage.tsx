@@ -64,7 +64,7 @@ function ContactsViralCard() {
         실행
       </button>
       <ResultView status={status} data={result} error={error} />
-      <CodeSnippet code={contactsViralSnippet} />
+      <CodeSnippet code={contactsViralSnippet} label="contactsViral source snippet" />
     </div>
   );
 }

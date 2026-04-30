@@ -158,7 +158,7 @@ export function ApiCard<const Params extends AnyParamDef[]>({
             <ResultView status={status} data={result} error={error} />
             <HistoryLog entries={history} />
           </div>
-          <CodeSnippet code={snippet} />
+          <CodeSnippet code={snippet} label={`${name} source snippet`} />
         </div>
       ) : (
         <>
