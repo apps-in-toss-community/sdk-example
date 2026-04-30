@@ -41,6 +41,14 @@ dependencies:
 개발 중에는 `@ait-co/devtools/unplugin`의 Vite 플러그인이 `@apps-in-toss/web-framework` import를 mock으로 대체한다.
 실제 앱인토스 배포 시에는 원본 SDK가 그대로 사용된다.
 
+## 환경 변수
+
+| Var | 용도 |
+|---|---|
+| `VITE_OIDC_BRIDGE_URL` | [`oidc-bridge`](https://github.com/apps-in-toss-community/oidc-bridge) base URL. `AuthPage`의 OIDC bridge demo 섹션을 활성화. 미설정 시 섹션은 안내 카드만 표시(공용 인스턴스 아직 배포 전이라 self-host URL을 권장). |
+
+샘플은 `.env.example` 참고. `.env.local`로 복사해 사용한다.
+
 ## 명령어
 
 ```bash
