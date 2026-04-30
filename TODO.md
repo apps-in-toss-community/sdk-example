@@ -14,6 +14,15 @@
 - [ ] oidc-bridge auth demo — `AuthPage`에 공용 `oidc-bridge` 인스턴스(또는 self-host) 기반의 표준 OIDC 로그인 흐름 추가. 결정 필요: 공용 인스턴스에 붙일지(rate-limit 있음) vs `.env`로 self-host URL 주입하도록 옵션화할지.
 
 ## Low Priority
+- [ ] Migrate GitHub Pages to `sdk-example.aitc.dev` custom domain (cross-repo decision; see umbrella `CLAUDE.md` § 운영 도메인 정책).
+  - Add `public/CNAME` containing `sdk-example.aitc.dev` (single line, no protocol). `public/` is copied verbatim into `dist/`, so the file lands at the Pages site root.
+  - Update `.github/workflows/deploy-pages.yml`: drop the `BASE_PATH: /sdk-example/` env on the `Build` step (or set `BASE_PATH: /`). With sub-domain hosting the app serves from `/`, so `vite.config.ts`'s `base: process.env.BASE_PATH ?? '/'` falls back to root automatically — no `vite.config.ts` change needed.
+  - `src/App.tsx:23` reads `BASE_URL` from Vite, which becomes `/` once `BASE_PATH` is gone — react-router routes continue to work without code changes. Worth a smoke test after the cutover.
+  - Update README's demo-link wording (anywhere it points at `apps-in-toss-community.github.io/sdk-example/`) and the `aitcc/README.md` reference if it embeds the deployed URL.
+  - Add Cloudflare DNS `CNAME sdk-example apps-in-toss-community.github.io.` (DNS-only, no orange-cloud proxy — Pages handles TLS).
+  - GitHub Settings → Pages → Custom domain: `sdk-example.aitc.dev`, Enforce HTTPS.
+  - Verify `https://sdk-example.aitc.dev/` loads the home page, every domain card navigates correctly, and `og-image.png` resolves at the new origin (OpenGraph absolute URL — check `index.html` meta if any).
+  - Coordinate timing with the homepage cutover: homepage's `content/projects.ts` `demoUrl` (`https://apps-in-toss-community.github.io/sdk-example/`) needs to flip to the new URL in the same window.
 - [ ] Set up Vitest + component tests — the repo currently has no test infrastructure; start with render smoke tests for `ApiCard`, `WorkflowStepper`, `HomePage` search filter
 - [ ] Playwright smoke tests for the web demo — home search filter, each domain page renders, DemoBanner expand/collapse in web mode
 - [ ] QA on real Toss app — verify `DemoBanner` actually hides inside the 토스 앱 (`getOperationalEnvironment() === 'toss'` path); verify real permission flows (not mock)
