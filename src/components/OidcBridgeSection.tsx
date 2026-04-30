@@ -48,9 +48,9 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   }
 
   if (!response.ok) {
-    const body = parsed as Partial<OAuthErrorBody>;
-    const code = body.error ?? `http_${response.status}`;
-    const description = body.error_description ?? response.statusText;
+    const errorBody = parsed as Partial<OAuthErrorBody>;
+    const code = errorBody.error ?? `http_${response.status}`;
+    const description = errorBody.error_description ?? response.statusText;
     throw new Error(`${code}: ${description}`);
   }
   return parsed as T;

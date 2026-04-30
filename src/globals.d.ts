@@ -21,3 +21,11 @@ interface NetworkInformationSnapshot {
 interface Navigator {
   connection?: NetworkInformationSnapshot;
 }
+
+interface ImportMetaEnv {
+  readonly VITE_OIDC_BRIDGE_URL?: string;
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv;
+}
