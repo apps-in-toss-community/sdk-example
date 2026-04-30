@@ -2,17 +2,17 @@
 
 ## 프로젝트 성격 (중요)
 
-`apps-in-toss-community`는 비공식(unofficial) 오픈소스 커뮤니티다. "공식/official/토스가 제공하는/powered by Toss" 등 제휴·후원·인증 암시 표현 금지. 상세는 umbrella `../CLAUDE.md`의 "프로젝트 성격" 참조.
+`apps-in-toss-community`는 비공식(unofficial) 오픈소스 커뮤니티다. "공식/official/토스가 제공하는/powered by Toss" 등 제휴·후원·인증 암시 표현 금지. 상세는 umbrella [`CLAUDE.md`](https://github.com/apps-in-toss-community/umbrella/blob/main/CLAUDE.md)의 "프로젝트 성격" 참조.
 
 ## 프로젝트 개요
 
 **sdk-example** — `@apps-in-toss/web-framework` SDK의 모든 public API를 인터랙티브하게 테스트하는 레퍼런스 앱. 앱 자체가 사용 예제이며, 앱인토스에 배포해 네이티브에서 직접 확인 가능. 개발 시 `@ait-co/devtools`의 unplugin이 SDK import를 mock으로 swap해 토스 앱 없이 동작.
 
-**조직 내 위치**: sdk-example은 모든 repo가 수렴하는 downstream consumer / 살아있는 QA 타겟. 직접 짝은 `devtools`(SDK mock 제공자)와 `docs`(양방향 deep-link, 경로 변경 시 반대쪽 링크 체크 필요). 전체 짝 관계는 umbrella `../CLAUDE.md`의 "짝(pair) 관계" 참조.
+**조직 내 위치**: sdk-example은 모든 repo가 수렴하는 downstream consumer / 살아있는 QA 타겟. 직접 짝은 `devtools`(SDK mock 제공자)와 `docs`(양방향 deep-link, 경로 변경 시 반대쪽 링크 체크 필요). 전체 짝 관계는 umbrella [`CLAUDE.md`](https://github.com/apps-in-toss-community/umbrella/blob/main/CLAUDE.md)의 "짝(pair) 관계" 참조.
 
 ## 기술 스택
 
-React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`), Vite 6, Tailwind CSS v4 (CSS-only), react-router-dom v7. 공통 스택(Node, pnpm 버전, Biome 정책 등)은 umbrella `../CLAUDE.md`의 "공통 스택" 참조.
+React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`), Vite 6, Tailwind CSS v4 (CSS-only), react-router-dom v7. 공통 스택(Node, pnpm 버전, Biome 정책 등)은 umbrella [`CLAUDE.md`](https://github.com/apps-in-toss-community/umbrella/blob/main/CLAUDE.md)의 "공통 스택" 참조.
 
 ## 의존성
 
