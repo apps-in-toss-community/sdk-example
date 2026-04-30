@@ -4,8 +4,13 @@ import {
   tdsEvent,
 } from '@apps-in-toss/web-framework';
 import { useEffect, useRef, useState } from 'react';
+import { CodeSnippet } from '../components/CodeSnippet';
 import { createHistoryEntry, type HistoryEntry, HistoryLog } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
+import graniteBackEventSnippet from '../snippets/events/graniteBackEvent.ts?raw';
+import graniteHomeEventSnippet from '../snippets/events/graniteHomeEvent.ts?raw';
+import onVisibilityChangedByTransparentServiceWebSnippet from '../snippets/events/onVisibilityChangedByTransparentServiceWeb.ts?raw';
+import tdsNavigationAccessoryEventSnippet from '../snippets/events/tdsNavigationAccessoryEvent.ts?raw';
 
 interface EventSubscriberCardProps {
   name: string;
@@ -15,9 +20,11 @@ interface EventSubscriberCardProps {
    * stability — a new subscription is created every time the user toggles on.
    */
   subscribe: (onEvent: (payload: unknown) => void) => () => void;
+  /** Source snippet for this event subscription. Loaded via Vite `?raw` import. */
+  snippet?: string;
 }
 
-function EventSubscriberCard({ name, description, subscribe }: EventSubscriberCardProps) {
+function EventSubscriberCard({ name, description, subscribe, snippet }: EventSubscriberCardProps) {
   const [events, setEvents] = useState<HistoryEntry[]>([]);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const unsubRef = useRef<(() => void) | null>(null);
@@ -77,7 +84,14 @@ function EventSubscriberCard({ name, description, subscribe }: EventSubscriberCa
         {isSubscribed ? '구독 해제' : '구독'}
       </button>
 
-      <HistoryLog entries={events} />
+      {snippet ? (
+        <div className="mt-2 grid gap-2 md:grid-cols-2 md:items-start">
+          <HistoryLog entries={events} />
+          <CodeSnippet code={snippet} />
+        </div>
+      ) : (
+        <HistoryLog entries={events} />
+      )}
     </div>
   );
 }
@@ -95,6 +109,7 @@ export function EventsPage() {
               onEvent: () => onEvent(undefined),
             })
           }
+          snippet={graniteBackEventSnippet}
         />
         <EventSubscriberCard
           name="graniteEvent — homeEvent"
@@ -104,6 +119,7 @@ export function EventsPage() {
               onEvent: () => onEvent(undefined),
             })
           }
+          snippet={graniteHomeEventSnippet}
         />
         <EventSubscriberCard
           name="tdsEvent — navigationAccessoryEvent"
@@ -113,6 +129,7 @@ export function EventsPage() {
               onEvent: (e) => onEvent(e),
             })
           }
+          snippet={tdsNavigationAccessoryEventSnippet}
         />
         <EventSubscriberCard
           name="onVisibilityChangedByTransparentServiceWeb"
@@ -124,6 +141,7 @@ export function EventsPage() {
               onError: (err) => onEvent({ error: String(err) }),
             })
           }
+          snippet={onVisibilityChangedByTransparentServiceWebSnippet}
         />
       </div>
     </div>

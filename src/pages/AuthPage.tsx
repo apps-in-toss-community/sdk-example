@@ -6,6 +6,10 @@ import {
 } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import appLoginSnippet from '../snippets/auth/appLogin.ts?raw';
+import appsInTossSignTossCertSnippet from '../snippets/auth/appsInTossSignTossCert.ts?raw';
+import getIsTossLoginIntegratedServiceSnippet from '../snippets/auth/getIsTossLoginIntegratedService.ts?raw';
+import getUserKeyForGameSnippet from '../snippets/auth/getUserKeyForGame.ts?raw';
 
 export function AuthPage() {
   return (
@@ -17,24 +21,28 @@ export function AuthPage() {
           description="앱 로그인, authorizationCode 반환"
           params={[]}
           execute={async () => await appLogin()}
+          snippet={appLoginSnippet}
         />
         <ApiCard
           name="getIsTossLoginIntegratedService"
           description="토스 로그인 연동 서비스 여부"
           params={[]}
           execute={async () => getIsTossLoginIntegratedService()}
+          snippet={getIsTossLoginIntegratedServiceSnippet}
         />
         <ApiCard
           name="getUserKeyForGame"
           description="게임용 유저 해시 키"
           params={[]}
           execute={async () => await getUserKeyForGame()}
+          snippet={getUserKeyForGameSnippet}
         />
         <ApiCard
           name="appsInTossSignTossCert"
           description="토스 인증서 서명"
           params={[{ name: 'txId', label: 'txId', placeholder: 'transaction-id' }]}
           execute={async (p) => await appsInTossSignTossCert({ txId: p.txId })}
+          snippet={appsInTossSignTossCertSnippet}
         />
       </div>
     </div>

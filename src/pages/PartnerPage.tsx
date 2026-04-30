@@ -1,6 +1,8 @@
 import { partner } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import addAccessoryButtonSnippet from '../snippets/partner/addAccessoryButton.ts?raw';
+import removeAccessoryButtonSnippet from '../snippets/partner/removeAccessoryButton.ts?raw';
 
 export function PartnerPage() {
   return (
@@ -22,6 +24,7 @@ export function PartnerPage() {
               icon: { name: p.iconName },
             });
           }}
+          snippet={addAccessoryButtonSnippet}
         />
         <ApiCard
           name="partner.removeAccessoryButton"
@@ -30,6 +33,7 @@ export function PartnerPage() {
           execute={async () => {
             await partner.removeAccessoryButton();
           }}
+          snippet={removeAccessoryButtonSnippet}
         />
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { fetchContacts } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import fetchContactsSnippet from '../snippets/contacts/fetchContacts.ts?raw';
 
 export function ContactsPage() {
   return (
@@ -27,6 +28,7 @@ export function ContactsPage() {
             },
           ]}
           execute={async (p) => await fetchContacts({ size: p.size, offset: p.offset })}
+          snippet={fetchContactsSnippet}
         />
       </div>
     </div>

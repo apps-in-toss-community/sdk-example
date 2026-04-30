@@ -3,6 +3,9 @@ import { generateHapticFeedback, saveBase64Data } from '@apps-in-toss/web-framew
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
+import generateHapticFeedbackSnippet from '../snippets/haptic/generateHapticFeedback.ts?raw';
+import navigatorVibrateSnippet from '../snippets/haptic/navigatorVibrate.ts?raw';
+import saveBase64DataSnippet from '../snippets/haptic/saveBase64Data.ts?raw';
 
 const hapticOptions: { label: string; value: HapticFeedbackType }[] = [
   { label: 'tickWeak', value: 'tickWeak' },
@@ -40,6 +43,7 @@ export function HapticPage() {
           execute={async (p) => {
             await generateHapticFeedback({ type: p.type });
           }}
+          snippet={generateHapticFeedbackSnippet}
         />
         <ApiCard
           name="saveBase64Data"
@@ -67,6 +71,7 @@ export function HapticPage() {
           execute={async (p) => {
             await saveBase64Data({ data: p.data, fileName: p.fileName, mimeType: p.mimeType });
           }}
+          snippet={saveBase64DataSnippet}
         />
 
         <ApiCard
@@ -93,6 +98,7 @@ export function HapticPage() {
               parsed.length === 1 && first !== undefined ? first : parsed;
             return { scheduled: navigator.vibrate(arg), pattern: arg };
           }}
+          snippet={navigatorVibrateSnippet}
         />
       </div>
     </div>

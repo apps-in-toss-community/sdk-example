@@ -2,9 +2,16 @@ import type { IapProductListItem } from '@apps-in-toss/web-framework';
 import { checkoutPayment, IAP } from '@apps-in-toss/web-framework';
 import { useCallback, useState } from 'react';
 import { ApiCard } from '../components/ApiCard';
+import { CodeSnippet } from '../components/CodeSnippet';
 import { createHistoryEntry, type HistoryEntry, HistoryLog } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
 import { WorkflowStepper } from '../components/WorkflowStepper';
+import checkoutPaymentSnippet from '../snippets/iap/checkoutPayment.ts?raw';
+import createPurchaseOrderSnippet from '../snippets/iap/createPurchaseOrder.ts?raw';
+import getCompletedOrRefundedOrdersSnippet from '../snippets/iap/getCompletedOrRefundedOrders.ts?raw';
+import getPendingOrdersSnippet from '../snippets/iap/getPendingOrders.ts?raw';
+import getProductItemListSnippet from '../snippets/iap/getProductItemList.ts?raw';
+import getSubscriptionInfoSnippet from '../snippets/iap/getSubscriptionInfo.ts?raw';
 
 export function IAPPage() {
   const [activeStep, setActiveStep] = useState(0);
@@ -77,6 +84,7 @@ export function IAPPage() {
               if (items.length > 0) setSelectedSku(items[0]?.sku ?? '');
               return result;
             }}
+            snippet={getProductItemListSnippet}
           />
           {products.length > 0 && (
             <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-800">
@@ -144,6 +152,7 @@ export function IAPPage() {
           )}
           {/* HistoryLog is the primary result source — shows all purchase events in order */}
           <HistoryLog entries={eventLog} />
+          <CodeSnippet code={createPurchaseOrderSnippet} />
         </div>
       ),
     },
@@ -158,24 +167,28 @@ export function IAPPage() {
             description="미완료 주문 조회"
             params={[]}
             execute={async () => await IAP.getPendingOrders()}
+            snippet={getPendingOrdersSnippet}
           />
           <ApiCard
             name="IAP.getCompletedOrRefundedOrders"
             description="완료/환불 주문 조회"
             params={[]}
             execute={async () => await IAP.getCompletedOrRefundedOrders()}
+            snippet={getCompletedOrRefundedOrdersSnippet}
           />
           <ApiCard
             name="IAP.getSubscriptionInfo"
             description="구독 정보 조회"
             params={[{ name: 'orderId', label: 'Order ID', placeholder: 'order-123' }]}
             execute={async (p) => await IAP.getSubscriptionInfo({ params: { orderId: p.orderId } })}
+            snippet={getSubscriptionInfoSnippet}
           />
           <ApiCard
             name="checkoutPayment"
             description="TossPay 결제"
             params={[{ name: 'payToken', label: 'Pay Token', placeholder: 'token-123' }]}
             execute={async (p) => await checkoutPayment({ params: { payToken: p.payToken } })}
+            snippet={checkoutPaymentSnippet}
           />
         </div>
       ),

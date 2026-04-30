@@ -1,6 +1,10 @@
 import { Analytics, eventLog } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import clickSnippet from '../snippets/analytics/click.ts?raw';
+import eventLogSnippet from '../snippets/analytics/eventLog.ts?raw';
+import impressionSnippet from '../snippets/analytics/impression.ts?raw';
+import screenSnippet from '../snippets/analytics/screen.ts?raw';
 
 // log_type values accepted by eventLog (aligns with SDK/mock union)
 type EventLogType =
@@ -36,6 +40,7 @@ export function AnalyticsPage() {
           execute={async (p) => {
             await Analytics.screen({ page: p.page });
           }}
+          snippet={screenSnippet}
         />
         <ApiCard
           name="Analytics.impression"
@@ -52,6 +57,7 @@ export function AnalyticsPage() {
           execute={async (p) => {
             await Analytics.impression({ component: p.component, page: p.page });
           }}
+          snippet={impressionSnippet}
         />
         <ApiCard
           name="Analytics.click"
@@ -68,6 +74,7 @@ export function AnalyticsPage() {
           execute={async (p) => {
             await Analytics.click({ component: p.component, page: p.page });
           }}
+          snippet={clickSnippet}
         />
         <ApiCard
           name="eventLog"
@@ -94,6 +101,7 @@ export function AnalyticsPage() {
               params: {},
             });
           }}
+          snippet={eventLogSnippet}
         />
       </div>
     </div>
