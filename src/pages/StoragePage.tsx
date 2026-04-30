@@ -1,6 +1,7 @@
 import { Storage } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import { docsLink } from '../lib/docs';
 import clearItemsSnippet from '../snippets/storage/clearItems.ts?raw';
 import getItemSnippet from '../snippets/storage/getItem.ts?raw';
 import removeItemSnippet from '../snippets/storage/removeItem.ts?raw';
@@ -22,6 +23,7 @@ export function StoragePage() {
             await Storage.setItem(p.key, p.value);
           }}
           snippet={setItemSnippet}
+          docsUrl={docsLink('storage', 'setItem')}
         />
         <ApiCard
           name="Storage.getItem"
@@ -29,6 +31,7 @@ export function StoragePage() {
           params={[{ name: 'key', label: 'Key', placeholder: 'myKey' }]}
           execute={async (p) => await Storage.getItem(p.key)}
           snippet={getItemSnippet}
+          docsUrl={docsLink('storage', 'getItem')}
         />
         <ApiCard
           name="Storage.removeItem"
@@ -38,6 +41,7 @@ export function StoragePage() {
             await Storage.removeItem(p.key);
           }}
           snippet={removeItemSnippet}
+          docsUrl={docsLink('storage', 'removeItem')}
         />
         <ApiCard
           name="Storage.clearItems"
@@ -47,6 +51,7 @@ export function StoragePage() {
             await Storage.clearItems();
           }}
           snippet={clearItemsSnippet}
+          docsUrl={docsLink('storage', 'clearItems')}
         />
       </div>
     </div>

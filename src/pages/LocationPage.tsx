@@ -3,6 +3,7 @@ import { Accuracy, getCurrentLocation, startUpdateLocation } from '@apps-in-toss
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
+import { docsLink } from '../lib/docs';
 import getCurrentLocationSnippet from '../snippets/location/getCurrentLocation.ts?raw';
 import getCurrentPositionSnippet from '../snippets/location/getCurrentPosition.ts?raw';
 import startUpdateLocationSnippet from '../snippets/location/startUpdateLocation.ts?raw';
@@ -36,6 +37,7 @@ export function LocationPage() {
           params={[]}
           execute={async () => await getCurrentLocation({ accuracy: Accuracy.Highest })}
           snippet={getCurrentLocationSnippet}
+          docsUrl={docsLink('location', 'getCurrentLocation')}
         />
         <ApiCard
           name="startUpdateLocation"
@@ -52,6 +54,7 @@ export function LocationPage() {
             });
           }}
           snippet={startUpdateLocationSnippet}
+          docsUrl={docsLink('location', 'startUpdateLocation')}
         />
 
         <ApiCard
