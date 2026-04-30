@@ -55,6 +55,14 @@ pnpm dev        # Vite dev 서버 → http://localhost:5173
 | `pnpm lint:fix` | `biome check --write .` |
 | `pnpm format` | `biome format --write .` |
 
+## 환경 변수
+
+`.env.example` 파일을 복사해서 `.env.local`로 두고 필요한 값을 채운다.
+
+| Var | 필수 | 용도 |
+|---|---|---|
+| `VITE_OIDC_BRIDGE_URL` | — | [`oidc-bridge`](https://github.com/apps-in-toss-community/oidc-bridge) base URL. 설정되면 `AuthPage`의 "OIDC bridge demo" 섹션이 활성화돼 `appLogin()` → `/verify` 흐름을 호출한다. 설정하지 않으면 섹션은 안내 카드만 표시. 공용 인스턴스는 아직 배포 전이라 self-host(예: `http://localhost:8080`) URL을 권장. |
+
 ## Pre-commit hook
 
 선택 사항이지만 권장. clone 후 다음 한 줄로 표준 pre-commit hook(스테이지된 파일에 `biome check` 실행)을 활성화한다:

@@ -5,6 +5,7 @@ import {
   getUserKeyForGame,
 } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
+import { OidcBridgeSection } from '../components/OidcBridgeSection';
 import { PageHeader } from '../components/PageHeader';
 import appLoginSnippet from '../snippets/auth/appLogin.ts?raw';
 import appsInTossSignTossCertSnippet from '../snippets/auth/appsInTossSignTossCert.ts?raw';
@@ -12,6 +13,9 @@ import getIsTossLoginIntegratedServiceSnippet from '../snippets/auth/getIsTossLo
 import getUserKeyForGameSnippet from '../snippets/auth/getUserKeyForGame.ts?raw';
 
 export function AuthPage() {
+  // Trim trailing slash so a self-host URL like `https://oidc-bridge.example.com/`
+  // doesn't produce `//verify` paths — strict reverse proxies 404 on those.
+  const bridgeUrl = import.meta.env.VITE_OIDC_BRIDGE_URL?.replace(/\/$/, '');
   return (
     <div>
       <PageHeader title="Auth" />
@@ -44,6 +48,9 @@ export function AuthPage() {
           execute={async (p) => await appsInTossSignTossCert({ txId: p.txId })}
           snippet={appsInTossSignTossCertSnippet}
         />
+        <div className="border-t border-gray-200 pt-4 dark:border-gray-800">
+          <OidcBridgeSection baseUrl={bridgeUrl} />
+        </div>
       </div>
     </div>
   );
