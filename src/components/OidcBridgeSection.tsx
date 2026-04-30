@@ -4,6 +4,7 @@ import oidcVerifySnippet from '../snippets/auth/oidcVerify.ts?raw';
 import { ApiCard } from './ApiCard';
 
 const BRIDGE_REPO_URL = 'https://github.com/apps-in-toss-community/oidc-bridge';
+export const OIDC_BRIDGE_BASE_URL = 'https://oidc-bridge.aitc.dev';
 
 /** Shape documented by oidc-bridge `POST /verify`. */
 interface VerifyResponse {
@@ -56,11 +57,7 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   return parsed as T;
 }
 
-interface OidcBridgeSectionProps {
-  baseUrl: string | undefined;
-}
-
-export function OidcBridgeSection({ baseUrl }: OidcBridgeSectionProps) {
+export function OidcBridgeSection() {
   return (
     <section className="space-y-3">
       <div className="flex items-center justify-between">
@@ -80,85 +77,57 @@ export function OidcBridgeSection({ baseUrl }: OidcBridgeSectionProps) {
         self-hosted with a Firebase service account, a Firebase custom token). Best-effort, no SLA —
         security-sensitive workloads should self-host.
       </p>
-
-      {baseUrl ? (
-        <>
-          <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300">
-            Bridge: <span className="font-mono">{baseUrl}</span>
-          </p>
-          <ApiCard
-            name="POST /verify"
-            description="appLogin() → exchange authorizationCode for normalized claims"
-            params={[
-              {
-                name: 'referrer',
-                label: 'referrer',
-                type: 'select',
-                defaultValue: 'DEFAULT',
-                options: [
-                  { label: 'DEFAULT', value: 'DEFAULT' },
-                  { label: 'SANDBOX', value: 'SANDBOX' },
-                ],
-              },
-            ]}
-            execute={async ({ referrer }) => {
-              const { authorizationCode } = await appLogin();
-              return await postJson<VerifyResponse>(`${baseUrl}/verify`, {
-                authorizationCode,
-                referrer,
-              });
-            }}
-            snippet={oidcVerifySnippet}
-          />
-          <ApiCard
-            name="POST /firebase-token"
-            description="Self-host only. Public instance responds 501 not_configured."
-            params={[
-              {
-                name: 'referrer',
-                label: 'referrer',
-                type: 'select',
-                defaultValue: 'DEFAULT',
-                options: [
-                  { label: 'DEFAULT', value: 'DEFAULT' },
-                  { label: 'SANDBOX', value: 'SANDBOX' },
-                ],
-              },
-            ]}
-            execute={async ({ referrer }) => {
-              const { authorizationCode } = await appLogin();
-              return await postJson<unknown>(`${baseUrl}/firebase-token`, {
-                authorizationCode,
-                referrer,
-              });
-            }}
-            snippet={oidcFirebaseTokenSnippet}
-          />
-        </>
-      ) : (
-        <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900">
-          <p className="text-sm font-medium text-gray-700 dark:text-gray-200">
-            Demo disabled — bridge URL not configured
-          </p>
-          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-            Set <code className="font-mono">VITE_OIDC_BRIDGE_URL</code> to enable this demo. Point
-            it at a self-hosted instance (Docker, Cloud Run, Fly.io, etc.) — see{' '}
-            <a
-              href={BRIDGE_REPO_URL}
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-600 hover:underline dark:text-blue-400"
-            >
-              the oidc-bridge README
-            </a>{' '}
-            for a quickstart. A community-operated public instance is planned but not yet deployed.
-          </p>
-          <pre className="mt-2 overflow-auto rounded-md bg-gray-900 px-3 py-2 text-xs text-gray-100 dark:bg-gray-950">
-            <code>{`# .env.local
-VITE_OIDC_BRIDGE_URL=http://localhost:8080`}</code>
-          </pre>
-        </div>
-      )}
+      <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300">
+        Bridge: <span className="font-mono">{OIDC_BRIDGE_BASE_URL}</span>
+      </p>
+      <ApiCard
+        name="POST /verify"
+        description="appLogin() → exchange authorizationCode for normalized claims"
+        params={[
+          {
+            name: 'referrer',
+            label: 'referrer',
+            type: 'select',
+            defaultValue: 'DEFAULT',
+            options: [
+              { label: 'DEFAULT', value: 'DEFAULT' },
+              { label: 'SANDBOX', value: 'SANDBOX' },
+            ],
+          },
+        ]}
+        execute={async ({ referrer }) => {
+          const { authorizationCode } = await appLogin();
+          return await postJson<VerifyResponse>(`${OIDC_BRIDGE_BASE_URL}/verify`, {
+            authorizationCode,
+            referrer,
+          });
+        }}
+        snippet={oidcVerifySnippet}
+      />
+      <ApiCard
+        name="POST /firebase-token"
+        description="Self-host only. Public instance responds 501 not_configured."
+        params={[
+          {
+            name: 'referrer',
+            label: 'referrer',
+            type: 'select',
+            defaultValue: 'DEFAULT',
+            options: [
+              { label: 'DEFAULT', value: 'DEFAULT' },
+              { label: 'SANDBOX', value: 'SANDBOX' },
+            ],
+          },
+        ]}
+        execute={async ({ referrer }) => {
+          const { authorizationCode } = await appLogin();
+          return await postJson<unknown>(`${OIDC_BRIDGE_BASE_URL}/firebase-token`, {
+            authorizationCode,
+            referrer,
+          });
+        }}
+        snippet={oidcFirebaseTokenSnippet}
+      />
     </section>
   );
 }
