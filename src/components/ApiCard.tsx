@@ -72,6 +72,12 @@ interface ApiCardProps<Params extends AnyParamDef[]> {
    * (mobile), so the user sees the runnable example next to its output.
    */
   snippet?: string;
+  /**
+   * Link to the corresponding entry on docs.aitc.dev. When provided, a small
+   * "Docs ↗" link appears in the card header. Use the `docsLink` helper in
+   * `src/lib/docs.ts` to construct URLs consistently.
+   */
+  docsUrl?: string;
 }
 
 /**
@@ -86,6 +92,7 @@ export function ApiCard<const Params extends AnyParamDef[]>({
   params,
   execute,
   snippet,
+  docsUrl,
 }: ApiCardProps<Params>) {
   const [values, setValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(params.map((p) => [p.name, p.defaultValue ?? ''])),
@@ -120,8 +127,18 @@ export function ApiCard<const Params extends AnyParamDef[]>({
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">{name}</h3>
+        {docsUrl && (
+          <a
+            href={docsUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="shrink-0 text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 underline-offset-2 hover:underline"
+          >
+            Docs ↗
+          </a>
+        )}
       </div>
       {description && (
         <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{description}</p>
