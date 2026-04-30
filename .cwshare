@@ -7,6 +7,5 @@
 #   - One file/directory path per line (relative to repo root)
 #   - Lines starting with # are comments
 #   - Empty lines are ignored
-
-.env
-.env.local
+#
+# This repo currently has no untracked local config files to share.

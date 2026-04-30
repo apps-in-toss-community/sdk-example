@@ -4,7 +4,7 @@ import { appLogin } from '@apps-in-toss/web-framework';
 // The community public instance returns 501 not_configured because it
 // deliberately does not hold end-user Firebase service accounts.
 const { authorizationCode } = await appLogin();
-const baseUrl = import.meta.env.VITE_OIDC_BRIDGE_URL;
+const baseUrl = 'https://oidc-bridge.aitc.dev';
 const response = await fetch(`${baseUrl}/firebase-token`, {
   method: 'POST',
   headers: { 'content-type': 'application/json' },

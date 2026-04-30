@@ -55,13 +55,11 @@ pnpm dev        # Vite dev 서버 → http://localhost:5173
 | `pnpm lint:fix` | `biome check --write .` |
 | `pnpm format` | `biome format --write .` |
 
-## 환경 변수
+## OIDC bridge 데모
 
-`.env.example` 파일을 복사해서 `.env.local`로 두고 필요한 값을 채운다.
+`AuthPage`의 "OIDC bridge demo" 섹션은 [`oidc-bridge`](https://github.com/apps-in-toss-community/oidc-bridge)의 커뮤니티 공용 인스턴스(`https://oidc-bridge.aitc.dev`)를 호출한다. 별도 환경 변수나 설정 없이 바로 동작.
 
-| Var | 필수 | 용도 |
-|---|---|---|
-| `VITE_OIDC_BRIDGE_URL` | — | [`oidc-bridge`](https://github.com/apps-in-toss-community/oidc-bridge) base URL. 설정되면 `AuthPage`의 "OIDC bridge demo" 섹션이 활성화돼 `appLogin()` → `/verify` 흐름을 호출한다. 설정하지 않으면 섹션은 안내 카드만 표시. 공용 인스턴스는 아직 배포 전이라 self-host(예: `http://localhost:8080`) URL을 권장. |
+self-host 인스턴스를 가리키게 하려면 `src/components/OidcBridgeSection.tsx`의 `OIDC_BRIDGE_BASE_URL` 상수를 수정한다.
 
 ## Pre-commit hook
 

@@ -24,13 +24,9 @@ React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`),
 
 `@ait-co/devtools/unplugin`의 Vite 플러그인이 dev에서 SDK import를 mock으로 대체. 앱인토스 배포 시에는 원본 SDK 그대로 사용. `@ait-co/polyfill/auto`는 `main.tsx`에서 import되어 SDK 미지원 환경에서 표준 Web API 경로를 제공하며, 일부 페이지(예: `LocationPage`)에서 `PolyfillNotice` 컴포넌트로 활성 상태를 표시.
 
-## 환경 변수
+## OIDC bridge URL
 
-| Var | 용도 |
-|---|---|
-| `VITE_OIDC_BRIDGE_URL` | [`oidc-bridge`](https://github.com/apps-in-toss-community/oidc-bridge) base URL. `AuthPage`의 OIDC bridge demo 섹션 활성화. 미설정 시 안내 카드만 표시(공용 인스턴스 미배포라 self-host 권장). |
-
-샘플은 `.env.example`. `.env.local`로 복사해 사용.
+`OidcBridgeSection`은 커뮤니티 공용 인스턴스 `https://oidc-bridge.aitc.dev`를 default 상수(`OIDC_BRIDGE_BASE_URL` in `src/components/OidcBridgeSection.tsx`)로 사용. 환경 변수/`.env` 안 씀 — self-host로 가리키려면 상수만 바꿔서 PR.
 
 ## 명령어
 
