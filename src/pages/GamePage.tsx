@@ -128,14 +128,14 @@ export function GamePage() {
           name="submitGameCenterLeaderBoardScore"
           description="리더보드 점수 제출"
           params={[{ name: 'score', label: 'Score', placeholder: '1000', defaultValue: '1000' }]}
-          execute={async (p) => await submitGameCenterLeaderBoardScore({ score: p.score })}
+          execute={(p) => submitGameCenterLeaderBoardScore({ score: p.score })}
           snippet={submitGameCenterLeaderBoardScoreSnippet}
         />
         <ApiCard
           name="getGameCenterGameProfile"
           description="게임 프로필 조회"
           params={[]}
-          execute={async () => await getGameCenterGameProfile()}
+          execute={() => getGameCenterGameProfile()}
           snippet={getGameCenterGameProfileSnippet}
         />
         <ApiCard

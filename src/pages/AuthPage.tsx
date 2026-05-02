@@ -21,7 +21,7 @@ export function AuthPage() {
           name="appLogin"
           description="앱 로그인, authorizationCode 반환"
           params={[]}
-          execute={async () => await appLogin()}
+          execute={() => appLogin()}
           snippet={appLoginSnippet}
         />
         <ApiCard
@@ -35,14 +35,14 @@ export function AuthPage() {
           name="getUserKeyForGame"
           description="게임용 유저 해시 키"
           params={[]}
-          execute={async () => await getUserKeyForGame()}
+          execute={() => getUserKeyForGame()}
           snippet={getUserKeyForGameSnippet}
         />
         <ApiCard
           name="appsInTossSignTossCert"
           description="토스 인증서 서명"
           params={[{ name: 'txId', label: 'txId', placeholder: 'transaction-id' }]}
-          execute={async (p) => await appsInTossSignTossCert({ txId: p.txId })}
+          execute={(p) => appsInTossSignTossCert({ txId: p.txId })}
           snippet={appsInTossSignTossCertSnippet}
         />
         <div className="border-t border-gray-200 pt-4 dark:border-gray-800">

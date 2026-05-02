@@ -13,7 +13,7 @@ export function CameraPage() {
           name="openCamera"
           description="카메라 열기"
           params={[]}
-          execute={async () => await openCamera()}
+          execute={() => openCamera()}
           snippet={openCameraSnippet}
         />
         <ApiCard
@@ -28,7 +28,7 @@ export function CameraPage() {
               parse: (v) => Number(v),
             },
           ]}
-          execute={async (p) => await fetchAlbumPhotos({ maxCount: p.maxCount })}
+          execute={(p) => fetchAlbumPhotos({ maxCount: p.maxCount })}
           snippet={fetchAlbumPhotosSnippet}
         />
       </div>

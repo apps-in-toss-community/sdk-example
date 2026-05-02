@@ -64,7 +64,7 @@ export function NavigationPage() {
             { name: 'path', label: 'Path', placeholder: '/some/path' },
             { name: 'ogImageUrl', label: 'OG Image URL (optional)', placeholder: 'https://...' },
           ]}
-          execute={async (p) => await getTossShareLink(p.path, p.ogImageUrl || undefined)}
+          execute={(p) => getTossShareLink(p.path, p.ogImageUrl || undefined)}
           snippet={getTossShareLinkSnippet}
         />
         <ApiCard
@@ -118,7 +118,7 @@ export function NavigationPage() {
               parse: (v) => v === 'true',
             },
           ]}
-          execute={async (p) => await setScreenAwakeMode({ enabled: p.enabled })}
+          execute={(p) => setScreenAwakeMode({ enabled: p.enabled })}
           snippet={setScreenAwakeModeSnippet}
         />
         <ApiCard
@@ -133,7 +133,7 @@ export function NavigationPage() {
               parse: (v) => v === 'true',
             },
           ]}
-          execute={async (p) => await setSecureScreen({ enabled: p.enabled })}
+          execute={(p) => setSecureScreen({ enabled: p.enabled })}
           snippet={setSecureScreenSnippet}
         />
         <ApiCard

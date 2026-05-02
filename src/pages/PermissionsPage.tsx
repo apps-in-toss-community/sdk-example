@@ -37,7 +37,7 @@ export function PermissionsPage() {
               parse: (v) => v as PermissionName,
             },
           ]}
-          execute={async (p) => await getPermission({ name: p.name, access: 'read' })}
+          execute={(p) => getPermission({ name: p.name, access: 'read' })}
           snippet={getPermissionSnippet}
         />
         <ApiCard
@@ -53,7 +53,7 @@ export function PermissionsPage() {
               parse: (v) => v as PermissionName,
             },
           ]}
-          execute={async (p) => await openPermissionDialog({ name: p.name, access: 'read' })}
+          execute={(p) => openPermissionDialog({ name: p.name, access: 'read' })}
           snippet={openPermissionDialogSnippet}
         />
         <ApiCard
@@ -80,7 +80,7 @@ export function PermissionsPage() {
               parse: (v) => v as 'read' | 'write',
             },
           ]}
-          execute={async (p) => await requestPermission({ name: p.name, access: p.access })}
+          execute={(p) => requestPermission({ name: p.name, access: p.access })}
           snippet={requestPermissionSnippet}
         />
       </div>

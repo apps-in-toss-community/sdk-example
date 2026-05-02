@@ -29,7 +29,7 @@ export function ClipboardPage() {
           name="getClipboardText"
           description="SDK — 클립보드 텍스트 읽기"
           params={[]}
-          execute={async () => await getClipboardText()}
+          execute={() => getClipboardText()}
           snippet={getClipboardTextSnippet}
           docsUrl={docsLink('clipboard', 'getClipboardText')}
         />
@@ -47,7 +47,7 @@ export function ClipboardPage() {
           name="navigator.clipboard.readText"
           description="표준 Web API (via @ait-co/polyfill)"
           params={[]}
-          execute={async () => await navigator.clipboard.readText()}
+          execute={() => navigator.clipboard.readText()}
           snippet={clipboardReadTextSnippet}
         />
       </div>
