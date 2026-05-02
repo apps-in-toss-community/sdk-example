@@ -1,54 +1,49 @@
-# aitcc app register config — sdk-example dog-food (#23)
+# aitcc app register config — AITC.DEV SDK Example (final dog-food)
 #
-# This file feeds `aitcc app register --config ./aitcc/aitcc.app.yaml`
-# to submit sdk-example as a real mini-app on workspace 3095. It is the
-# first end-to-end test of the inferred submit payload (console-cli #22),
-# so expect field names / enum values to be corrected after the dog-food
-# XHR capture confirms or refutes the shape.
+# Feeds `aitcc app register --config ./aitcc/aitcc.yaml` to register
+# sdk-example as a real mini-app on workspace 3095.
+#
+# Note: `aitcc.app.yaml` was the previous filename; console-cli v0.1.20
+# dropped the `.app.` token, so the file was renamed to `aitcc.yaml`.
+#
+# This is the **final** dog-food mini-app for sdk-example. Subsequent
+# changes go through `app update` against the resulting miniAppId — do
+# NOT register additional apps. See umbrella `CLAUDE.md` "sdk-example
+# dog-food 앱" section.
 #
 # Relative paths are resolved from THIS file's location (aitcc/).
 
-titleKo: "SDK 레퍼런스 커뮤니티"
-# titleEn allowed chars: English letters, numbers, spaces, colon (:) only.
-# Parentheses/hyphens/etc are rejected by the server (errorCode 4000).
-titleEn: "SDK Reference Community"
+titleKo: "AITC SDK 예제"
+# titleKo allowed chars: 한글/영문/숫자/공백/`:·?`. Hard cap of 10
+# code points **excluding spaces** (server errorCode miniApp.InvalidTitle).
+# That's why brand `AITC.DEV` lives in description / wordmark, not title.
+# titleEn allowed chars: 영문/숫자/공백/`:·?`. ≤15 chars excl. spaces,
+# AND each word must start with uppercase/digit and continue lowercase
+# (server errorCode miniApp.InvalidTitleEn) — so `AITC`/`SDK` (all caps)
+# are rejected, must be `Aitc`/`Sdk`.
+titleEn: "Aitc Sdk Example"
 
-# appName: kebab-case slug the UI calls "appName". Must be unique across
-# all apps-in-toss mini-apps. Placeholder shown in the form was `my-miniApp`.
-# History:
-#   -1: 29349, aitcc 0.1.6 (looked like dropped fields — actually saved to draft)
-#   -2: 29356, curl variant-B probe (same shape as -1, succeeded)
-#   -3: 29397, curl full-body probe (complete body; entered review immediately)
-#   -final: this run, aitcc 0.1.8 after the 0.1.7 revert (#27/#28)
-appName: ait-sdk-example-final
+appName: aitc-sdk-example
 
 homePageUri: "https://apps-in-toss-community.github.io/sdk-example/"
 csEmail: helloworld4625@gmail.com
 
-# ageRating: UI shows only "만 19세 이상" (disabled combobox). The console-cli
-# manifest loader (#22) currently ignores this field and lets the server
-# apply its default — no `ageRating` key is in the submit payload builder.
-# Once dog-food (#23) confirms or refutes the enum, this will either be
-# surfaced in the manifest or deleted from this comment.
-# ageRating: AGE_19_PLUS
-
-# Images — all paths relative to this YAML.
-# Dimensions are hard-validated locally (image-size) before upload to fail fast.
+# Images — paths relative to this YAML. Console-cli image-validator
+# enforces exact dimensions. PNGs derived from `aitcc/brand-src/*.svg`
+# (logo, thumbnail) and live screenshots captured via Playwright MCP
+# (screenshot-1/2/3).
 logo: ./assets/logo.png                         # 600×600 ✓
-# logoDarkMode: ./assets/logo-dark.png          # optional, omit for now
 horizontalThumbnail: ./assets/thumbnail.png     # 1932×828 ✓
 
-# categoryIds — must be ≥1. Loaded from GET /impression/category-list
-# (fetched on 2026-04-22 against workspace 3095).
-# 3882 = 생활 > 정보. Best fit for a technical SDK reference app —
-# "개발자 도구" is not a category in the public console.
+# 3882 = 생활 > 정보. Best fit for a technical SDK reference app.
 categoryIds: [3882]
 
-subtitle: "앱인토스 SDK 인터랙티브 레퍼런스"  # ≤20 chars (checked: 18)
-# Detail description — hard max 500 chars enforced server-side (errorCode 4000).
+subtitle: "AITC 커뮤니티 SDK 레퍼런스"   # 18 code points (≤20)
+
+# Detail description — hard max 500 code points enforced server-side.
 description: |-
   @apps-in-toss/web-framework SDK의 모든 public API를 직접 호출해볼 수 있는
-  비공식 커뮤니티 레퍼런스 앱입니다.
+  비공식 커뮤니티 레퍼런스 앱입니다. (AITC.DEV / apps-in-toss-community)
 
   - 16개 SDK 도메인(Auth, Navigation, Environment, Permissions, Storage, Location,
     Camera, Contacts, Clipboard, Haptic, IAP, Ads, Game, Analytics, Partner, Events)의
@@ -60,17 +55,17 @@ description: |-
   소스: github.com/apps-in-toss-community/sdk-example
 
 keywords:
+  - aitc
   - sdk
   - reference
   - example
   - community
   - api
-  - test
 
 verticalScreenshots:
   - ./assets/screenshot-1-home.png        # 636×1048 ✓
   - ./assets/screenshot-2-auth.png        # 636×1048 ✓
   - ./assets/screenshot-3-auth-result.png # 636×1048 ✓
 
-# horizontalScreenshots is optional per VALIDATION-RULES.md; omitted for dog-food.
+# horizontalScreenshots is optional; omitted.
 horizontalScreenshots: []
