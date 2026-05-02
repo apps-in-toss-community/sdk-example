@@ -35,7 +35,7 @@ export function LocationPage() {
           name="getCurrentLocation"
           description="SDK — 현재 위치 조회"
           params={[]}
-          execute={async () => await getCurrentLocation({ accuracy: Accuracy.Highest })}
+          execute={() => getCurrentLocation({ accuracy: Accuracy.Highest })}
           snippet={getCurrentLocationSnippet}
           docsUrl={docsLink('location', 'getCurrentLocation')}
         />

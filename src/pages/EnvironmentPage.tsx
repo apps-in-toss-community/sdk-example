@@ -59,7 +59,7 @@ export function EnvironmentPage() {
           name="getNetworkStatus"
           description="SDK — 네트워크 상태"
           params={[]}
-          execute={async () => await getNetworkStatus()}
+          execute={() => getNetworkStatus()}
           snippet={getNetworkStatusSnippet}
         />
         <ApiCard
@@ -116,7 +116,7 @@ export function EnvironmentPage() {
           name="getServerTime"
           description="서버 시간"
           params={[]}
-          execute={async () => await getServerTime()}
+          execute={() => getServerTime()}
           snippet={getServerTimeSnippet}
         />
         <ApiCard

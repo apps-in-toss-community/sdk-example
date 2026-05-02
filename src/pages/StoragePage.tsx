@@ -29,7 +29,7 @@ export function StoragePage() {
           name="Storage.getItem"
           description="값 조회"
           params={[{ name: 'key', label: 'Key', placeholder: 'myKey' }]}
-          execute={async (p) => await Storage.getItem(p.key)}
+          execute={(p) => Storage.getItem(p.key)}
           snippet={getItemSnippet}
           docsUrl={docsLink('storage', 'getItem')}
         />

@@ -27,7 +27,7 @@ export function ContactsPage() {
               parse: (v) => Number(v),
             },
           ]}
-          execute={async (p) => await fetchContacts({ size: p.size, offset: p.offset })}
+          execute={(p) => fetchContacts({ size: p.size, offset: p.offset })}
           snippet={fetchContactsSnippet}
         />
       </div>

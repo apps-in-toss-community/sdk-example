@@ -169,28 +169,28 @@ export function IAPPage() {
             name="IAP.getPendingOrders"
             description="미완료 주문 조회"
             params={[]}
-            execute={async () => await IAP.getPendingOrders()}
+            execute={() => IAP.getPendingOrders()}
             snippet={getPendingOrdersSnippet}
           />
           <ApiCard
             name="IAP.getCompletedOrRefundedOrders"
             description="완료/환불 주문 조회"
             params={[]}
-            execute={async () => await IAP.getCompletedOrRefundedOrders()}
+            execute={() => IAP.getCompletedOrRefundedOrders()}
             snippet={getCompletedOrRefundedOrdersSnippet}
           />
           <ApiCard
             name="IAP.getSubscriptionInfo"
             description="구독 정보 조회"
             params={[{ name: 'orderId', label: 'Order ID', placeholder: 'order-123' }]}
-            execute={async (p) => await IAP.getSubscriptionInfo({ params: { orderId: p.orderId } })}
+            execute={(p) => IAP.getSubscriptionInfo({ params: { orderId: p.orderId } })}
             snippet={getSubscriptionInfoSnippet}
           />
           <ApiCard
             name="checkoutPayment"
             description="TossPay 결제"
             params={[{ name: 'payToken', label: 'Pay Token', placeholder: 'token-123' }]}
-            execute={async (p) => await checkoutPayment({ params: { payToken: p.payToken } })}
+            execute={(p) => checkoutPayment({ params: { payToken: p.payToken } })}
             snippet={checkoutPaymentSnippet}
           />
         </div>
