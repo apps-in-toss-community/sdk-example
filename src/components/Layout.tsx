@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useSafeAreaInsets } from '../hooks/useSafeAreaInsets';
+import { BrandMark } from './BrandMark';
 import { DemoBanner } from './DemoBanner';
 
 function insetValue(sdk: number, edge: 'top' | 'bottom' | 'left' | 'right'): string {
@@ -32,6 +33,7 @@ export function Layout() {
         className="mx-auto max-w-[430px] min-h-screen bg-white shadow-sm dark:bg-gray-900 dark:shadow-none"
         style={style}
       >
+        <BrandMark />
         <DemoBanner />
         <Outlet />
       </div>
