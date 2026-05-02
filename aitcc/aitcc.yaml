@@ -1,0 +1,71 @@
+# aitcc app register config — AITC.DEV SDK Example (final dog-food)
+#
+# Feeds `aitcc app register --config ./aitcc/aitcc.yaml` to register
+# sdk-example as a real mini-app on workspace 3095.
+#
+# Note: `aitcc.app.yaml` was the previous filename; console-cli v0.1.20
+# dropped the `.app.` token, so the file was renamed to `aitcc.yaml`.
+#
+# This is the **final** dog-food mini-app for sdk-example. Subsequent
+# changes go through `app update` against the resulting miniAppId — do
+# NOT register additional apps. See umbrella `CLAUDE.md` "sdk-example
+# dog-food 앱" section.
+#
+# Relative paths are resolved from THIS file's location (aitcc/).
+
+titleKo: "AITC SDK 예제"
+# titleKo allowed chars: 한글/영문/숫자/공백/`:·?`. Hard cap of 10
+# code points **excluding spaces** (server errorCode miniApp.InvalidTitle).
+# That's why brand `AITC.DEV` lives in description / wordmark, not title.
+# titleEn allowed chars: 영문/숫자/공백/`:·?`. ≤15 chars excl. spaces,
+# AND each word must start with uppercase/digit and continue lowercase
+# (server errorCode miniApp.InvalidTitleEn) — so `AITC`/`SDK` (all caps)
+# are rejected, must be `Aitc`/`Sdk`.
+titleEn: "Aitc Sdk Example"
+
+appName: aitc-sdk-example
+
+homePageUri: "https://apps-in-toss-community.github.io/sdk-example/"
+csEmail: helloworld4625@gmail.com
+
+# Images — paths relative to this YAML. Console-cli image-validator
+# enforces exact dimensions. PNGs derived from `aitcc/brand-src/*.svg`
+# (logo, thumbnail) and live screenshots captured via Playwright MCP
+# (screenshot-1/2/3).
+logo: ./assets/logo.png                         # 600×600 ✓
+horizontalThumbnail: ./assets/thumbnail.png     # 1932×828 ✓
+
+# 3882 = 생활 > 정보. Best fit for a technical SDK reference app.
+categoryIds: [3882]
+
+subtitle: "AITC 커뮤니티 SDK 레퍼런스"   # 18 code points (≤20)
+
+# Detail description — hard max 500 code points enforced server-side.
+description: |-
+  @apps-in-toss/web-framework SDK의 모든 public API를 직접 호출해볼 수 있는
+  비공식 커뮤니티 레퍼런스 앱입니다. (AITC.DEV / apps-in-toss-community)
+
+  - 16개 SDK 도메인(Auth, Navigation, Environment, Permissions, Storage, Location,
+    Camera, Contacts, Clipboard, Haptic, IAP, Ads, Game, Analytics, Partner, Events)의
+    API를 폼으로 실행하고 응답을 확인할 수 있어요.
+  - IAP·Ads는 워크플로우 단위로 구성됐어요.
+  - Events 탭에서는 이벤트를 실시간 구독해요.
+
+  토스와 제휴 관계 없는 오픈소스 프로젝트입니다.
+  소스: github.com/apps-in-toss-community/sdk-example
+
+keywords:
+  - aitc
+  - sdk
+  - reference
+  - example
+  - community
+  - api
+
+verticalScreenshots:
+  - ./assets/screenshot-1-home.png        # 636×1048 ✓
+  - ./assets/screenshot-2-auth.png        # 636×1048 ✓
+  - ./assets/screenshot-3-auth-result.png # 636×1048 ✓
+
+# horizontalScreenshots is optional; omitted.
+horizontalScreenshots: []

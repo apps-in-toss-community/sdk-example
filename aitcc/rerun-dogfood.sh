@@ -8,9 +8,7 @@
 # Before running:
 #   - aitcc upgrade   (pick up the fixup release)
 #   - aitcc whoami --json | jq .authenticated   → must be true
-#   - The appName in aitcc.app.yaml must be unique on the workspace.
-#     If the previous dog-food left `ait-sdk-example` in 3095, bump the
-#     appName (e.g. `ait-sdk-example-2`) before using --live.
+#   - The appName in aitcc.yaml must be unique on the workspace.
 
 set -euo pipefail
 
@@ -33,7 +31,7 @@ check_prereqs() {
 
 run_dry() {
   echo "--- dry-run ---"
-  aitcc app register --workspace 3095 --config ./aitcc.app.yaml --dry-run --json | jq .
+  aitcc app register --workspace 3095 --config ./aitcc.yaml --dry-run --json | jq .
 }
 
 run_live() {
@@ -41,7 +39,7 @@ run_live() {
   ts="$(date +%Y%m%d-%H%M%S)"
   local out="submit-${ts}.json"
   echo "--- live submit (result → $out) ---"
-  aitcc app register --workspace 3095 --config ./aitcc.app.yaml --accept-terms --json \
+  aitcc app register --workspace 3095 --config ./aitcc.yaml --accept-terms --json \
     | tee "$out"
   echo
   echo "--- verifying persisted row via app ls ---"

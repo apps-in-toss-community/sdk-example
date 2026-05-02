@@ -1,75 +1,71 @@
-# aitcc dog-food assets
+# aitcc — AITC.DEV SDK Example mini-app
 
-This directory is the dog-food test fixture for `console-cli`'s
-`aitcc app register` command (tracked as umbrella task #23). It stages
-everything needed to submit **sdk-example as a real mini-app on workspace
-3095** the first time `aitcc app register` ships.
+This directory holds the manifest and assets used to register
+**sdk-example as the AITC.DEV SDK Example mini-app on workspace 3095**
+via `aitcc app register` (console-cli ≥ v0.1.20).
 
-This is the **first real submit** of the inferred payload shape documented
-in `../../.playwright-mcp/FORM-SCHEMA-CAPTURED.md`. It will either confirm
-the shape or surface corrections for console-cli #22.
+This is the **final dog-food mini-app** for sdk-example. Subsequent
+changes go through `app update` against the resulting `miniAppId` —
+do **not** register additional apps. See umbrella
+[`CLAUDE.md`](https://github.com/apps-in-toss-community/umbrella/blob/main/CLAUDE.md)
+"sdk-example dog-food 앱" section for the full policy.
 
 ## Contents
 
-- `aitcc.app.yaml` — registration payload (config format defined by #22)
-- `assets/logo.png` — 600×600 PNG app logo
-- `assets/thumbnail.png` — 1932×828 PNG horizontal thumbnail
-- `assets/screenshot-{1,2,3}-*.png` — 636×1048 PNG vertical screenshots (×3, the hard minimum)
+- `aitcc.yaml` — registration manifest (console-cli ≥ v0.1.20 dropped the
+  `.app.` token from the filename).
+- `assets/logo.png` — 600×600 PNG app logo (AITC mark + `SDK Example`).
+- `assets/thumbnail.png` — 1932×828 PNG horizontal thumbnail (AITC.DEV
+  banner, `aitc.dev` brand color, tagline).
+- `assets/screenshot-{1,2,3}-*.png` — 636×1048 PNG vertical screenshots
+  (×3, the hard minimum). All three include the AITC.DEV BrandMark
+  header from the live app.
+- `brand-src/{logo,thumbnail}.svg` — vector source for the PNGs above.
+  Re-derive with `rsvg-convert` (or `magick`) if the brand evolves.
+- `rerun-dogfood.sh` — convenience wrapper for dry-run / live submit.
 
-No dark-mode logo, no horizontal screenshots, no business-reg-number games.
-All fields in `aitcc.app.yaml` match the required/optional split captured
-on 2026-04-22.
-
-## Pre-flight (do before submit)
-
-1. Confirm `aitcc app register` is installed and `aitcc whoami` shows workspace 3095:
-   ```sh
-   aitcc app ls --workspace 3095 --json
-   ```
-2. Fetch the real category IDs and replace the placeholder in
-   `aitcc.app.yaml`'s `categoryIds`:
-   ```sh
-   # aitcc does not yet expose a `category list` command (not in #22 scope).
-   # Temporarily read the response directly:
-   curl -sH "Cookie: $(aitcc session cookie)" \
-     https://apps-in-toss.toss.im/console/api-public/v3/appsintossconsole/impression/category-list
-   ```
-   Pick 1–3 IDs that fit sdk-example's purpose (likely "개발자 도구" / "생활" tier).
-3. Verify image dimensions locally (the command will do this too, but belt-and-suspenders):
-   ```sh
-   file assets/*.png
-   ```
-
-## Submit
-
-From `sdk-example/aitcc/`:
+## Register / re-register
 
 ```sh
-aitcc app register --workspace 3095 --config ./aitcc.app.yaml --json \
+# 1. Make sure the workspace context + session are ready.
+pnpm dlx @ait-co/console-cli@latest workspace use 3095
+pnpm dlx @ait-co/console-cli@latest whoami --json | jq .authenticated
+
+# 2. Dry-run (validates manifest + image dimensions, hits no server).
+pnpm dlx @ait-co/console-cli@latest app register \
+  --config ./aitcc/aitcc.yaml --dry-run --json | jq .
+
+# 3. Real registration (workspace 3095 OWNER session required).
+pnpm dlx @ait-co/console-cli@latest app register \
+  --config ./aitcc/aitcc.yaml --accept-terms --json \
   | tee submit-$(date +%Y%m%d-%H%M%S).json
+
+# 4. Confirm review queue entry.
+pnpm dlx @ait-co/console-cli@latest app status <new-miniAppId> --json | jq .
 ```
 
-Capture the XHR response in Playwright/DevTools in parallel — this is the
-authoritative record we lacked during spec capture. Save it under
-`../../.playwright-mcp/` as `dogfood-23-submit-response.json`.
+## Updating
 
-## Post-submit
+The CLI does **not** yet expose update mode (`aitcc app register` always
+creates). Once it does, run it against the same manifest with the
+existing `miniAppId` injected. Until then, edits go through the console
+web UI (`/mini-app/<id>/meta/edit`).
 
-- Open the console web UI and verify the app appears in the list for workspace 3095.
-- The UI has a separate "검토 요청하기" button for the review-request step.
-  That endpoint is explicitly out of scope for #22; file any findings under
-  a new task.
+REVIEW lock semantics, the `errorCode 4046` branch, and the payload
+shape are documented in
+[`console-cli/docs/api/mini-apps.md`](https://github.com/apps-in-toss-community/console-cli/blob/main/docs/api/mini-apps.md).
 
-## If the submit fails
+## Re-deriving the brand assets
 
-- `400 invalid-payload`: compare the server error field name with
-  `aitcc.app.yaml` and `src/commands/app.ts` payload builder. Feed the diff
-  back into console-cli #22 as a follow-up patch.
-- `image-dimension-mismatch` locally: check `file assets/*.png` — the PNGs
-  in this dir have been verified 600×600 / 1932×828 / 636×1048 at commit time,
-  so a mismatch means the files were replaced.
+Source SVGs live in `brand-src/`. Both PNGs must end up at exact
+console-enforced dimensions:
 
-Once a real response is captured, update
-`../../.playwright-mcp/FORM-SCHEMA-CAPTURED.md` with "Submit shape confirmed
-on 2026-04-YY via dog-food #23" and remove this README's "first real submit"
-language.
+```sh
+rsvg-convert -w 600  -h 600  brand-src/logo.svg      -o assets/logo.png
+rsvg-convert -w 1932 -h 828  brand-src/thumbnail.svg -o assets/thumbnail.png
+magick identify assets/*.png    # spot-check dimensions
+```
+
+Screenshots are captured live from `pnpm dev` at viewport 636×1048 via
+Playwright MCP (see umbrella `meta/brand/README.md` and the parent
+repo's UI regression workflow).

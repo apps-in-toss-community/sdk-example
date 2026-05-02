@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1932 828" role="img" aria-label="AITC.DEV SDK Example">
+  <title>AITC.DEV SDK Example</title>
+  <rect width="1932" height="828" fill="#f4f5f7"/>
+
+  <g transform="translate(140 174)">
+    <rect width="480" height="480" rx="96" ry="96" fill="#3182f6"/>
+    <text
+      x="240"
+      y="240"
+      text-anchor="middle"
+      dominant-baseline="central"
+      font-family="'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      font-weight="800"
+      font-size="190"
+      letter-spacing="-5"
+      fill="#ffffff"
+    >AITC</text>
+  </g>
+
+  <g transform="translate(720 200)">
+    <text
+      x="0"
+      y="60"
+      font-family="'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      font-weight="600"
+      font-size="28"
+      letter-spacing="3"
+      fill="#3182f6"
+    >COMMUNITY · OPEN SOURCE</text>
+
+    <text
+      x="0"
+      y="170"
+      font-family="'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      font-weight="800"
+      font-size="92"
+      letter-spacing="-3"
+      fill="#191f28"
+    >AITC.DEV SDK Example</text>
+
+    <text
+      x="0"
+      y="260"
+      font-family="'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      font-weight="500"
+      font-size="40"
+      letter-spacing="-0.5"
+      fill="#4e5968"
+    >16 SDK domains, interactive playground.</text>
+
+    <text
+      x="0"
+      y="380"
+      font-family="'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+      font-weight="500"
+      font-size="32"
+      letter-spacing="0"
+      fill="#8b95a1"
+    >aitc.dev · sdk-example</text>
+  </g>
+</svg>
