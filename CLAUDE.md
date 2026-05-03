@@ -79,6 +79,10 @@ src/
 
 전체 회귀: 홈에서 16개 도메인 카드 + 검색 필터 → 각 페이지 API 실행 → IAP/Ads 워크플로우 → EventsPage 구독 → 콘솔 에러 확인.
 
+## TODO
+
+조직 TODO는 umbrella [`TODO.md`](https://github.com/apps-in-toss-community/umbrella/blob/main/TODO.md)가 single source of truth (이 repo의 `TODO.md`는 stub). PR 머지 시 작성자가 관련 항목 close + 새 follow-up 추가 — 상세는 umbrella [`CLAUDE.md` "TODO 관리"](https://github.com/apps-in-toss-community/umbrella/blob/main/CLAUDE.md#todo-관리--umbrella가-single-source-of-truth).
+
 ## 외부 참조
 
 [`@apps-in-toss/web-framework`](https://www.npmjs.com/package/@apps-in-toss/web-framework) — 원본 SDK.
