@@ -6,9 +6,7 @@ via `aitcc app register` (console-cli ≥ v0.1.20).
 
 This is the **final dog-food mini-app** for sdk-example. Subsequent
 changes go through `app update` against the resulting `miniAppId` —
-do **not** register additional apps. See umbrella
-[`CLAUDE.md`](https://github.com/apps-in-toss-community/umbrella/blob/main/CLAUDE.md)
-"sdk-example dog-food 앱" section for the full policy.
+do **not** register additional apps.
 
 ## Contents
 
@@ -67,5 +65,5 @@ magick identify assets/*.png    # spot-check dimensions
 ```
 
 Screenshots are captured live from `pnpm dev` at viewport 636×1048 via
-Playwright MCP (see umbrella `meta/brand/README.md` and the parent
-repo's UI regression workflow).
+Playwright MCP (see the UI regression workflow in this repo's
+`CLAUDE.md`).
