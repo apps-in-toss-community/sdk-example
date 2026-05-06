@@ -8,8 +8,7 @@
 #
 # This is the **final** dog-food mini-app for sdk-example. Subsequent
 # changes go through `app update` against the resulting miniAppId — do
-# NOT register additional apps. See umbrella `CLAUDE.md` "sdk-example
-# dog-food 앱" section.
+# NOT register additional apps.
 #
 # Relative paths are resolved from THIS file's location (aitcc/).
 
