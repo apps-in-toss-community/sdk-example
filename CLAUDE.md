@@ -2,17 +2,31 @@
 
 ## 프로젝트 성격 (중요)
 
-`apps-in-toss-community`는 비공식(unofficial) 오픈소스 커뮤니티다. "공식/official/토스가 제공하는/powered by Toss" 등 제휴·후원·인증 암시 표현 금지. 상세는 umbrella [`CLAUDE.md`](https://github.com/apps-in-toss-community/umbrella/blob/main/CLAUDE.md)의 "프로젝트 성격" 참조.
+`apps-in-toss-community`는 **비공식(unofficial) 오픈소스 커뮤니티** 프로젝트다. 토스/앱인토스 팀과 제휴·후원·인증 관계 없음.
+
+사용자에게 보여지는 모든 산출물(README, UI 카피, 패키지 설명, 커밋/PR 메시지, 코드 주석 등)에서 다음 표현 **금지**:
+
+- "공식(official)", "공식 플러그인/도구", "토스가 제공하는", "앱인토스에서 만든", "powered by Toss"
+- 토스와의 제휴/후원/인증을 암시하는 모든 표현
+
+대신 "커뮤니티(community)", "오픈소스", "비공식(unofficial)" 사용. 의심스러우면 빼라.
 
 ## 프로젝트 개요
 
 **sdk-example** — `@apps-in-toss/web-framework` SDK의 모든 public API를 인터랙티브하게 테스트하는 레퍼런스 앱. 앱 자체가 사용 예제이며, 앱인토스에 배포해 네이티브에서 직접 확인 가능. 개발 시 `@ait-co/devtools`의 unplugin이 SDK import를 mock으로 swap해 토스 앱 없이 동작.
 
-**조직 내 위치**: sdk-example은 모든 repo가 수렴하는 downstream consumer / 살아있는 QA 타겟. 직접 짝은 `devtools`(SDK mock 제공자)와 `docs`(양방향 deep-link, 경로 변경 시 반대쪽 링크 체크 필요). 전체 짝 관계는 umbrella [`CLAUDE.md`](https://github.com/apps-in-toss-community/umbrella/blob/main/CLAUDE.md)의 "짝(pair) 관계" 참조.
+**조직 내 위치**: sdk-example은 모든 repo가 수렴하는 downstream consumer / 살아있는 QA 타겟. 직접 짝은 `devtools`(SDK mock 제공자)와 `docs`(양방향 deep-link, 경로 변경 시 반대쪽 링크 체크 필요).
 
 ## 기술 스택
 
-React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`), Vite 6, Tailwind CSS v4 (CSS-only), react-router-dom v7. 공통 스택(Node, pnpm 버전, Biome 정책 등)은 umbrella [`CLAUDE.md`](https://github.com/apps-in-toss-community/umbrella/blob/main/CLAUDE.md)의 "공통 스택" 참조.
+React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`), Vite 6, Tailwind CSS v4 (CSS-only), react-router-dom v7.
+
+## 공통 스택 / 개발 환경
+
+- Node 24 LTS, **pnpm 10.33.0** (`packageManager` 고정), TypeScript strict.
+- **Biome** (lint + formatter). ESLint/Prettier 사용 안 함. `pnpm lint` / `pnpm lint:fix` / `pnpm format`.
+- **Pre-commit hook**: `.githooks/pre-commit`이 source-controlled. contributor가 수동 활성화: `git config core.hooksPath .githooks`. CI `pnpm lint`가 실제 강제 계층, hook은 빠른 피드백.
+- **Commit message**: Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`).
 
 ## 의존성
 
@@ -79,9 +93,9 @@ src/
 
 전체 회귀: 홈에서 16개 도메인 카드 + 검색 필터 → 각 페이지 API 실행 → IAP/Ads 워크플로우 → EventsPage 구독 → 콘솔 에러 확인.
 
-## TODO
+## 이슈 / 제안
 
-조직 TODO는 umbrella [`TODO.md`](https://github.com/apps-in-toss-community/umbrella/blob/main/TODO.md)가 single source of truth (이 repo의 `TODO.md`는 stub). PR 머지 시 작성자가 관련 항목 close + 새 follow-up 추가 — 상세는 umbrella [`CLAUDE.md` "TODO 관리"](https://github.com/apps-in-toss-community/umbrella/blob/main/CLAUDE.md#todo-관리--umbrella가-single-source-of-truth).
+이슈/제안은 GitHub Issues로.
 
 ## 외부 참조
 
