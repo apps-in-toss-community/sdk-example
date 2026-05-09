@@ -31,7 +31,7 @@ describe('ApiCard', () => {
             type: 'number',
             defaultValue: '21',
             parse: (v: string) => Number(v),
-          } as const,
+          },
         ]}
         execute={execute}
       />,
