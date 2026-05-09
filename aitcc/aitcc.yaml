@@ -12,6 +12,19 @@
 #
 # Relative paths are resolved from THIS file's location (aitcc/).
 
+# Project context — read by every aitcc command run in this repo so
+# `--workspace`/`--app` can be omitted on `app status`, `app certs ls`,
+# `app deploy`, etc. (console-cli ≥0.1.21).
+#
+# DO NOT run `aitcc app register` here. The dog-food app is already
+# registered as miniAppId 31146 and is currently REVIEW-locked. console-cli
+# does not yet implement update mode (payload has no `miniAppId` field), so
+# every `register` invocation creates a *new* app — that pattern is what
+# left 4 abandoned apps in the ops queue. Once REVIEW lock is released and
+# console-cli ships update mode, this comment can come down.
+workspaceId: 3095
+miniAppId: 31146
+
 titleKo: "AITC SDK 예제"
 # titleKo allowed chars: 한글/영문/숫자/공백/`:·?`. Hard cap of 10
 # code points **excluding spaces** (server errorCode miniApp.InvalidTitle).
