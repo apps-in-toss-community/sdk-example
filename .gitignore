@@ -6,6 +6,7 @@ dist/
 .playwright-mcp/
 test-results/
 playwright-report/
+playwright/.cache/
 .tmp/
 *.local
 

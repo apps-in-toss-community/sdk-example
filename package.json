@@ -17,7 +17,10 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "format": "biome format --write ."
+    "format": "biome format --write .",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:install": "playwright install chromium"
   },
   "dependencies": {
     "@ait-co/devtools": "^0.1.5",
@@ -30,6 +33,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.12",
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/vite": "^4.2.2",
     "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.14",
