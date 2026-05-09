@@ -54,6 +54,9 @@ pnpm dev        # Vite dev 서버 → http://localhost:5173
 | `pnpm lint` | `biome check .` |
 | `pnpm lint:fix` | `biome check --write .` |
 | `pnpm format` | `biome format --write .` |
+| `pnpm test` | Vitest 컴포넌트 smoke 테스트 (jsdom) |
+| `pnpm test:watch` | Vitest watch 모드 |
+| `pnpm test:e2e` | Playwright e2e (실제 브라우저, 별도 dev 서버 자동 기동) |
 
 ## OIDC bridge 데모
 
