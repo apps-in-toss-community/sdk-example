@@ -44,7 +44,16 @@ React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`),
 
 ## 명령어
 
-핵심 5개: `pnpm dev` (Vite, :5173), `pnpm build` (`tsc -b` + `vite build`), `pnpm preview`, `pnpm typecheck` (`tsc --noEmit`, SDK export 커버리지 포함), `pnpm lint`. 전체는 `package.json` 참조.
+핵심: `pnpm dev` (Vite, :5173), `pnpm build` (`tsc -b` + `vite build`), `pnpm preview`, `pnpm typecheck` (`tsc --noEmit`, SDK export 커버리지 포함), `pnpm lint`, `pnpm test` (Vitest 컴포넌트 smoke), `pnpm test:e2e` (Playwright). 전체는 `package.json` 참조.
+
+## 테스트 정책
+
+두 계층:
+
+- **`pnpm test`** — Vitest + `@testing-library/react` + jsdom. 컴포넌트 render/interaction smoke level. 컴포넌트당 1-3 케이스, 빠른 CI 게이트(typecheck/lint 옆). 테스트 파일은 `*.test.{ts,tsx}` 패턴으로 src 옆에. setup은 `src/test/setup.ts` (jest-dom matcher + RTL cleanup).
+- **`pnpm test:e2e`** — Playwright. `e2e/`에 위치, 실제 dev 서버에서 브라우저로 실행. 시각적/네비게이션 회귀.
+
+새 컴포넌트 추가 시: render + 핵심 interaction 1개. SDK 자체 호출은 `vi.mock('@apps-in-toss/web-framework')` 또는 devtools mock에 의존. 깊은 단위 테스트는 지양 — sdk-example의 가치는 dog-food이지 라이브러리가 아니므로 테스트는 "렌더 깨짐" 가드 역할만.
 
 ## 프로젝트 구조
 
