@@ -22,7 +22,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:install": "playwright install chromium"
+    "test:e2e:install": "playwright install chromium",
+    "scaffold:domain": "node scripts/scaffold-domain.ts"
   },
   "dependencies": {
     "@ait-co/devtools": "^0.1.5",

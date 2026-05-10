@@ -90,9 +90,11 @@ src/
 ## 새 SDK API 페이지 추가 절차
 
 1. `@ait-co/devtools` 업데이트 후 `pnpm typecheck` → `__typecheck.ts`에 누락 import 추가
-2. 도메인 페이지(`src/pages/XxxPage.tsx`)에 `ApiCard` 추가
-3. 새 도메인이면: `src/pages/NewPage.tsx` 생성, `src/App.tsx` 라우트 추가, `HomePage.tsx`의 `domains` 배열에 엔트리 추가
+2. **새 도메인이면**: `pnpm scaffold:domain <name> --label "<Display>" --description "..."` 한 번 실행. `src/pages/<Name>Page.tsx` 생성 + `src/App.tsx` 라우트 + `HomePage.tsx` `domains` entry까지 자동 wire (수동 wire 불필요). `--dry-run`으로 plan만 미리 볼 수 있고, 같은 name 재실행은 no-op.
+3. 도메인 페이지(`src/pages/XxxPage.tsx`)에 `ApiCard` 추가
 4. `pnpm typecheck` + `pnpm dev`로 동작 확인
+
+scaffold가 의존하는 BEGIN/END 마커는 `src/App.tsx` (imports/routes)와 `src/pages/HomePage.tsx` (domains 배열)에 있다 — 이 마커를 지우면 scaffold가 fail-fast하니 유지할 것.
 
 ## UI 회귀 검증 (필수)
 
