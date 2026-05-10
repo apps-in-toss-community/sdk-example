@@ -138,6 +138,10 @@ src/
 
 여러 API를 순서대로 호출하는 다단계 플로우를 스텝 UI로 표현. IAP의 "상품조회 → 구매 → 주문관리", Ads의 "load → show" 등에 사용.
 
+### `ShimCompositionCard`
+
+`@ait-co/devtools` mock과 `@ait-co/polyfill` shim이 동시에 설치된 환경(=sdk-example dev)에서 polyfill이 SDK를 "present"로 감지해 mock 경유로 라우팅하는 의도된 합성을 페이지 로드 기준으로 진단한다. SDK present / Polyfill loaded / Composition mode (`mock-via-polyfill` / `sdk-direct` / `polyfill-direct` / `unknown`)를 표시하고, `navigator.clipboard.writeText` round-trip이 `window.__ait`의 devtools mock state를 갱신하는지 한 번에 확인할 수 있다. `EnvironmentPage` 상단에 마운트된다. e2e 회귀 게이트는 `e2e/shim-composition.spec.ts`.
+
 ## OG 이미지
 
 SPA 앱이지만 도메인 그룹 페이지(예: `/iap`, `/permissions`)를 SNS에 공유했을 때 그룹별 OG 이미지가 떨어지도록 정적 파이프라인을 둔다.

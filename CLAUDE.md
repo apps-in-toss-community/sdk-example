@@ -38,6 +38,8 @@ React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`),
 
 `@ait-co/devtools/unplugin`의 Vite 플러그인이 dev에서 SDK import를 mock으로 대체. 앱인토스 배포 시에는 원본 SDK 그대로 사용. `@ait-co/polyfill/auto`는 `main.tsx`에서 import되어 SDK 미지원 환경에서 표준 Web API 경로를 제공하며, 일부 페이지(예: `LocationPage`)에서 `PolyfillNotice` 컴포넌트로 활성 상태를 표시.
 
+dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `getAppsInTossGlobals()`가 truthy를 반환한다는 이유로 SDK를 "present"로 감지하고, `navigator.clipboard.*` 등의 표준 API 호출을 SDK(=devtools mock) 경유로 라우팅한다. 이 합성을 sdk-example에서 명시적으로 가시화/회귀 검증하기 위해 `EnvironmentPage` 상단에 `ShimCompositionCard`를 둔다 (writeText round-trip이 `window.__ait` mock state를 갱신하는지 확인). e2e는 `e2e/shim-composition.spec.ts`.
+
 ## OIDC bridge URL
 
 `OidcBridgeSection`은 커뮤니티 공용 인스턴스 `https://oidc-bridge.aitc.dev`를 default 상수(`OIDC_BRIDGE_BASE_URL` in `src/components/OidcBridgeSection.tsx`)로 사용. 환경 변수/`.env` 안 씀 — self-host로 가리키려면 상수만 바꿔서 PR.
