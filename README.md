@@ -48,7 +48,8 @@ pnpm dev        # Vite dev 서버 → http://localhost:5173
 | 명령 | 설명 |
 |---|---|
 | `pnpm dev` | Vite dev 서버 기동 |
-| `pnpm build` | 타입 체크 + 프로덕션 빌드 → `dist/` |
+| `pnpm build` | 타입 체크 + OG 이미지 생성 + 프로덕션 빌드 + 라우트별 HTML 생성 → `dist/` |
+| `pnpm build:og` | OG 이미지(`public/og/*.png`)만 재생성 |
 | `pnpm preview` | 빌드 결과 로컬 서빙 |
 | `pnpm typecheck` | `tsc --noEmit` (SDK export 커버리지 검증 포함) |
 | `pnpm lint` | `biome check .` |
@@ -130,6 +131,15 @@ src/
 ### `WorkflowStepper`
 
 여러 API를 순서대로 호출하는 다단계 플로우를 스텝 UI로 표현. IAP의 "상품조회 → 구매 → 주문관리", Ads의 "load → show" 등에 사용.
+
+## OG 이미지
+
+SPA 앱이지만 도메인 그룹 페이지(예: `/iap`, `/permissions`)를 SNS에 공유했을 때 그룹별 OG 이미지가 떨어지도록 정적 파이프라인을 둔다.
+
+- **소스**: `src/og/manifest.ts` (라우트 ↔ OG 메타 single source of truth), `src/og/template.tsx` (satori JSX 템플릿).
+- **이미지 빌드**: `pnpm build:og` 또는 `pnpm build`의 prebuild 단계에서 `scripts/build-og-images.tsx`가 `public/og/<slug>.png` 17장(home + 16 그룹)을 생성한다. PNG는 commit 대상.
+- **라우트별 HTML**: `pnpm build` 마지막 단계의 `scripts/build-route-html.ts`가 `dist/index.html`을 읽어 `dist/<slug>/index.html`을 만들면서 `og:title` / `og:description` / `og:image` / `twitter:*` 메타와 `<title>`을 그룹별로 치환한다. 같은 JS bundle을 모든 HTML이 공유하므로 SPA는 정상 동작하고, 크롤러(JS 미실행)는 정적 메타만 본다.
+- **수정 흐름**: 메타·문구를 바꾸려면 `manifest.ts` → 디자인을 바꾸려면 `template.tsx` → `pnpm build` → `public/og/`의 PNG diff 리뷰. 새 도메인 그룹 추가 시 `manifest.ts`에 엔트리 한 줄만 추가하면 된다.
 
 ## SDK 업데이트 대응
 
