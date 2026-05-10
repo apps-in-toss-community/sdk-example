@@ -107,6 +107,10 @@ src/
 />
 ```
 
+### `PolyfillToggleCard`
+
+`@ait-co/polyfill`이 노출하는 표준 Web API와 SDK 호출을 한 카드 안에서 토글로 비교 실행할 때 사용. 같은 동작을 두 경로로 번갈아 호출하며 결과를 옆에 두고 비교할 수 있다 (SDK ↔ Polyfill 결과는 모드별로 보존). 카드를 두 개로 나란히 두는 paired-card 패턴(`Location`, `Navigation`, `Environment`)과 토글 패턴(`Clipboard`, `Haptic`)이 공존하며, 페이지 성격에 맞춰 둘 중 하나를 고른다.
+
 ### `WorkflowStepper`
 
 여러 API를 순서대로 호출하는 다단계 플로우를 스텝 UI로 표현. IAP의 "상품조회 → 구매 → 주문관리", Ads의 "load → show" 등에 사용.
