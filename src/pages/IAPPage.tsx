@@ -3,7 +3,12 @@ import { checkoutPayment, IAP } from '@apps-in-toss/web-framework';
 import { useCallback, useState } from 'react';
 import { ApiCard } from '../components/ApiCard';
 import { CodeSnippet } from '../components/CodeSnippet';
-import { createHistoryEntry, type HistoryEntry, HistoryLog } from '../components/HistoryLog';
+import {
+  appendHistory,
+  createHistoryEntry,
+  type HistoryEntry,
+  HistoryLog,
+} from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
 import { WorkflowStepper } from '../components/WorkflowStepper';
 import checkoutPaymentSnippet from '../snippets/iap/checkoutPayment.ts?raw';
@@ -24,7 +29,7 @@ export function IAPPage() {
   const [eventLog, setEventLog] = useState<HistoryEntry[]>([]);
 
   const addLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
-    setEventLog((prev) => [createHistoryEntry({ status, data, error }), ...prev].slice(0, 20));
+    setEventLog((prev) => appendHistory(prev, createHistoryEntry({ status, data, error })));
   }, []);
 
   const handlePurchase = useCallback(
@@ -151,7 +156,7 @@ export function IAPPage() {
             <p className="text-sm text-red-600 dark:text-red-400">{purchaseError}</p>
           )}
           {/* HistoryLog is the primary result source — shows all purchase events in order */}
-          <HistoryLog entries={eventLog} />
+          <HistoryLog entries={eventLog} onClear={() => setEventLog([])} />
           <CodeSnippet
             code={createPurchaseOrderSnippet}
             label="createPurchaseOrder source snippet"

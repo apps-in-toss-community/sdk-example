@@ -5,7 +5,12 @@ import {
 } from '@apps-in-toss/web-framework';
 import { useEffect, useRef, useState } from 'react';
 import { CodeSnippet } from '../components/CodeSnippet';
-import { createHistoryEntry, type HistoryEntry, HistoryLog } from '../components/HistoryLog';
+import {
+  appendHistory,
+  createHistoryEntry,
+  type HistoryEntry,
+  HistoryLog,
+} from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
 import graniteBackEventSnippet from '../snippets/events/graniteBackEvent.ts?raw';
 import graniteHomeEventSnippet from '../snippets/events/graniteHomeEvent.ts?raw';
@@ -37,7 +42,7 @@ function EventSubscriberCard({ name, description, subscribe, snippet }: EventSub
     } else {
       const unsub = subscribe((payload) => {
         setEvents((prev) =>
-          [createHistoryEntry({ status: 'success', data: payload }), ...prev].slice(0, 20),
+          appendHistory(prev, createHistoryEntry({ status: 'success', data: payload })),
         );
       });
       unsubRef.current = unsub;
@@ -86,11 +91,11 @@ function EventSubscriberCard({ name, description, subscribe, snippet }: EventSub
 
       {snippet ? (
         <div className="mt-2 grid gap-2 md:grid-cols-2 md:items-start">
-          <HistoryLog entries={events} />
+          <HistoryLog entries={events} onClear={() => setEvents([])} />
           <CodeSnippet code={snippet} label={`${name} source snippet`} />
         </div>
       ) : (
-        <HistoryLog entries={events} />
+        <HistoryLog entries={events} onClear={() => setEvents([])} />
       )}
     </div>
   );

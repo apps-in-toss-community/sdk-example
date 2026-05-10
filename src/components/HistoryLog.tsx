@@ -10,8 +10,17 @@ export function createHistoryEntry(fields: Omit<HistoryEntry, 'id' | 'timestamp'
   return { id: crypto.randomUUID(), timestamp: Date.now(), ...fields };
 }
 
+export const HISTORY_CAP = 20;
+
+/** Prepend `next` to `prev` and cap the result at `HISTORY_CAP` entries. */
+export function appendHistory(prev: HistoryEntry[], next: HistoryEntry): HistoryEntry[] {
+  return [next, ...prev].slice(0, HISTORY_CAP);
+}
+
 interface HistoryLogProps {
   entries: HistoryEntry[];
+  /** When provided and `entries` is non-empty, a "Clear" button appears in the header. */
+  onClear?: () => void;
 }
 
 function formatTime(ts: number) {
@@ -22,14 +31,26 @@ function formatTime(ts: number) {
   });
 }
 
-export function HistoryLog({ entries }: HistoryLogProps) {
+export function HistoryLog({ entries, onClear }: HistoryLogProps) {
   if (entries.length === 0) return null;
 
   return (
     <div className="mt-3 border-t border-gray-100 pt-2 dark:border-gray-800">
-      <p className="text-xs font-medium text-gray-500 mb-1 dark:text-gray-400">
-        History ({entries.length})
-      </p>
+      <div className="flex items-center justify-between mb-1">
+        <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
+          History ({entries.length})
+        </p>
+        {onClear && (
+          <button
+            type="button"
+            onClick={onClear}
+            aria-label="기록 지우기"
+            className="text-xs text-gray-500 hover:text-gray-900 underline-offset-2 hover:underline dark:text-gray-400 dark:hover:text-gray-100"
+          >
+            Clear
+          </button>
+        )}
+      </div>
       <div className="space-y-1 max-h-40 overflow-y-auto">
         {entries.map((entry) => (
           <div key={entry.id} className="flex items-start gap-2 text-xs">
