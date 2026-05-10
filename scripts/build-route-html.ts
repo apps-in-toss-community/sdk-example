@@ -58,7 +58,7 @@ function imageUrl(siteOrigin: string, slug: string): string {
 }
 
 function buildRouteHtml(template: string, entry: OgEntry, siteOrigin: string): string {
-  const titleText = entry.slug === 'home' ? entry.title : `${entry.title} — sdk-example`;
+  const titleText = entry.pageTitle ?? `${entry.title} — sdk-example`;
   const ogImage = imageUrl(siteOrigin, entry.slug);
 
   let html = template;

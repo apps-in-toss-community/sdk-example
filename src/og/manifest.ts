@@ -18,12 +18,18 @@ export interface OgEntry {
   route: string;
   /** Small label above the title (e.g. "SDK Reference"). */
   eyebrow: string;
-  /** Big title rendered in the OG image and used as og:title / <title>. */
+  /** Big title rendered in the OG image and used as og:title. */
   title: string;
   /** Tagline rendered in the OG image and used as og:description. */
   subtitle: string;
   /** Footer line in the OG image (e.g. "sdk-example.aitc.dev"). */
   footer: string;
+  /**
+   * Optional override for <title> and the og:title meta on the rendered HTML
+   * page. Group entries leave this unset and get "{title} — sdk-example";
+   * home sets it explicitly to keep the original landing-page title intact.
+   */
+  pageTitle?: string;
 }
 
 const SITE = 'sdk-example.aitc.dev';
@@ -35,6 +41,7 @@ export const HOME_ENTRY: OgEntry = {
   title: 'sdk-example',
   subtitle: '@apps-in-toss/web-framework SDK를 인터랙티브하게 실행·확인.',
   footer: SITE,
+  pageTitle: 'sdk-example — 커뮤니티 SDK 레퍼런스',
 };
 
 export const GROUP_ENTRIES: OgEntry[] = [

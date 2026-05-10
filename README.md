@@ -48,7 +48,7 @@ pnpm dev        # Vite dev 서버 → http://localhost:5173
 | 명령 | 설명 |
 |---|---|
 | `pnpm dev` | Vite dev 서버 기동 |
-| `pnpm build` | 타입 체크 + OG 이미지 생성 + 프로덕션 빌드 + 라우트별 HTML 생성 → `dist/` |
+| `pnpm build` | OG 이미지 생성(prebuild) + 타입 체크 + 프로덕션 빌드 + 라우트별 HTML 생성 → `dist/` |
 | `pnpm build:og` | OG 이미지(`public/og/*.png`)만 재생성 |
 | `pnpm preview` | 빌드 결과 로컬 서빙 |
 | `pnpm typecheck` | `tsc --noEmit` (SDK export 커버리지 검증 포함) |
