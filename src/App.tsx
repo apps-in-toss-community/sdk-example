@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/Layout';
+// SCAFFOLD_DOMAIN_IMPORTS_BEGIN
 import { AdsPage } from './pages/AdsPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { AuthPage } from './pages/AuthPage';
@@ -18,6 +19,7 @@ import { NavigationPage } from './pages/NavigationPage';
 import { PartnerPage } from './pages/PartnerPage';
 import { PermissionsPage } from './pages/PermissionsPage';
 import { StoragePage } from './pages/StoragePage';
+// SCAFFOLD_DOMAIN_IMPORTS_END
 
 export function App() {
   // Honors Vite's BASE_URL so Pages (e.g. /sdk-example/) and 앱인토스 배포 (/) both work.
@@ -28,6 +30,7 @@ export function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
+            {/* SCAFFOLD_DOMAIN_ROUTES_BEGIN */}
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/navigation" element={<NavigationPage />} />
             <Route path="/environment" element={<EnvironmentPage />} />
@@ -44,6 +47,7 @@ export function App() {
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/partner" element={<PartnerPage />} />
             <Route path="/events" element={<EventsPage />} />
+            {/* SCAFFOLD_DOMAIN_ROUTES_END */}
           </Route>
         </Routes>
       </BrowserRouter>

@@ -57,6 +57,22 @@ pnpm dev        # Vite dev 서버 → http://localhost:5173
 | `pnpm test` | Vitest 컴포넌트 smoke 테스트 (jsdom) |
 | `pnpm test:watch` | Vitest watch 모드 |
 | `pnpm test:e2e` | Playwright e2e (실제 브라우저, 별도 dev 서버 자동 기동) |
+| `pnpm scaffold:domain <name>` | 새 SDK 도메인 페이지 boilerplate 생성 (page + route + 카탈로그 entry) |
+
+### 새 도메인 추가
+
+새 SDK 도메인을 dog-food하려면:
+
+```bash
+pnpm scaffold:domain analytics --label "Analytics" --description "사용자 이벤트 추적"
+# → src/pages/AnalyticsPage.tsx 생성
+# → src/App.tsx에 라우트 추가
+# → src/pages/HomePage.tsx의 domains 카탈로그에 entry 추가
+```
+
+옵션: `--label "Display"`, `--group <core|permissions|commerce|telemetry|misc>` (현재 HomePage entry 스키마에는 저장되지 않고 의도 메모용 — runtime 효과 없음), `--description "..."`, `--dry-run` (변경 없이 plan만 출력). 같은 name으로 재실행하면 no-op이다.
+
+생성 후 `<Name>Page.tsx`에 실제 `ApiCard`를 추가하고 `HomePage.tsx` entry의 `apis: []` 배열에 검색 키워드를 채우면 된다.
 
 ## OIDC bridge 데모
 

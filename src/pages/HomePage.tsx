@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const domains = [
+  // SCAFFOLD_DOMAIN_ENTRIES_BEGIN
   {
     path: '/auth',
     name: 'Auth',
@@ -153,6 +154,7 @@ const domains = [
       'onVisibilityChangedByTransparentServiceWeb',
     ],
   },
+  // SCAFFOLD_DOMAIN_ENTRIES_END
 ];
 
 export function HomePage() {
