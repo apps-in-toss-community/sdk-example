@@ -1,8 +1,28 @@
 import { useState } from 'react';
 import { CodeSnippet } from './CodeSnippet';
-import { createHistoryEntry, type HistoryEntry, HistoryLog } from './HistoryLog';
+import { appendHistory, createHistoryEntry, type HistoryEntry, HistoryLog } from './HistoryLog';
 import { ParamInput } from './ParamInput';
 import { ResultView } from './ResultView';
+
+/**
+ * Inline spinner shown inside the execute button while a call is in flight.
+ * `motion-reduce:animate-none` halts rotation when the user opts out of motion.
+ */
+export function ExecuteSpinner() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 24 24"
+      className="inline-block h-3.5 w-3.5 animate-spin motion-reduce:animate-none"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="3"
+    >
+      <circle cx="12" cy="12" r="9" className="opacity-25" />
+      <path d="M21 12a9 9 0 0 0-9-9" strokeLinecap="round" />
+    </svg>
+  );
+}
 
 export interface ParamDef<T = string> {
   name: string;
@@ -114,13 +134,13 @@ export function ApiCard<const Params extends AnyParamDef[]>({
       const data = await execute(parsed as ParamsRecord<Params>);
       setStatus('success');
       setResult(data);
-      setHistory((prev) => [createHistoryEntry({ status: 'success', data }), ...prev].slice(0, 20));
+      setHistory((prev) => appendHistory(prev, createHistoryEntry({ status: 'success', data })));
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setStatus('error');
       setError(msg);
       setHistory((prev) =>
-        [createHistoryEntry({ status: 'error', error: msg }), ...prev].slice(0, 20),
+        appendHistory(prev, createHistoryEntry({ status: 'error', error: msg })),
       );
     }
   }
@@ -164,23 +184,31 @@ export function ApiCard<const Params extends AnyParamDef[]>({
         type="button"
         onClick={handleExecute}
         disabled={status === 'loading'}
+        aria-busy={status === 'loading'}
         className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
       >
-        실행
+        {status === 'loading' ? (
+          <span className="inline-flex items-center gap-2">
+            <ExecuteSpinner />
+            실행 중...
+          </span>
+        ) : (
+          '실행'
+        )}
       </button>
 
       {snippet ? (
         <div className="mt-2 grid gap-2 md:grid-cols-2 md:items-start">
           <div>
             <ResultView status={status} data={result} error={error} />
-            <HistoryLog entries={history} />
+            <HistoryLog entries={history} onClear={() => setHistory([])} />
           </div>
           <CodeSnippet code={snippet} label={`${name} source snippet`} />
         </div>
       ) : (
         <>
           <ResultView status={status} data={result} error={error} />
-          <HistoryLog entries={history} />
+          <HistoryLog entries={history} onClear={() => setHistory([])} />
         </>
       )}
     </div>

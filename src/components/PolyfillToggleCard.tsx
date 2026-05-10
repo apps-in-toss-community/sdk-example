@@ -1,7 +1,7 @@
 import { type ReactNode, useId, useRef, useState } from 'react';
-import type { ParamDef } from './ApiCard';
+import { ExecuteSpinner, type ParamDef } from './ApiCard';
 import { CodeSnippet } from './CodeSnippet';
-import { createHistoryEntry, type HistoryEntry, HistoryLog } from './HistoryLog';
+import { appendHistory, createHistoryEntry, type HistoryEntry, HistoryLog } from './HistoryLog';
 import { ParamInput } from './ParamInput';
 import { ResultView } from './ResultView';
 
@@ -112,7 +112,7 @@ export function PolyfillToggleCard<
         status: 'success',
         result: data,
         error: '',
-        history: [createHistoryEntry({ status: 'success', data }), ...prev.history].slice(0, 20),
+        history: appendHistory(prev.history, createHistoryEntry({ status: 'success', data })),
       }));
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -121,12 +121,13 @@ export function PolyfillToggleCard<
         ...prev,
         status: 'error',
         error: msg,
-        history: [createHistoryEntry({ status: 'error', error: msg }), ...prev.history].slice(
-          0,
-          20,
-        ),
+        history: appendHistory(prev.history, createHistoryEntry({ status: 'error', error: msg })),
       }));
     }
+  }
+
+  function clearHistory() {
+    setState((prev) => ({ ...prev, history: [] }));
   }
 
   return (
@@ -199,23 +200,31 @@ export function PolyfillToggleCard<
           type="button"
           onClick={handleExecute}
           disabled={state.status === 'loading'}
+          aria-busy={state.status === 'loading'}
           className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
         >
-          실행
+          {state.status === 'loading' ? (
+            <span className="inline-flex items-center gap-2">
+              <ExecuteSpinner />
+              실행 중...
+            </span>
+          ) : (
+            '실행'
+          )}
         </button>
 
         {config.snippet ? (
           <div className="mt-2 grid gap-2 md:grid-cols-2 md:items-start">
             <div>
               <ResultView status={state.status} data={state.result} error={state.error} />
-              <HistoryLog entries={state.history} />
+              <HistoryLog entries={state.history} onClear={clearHistory} />
             </div>
             <CodeSnippet code={config.snippet} label={`${config.name} source snippet`} />
           </div>
         ) : (
           <>
             <ResultView status={state.status} data={state.result} error={state.error} />
-            <HistoryLog entries={state.history} />
+            <HistoryLog entries={state.history} onClear={clearHistory} />
           </>
         )}
       </div>

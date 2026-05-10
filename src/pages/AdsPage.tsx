@@ -7,7 +7,12 @@ import {
 import { useCallback, useState } from 'react';
 import { ApiCard } from '../components/ApiCard';
 import { CodeSnippet } from '../components/CodeSnippet';
-import { createHistoryEntry, type HistoryEntry, HistoryLog } from '../components/HistoryLog';
+import {
+  appendHistory,
+  createHistoryEntry,
+  type HistoryEntry,
+  HistoryLog,
+} from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
 import { ResultView } from '../components/ResultView';
 import { WorkflowStepper } from '../components/WorkflowStepper';
@@ -28,7 +33,7 @@ export function AdsPage() {
   const [loadError, setLoadError] = useState('');
 
   const addLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
-    setEventLog((prev) => [createHistoryEntry({ status, data, error }), ...prev].slice(0, 20));
+    setEventLog((prev) => appendHistory(prev, createHistoryEntry({ status, data, error })));
   }, []);
 
   const handleLoad = useCallback(() => {
@@ -102,7 +107,7 @@ export function AdsPage() {
           >
             GoogleAdMob.showAppsInTossAdMob
           </button>
-          <HistoryLog entries={eventLog} />
+          <HistoryLog entries={eventLog} onClear={() => setEventLog([])} />
           <CodeSnippet
             code={showAppsInTossAdMobSnippet}
             label="GoogleAdMob.showAppsInTossAdMob source snippet"
@@ -126,7 +131,7 @@ export function AdsPage() {
   const [fsShowError, setFsShowError] = useState('');
 
   const addFsLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
-    setFsEventLog((prev) => [createHistoryEntry({ status, data, error }), ...prev].slice(0, 20));
+    setFsEventLog((prev) => appendHistory(prev, createHistoryEntry({ status, data, error })));
   }, []);
 
   // NOTE: `status` in ResultView reflects only the *latest* event received from
@@ -230,7 +235,7 @@ export function AdsPage() {
               <CodeSnippet code={showFullScreenAdSnippet} label="showFullScreenAd source snippet" />
             </div>
             {/* Shared event log for FullScreen Ad */}
-            <HistoryLog entries={fsEventLog} />
+            <HistoryLog entries={fsEventLog} onClear={() => setFsEventLog([])} />
           </div>
         </div>
 
