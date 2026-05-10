@@ -27,6 +27,9 @@ jobs:
       - name: Lint
         run: pnpm lint
 
+      - name: README domain table sync
+        run: pnpm sync:readme:check
+
       - name: Typecheck
         run: pnpm typecheck
 
