@@ -1,4 +1,4 @@
-import { type ReactNode, useId, useState } from 'react';
+import { type ReactNode, useId, useRef, useState } from 'react';
 import type { ParamDef } from './ApiCard';
 import { CodeSnippet } from './CodeSnippet';
 import { createHistoryEntry, type HistoryEntry, HistoryLog } from './HistoryLog';
@@ -25,7 +25,6 @@ type ParamsRecord<Params extends AnyParamDef[]> =
   UnionToIntersection<ParamEntry<Params[number]>> extends infer T ? T : never;
 
 interface ModeConfig<Params extends AnyParamDef[]> {
-  /** Subtitle shown above the form when this mode is active (e.g., the API name). */
   name: string;
   description?: string;
   params: readonly [...Params];
@@ -38,7 +37,6 @@ interface PolyfillToggleCardProps<
   SdkParams extends AnyParamDef[],
   PolyParams extends AnyParamDef[],
 > {
-  /** Card heading shared across both modes (e.g., "Clipboard write"). */
   title: string;
   sdk: ModeConfig<SdkParams>;
   polyfill: ModeConfig<PolyParams>;
@@ -53,8 +51,6 @@ interface ModeState {
   result: unknown;
   error: string;
   history: HistoryEntry[];
-  /** Monotonic counter — guards against stale async settles after a mode switch. */
-  callId: number;
 }
 
 function initState(params: readonly AnyParamDef[]): ModeState {
@@ -64,27 +60,24 @@ function initState(params: readonly AnyParamDef[]): ModeState {
     result: undefined,
     error: '',
     history: [],
-    callId: 0,
   };
 }
 
-/**
- * Single-card variant of the SDK / `@ait-co/polyfill` comparison pattern: one
- * card with a toggle header that swaps between the SDK call and its standard
- * Web API equivalent. Per-mode state is preserved across toggles so the user
- * can run both paths and compare results side-by-side without losing output.
- *
- * Each call carries a `callId`; if the active mode changes mid-flight, the
- * stale settle is dropped (latest call wins).
- */
 export function PolyfillToggleCard<
   const SdkParams extends AnyParamDef[],
   const PolyParams extends AnyParamDef[],
 >({ title, sdk, polyfill }: PolyfillToggleCardProps<SdkParams, PolyParams>) {
   const panelId = useId();
+  const sdkTabId = useId();
+  const polyTabId = useId();
   const [mode, setMode] = useState<Mode>('sdk');
   const [sdkState, setSdkState] = useState<ModeState>(() => initState(sdk.params));
   const [polyState, setPolyState] = useState<ModeState>(() => initState(polyfill.params));
+  // Synchronous monotonic counter per mode. Guards the stale-settle race
+  // where two clicks fire before React commits — closure-captured state
+  // would give both calls the same id, so they'd both pass `prev.callId !==`.
+  const sdkCallId = useRef(0);
+  const polyCallId = useRef(0);
 
   const isSdk = mode === 'sdk';
   const config = isSdk ? sdk : polyfill;
@@ -96,8 +89,10 @@ export function PolyfillToggleCard<
   }
 
   async function handleExecute() {
-    const callId = state.callId + 1;
-    setState((prev) => ({ ...prev, status: 'loading', callId }));
+    const callIdRef = isSdk ? sdkCallId : polyCallId;
+    callIdRef.current += 1;
+    const callId = callIdRef.current;
+    setState((prev) => ({ ...prev, status: 'loading' }));
 
     try {
       const parsed: Record<string, unknown> = {};
@@ -107,39 +102,30 @@ export function PolyfillToggleCard<
       }
       // Call the mode-specific execute directly so each branch keeps its own
       // params type. The runtime payload is a Record keyed by param name; the
-      // generic types on each ModeConfig handled inference for callers already.
+      // generic types on each ModeConfig handle inference for callers already.
       const data = isSdk
         ? await sdk.execute(parsed as ParamsRecord<SdkParams>)
         : await polyfill.execute(parsed as ParamsRecord<PolyParams>);
-      setState((prev) =>
-        prev.callId !== callId
-          ? prev
-          : {
-              ...prev,
-              status: 'success',
-              result: data,
-              error: '',
-              history: [createHistoryEntry({ status: 'success', data }), ...prev.history].slice(
-                0,
-                20,
-              ),
-            },
-      );
+      if (callIdRef.current !== callId) return;
+      setState((prev) => ({
+        ...prev,
+        status: 'success',
+        result: data,
+        error: '',
+        history: [createHistoryEntry({ status: 'success', data }), ...prev.history].slice(0, 20),
+      }));
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      setState((prev) =>
-        prev.callId !== callId
-          ? prev
-          : {
-              ...prev,
-              status: 'error',
-              error: msg,
-              history: [createHistoryEntry({ status: 'error', error: msg }), ...prev.history].slice(
-                0,
-                20,
-              ),
-            },
-      );
+      if (callIdRef.current !== callId) return;
+      setState((prev) => ({
+        ...prev,
+        status: 'error',
+        error: msg,
+        history: [createHistoryEntry({ status: 'error', error: msg }), ...prev.history].slice(
+          0,
+          20,
+        ),
+      }));
     }
   }
 
@@ -164,10 +150,20 @@ export function PolyfillToggleCard<
         aria-label={`${title} 호출 경로`}
         className="mt-2 inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 text-xs dark:border-gray-800 dark:bg-gray-950"
       >
-        <ToggleButton active={isSdk} onClick={() => setMode('sdk')} controls={panelId}>
+        <ToggleButton
+          id={sdkTabId}
+          active={isSdk}
+          onClick={() => setMode('sdk')}
+          controls={panelId}
+        >
           SDK
         </ToggleButton>
-        <ToggleButton active={!isSdk} onClick={() => setMode('polyfill')} controls={panelId}>
+        <ToggleButton
+          id={polyTabId}
+          active={!isSdk}
+          onClick={() => setMode('polyfill')}
+          controls={panelId}
+        >
           Polyfill
         </ToggleButton>
       </div>
@@ -175,7 +171,7 @@ export function PolyfillToggleCard<
       <div
         id={panelId}
         role="tabpanel"
-        aria-label={config.name}
+        aria-labelledby={isSdk ? sdkTabId : polyTabId}
         className="motion-safe:transition-opacity"
       >
         <p className="mt-2 text-xs font-mono text-gray-700 dark:text-gray-300">{config.name}</p>
@@ -228,15 +224,17 @@ export function PolyfillToggleCard<
 }
 
 interface ToggleButtonProps {
+  id: string;
   active: boolean;
   onClick: () => void;
   controls: string;
   children: ReactNode;
 }
 
-function ToggleButton({ active, onClick, controls, children }: ToggleButtonProps) {
+function ToggleButton({ id, active, onClick, controls, children }: ToggleButtonProps) {
   return (
     <button
+      id={id}
       type="button"
       role="tab"
       aria-selected={active}

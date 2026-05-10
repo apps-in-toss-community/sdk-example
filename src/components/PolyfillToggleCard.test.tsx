@@ -86,7 +86,7 @@ describe('PolyfillToggleCard', () => {
     expect((await screen.findAllByText(/poly-out/)).length).toBeGreaterThan(0);
 
     await user.click(screen.getByRole('tab', { name: 'SDK' }));
-    expect(screen.getAllByText(/sdk-out/).length).toBeGreaterThan(0);
+    expect((await screen.findAllByText(/sdk-out/)).length).toBeGreaterThan(0);
     expect(screen.queryAllByText(/poly-out/)).toHaveLength(0);
   });
 });
