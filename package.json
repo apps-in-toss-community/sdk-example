@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@ait-co/devtools": "^0.1.12",
-    "@ait-co/polyfill": "^0.1.7",
+    "@ait-co/polyfill": "^0.1.8",
     "@apps-in-toss/web-framework": "^2.5.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.6",
