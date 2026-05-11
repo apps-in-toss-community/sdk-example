@@ -16,12 +16,12 @@
 # `--workspace`/`--app` can be omitted on `app status`, `app certs ls`,
 # `app deploy`, etc. (console-cli ≥0.1.21).
 #
-# DO NOT run `aitcc app register` here. The dog-food app is already
-# registered as miniAppId 31146 and is currently REVIEW-locked. console-cli
-# does not yet implement update mode (payload has no `miniAppId` field), so
-# every `register` invocation creates a *new* app — that pattern is what
-# left 4 abandoned apps in the ops queue. Once REVIEW lock is released and
-# console-cli ships update mode, this comment can come down.
+# Update mode: console-cli ≥0.1.27 reads `miniAppId` below and threads it
+# into the submit payload, so `aitcc app register` runs the dual-mode
+# endpoint as an UPDATE against 31146 — existing draft is overwritten and
+# the app re-enters the review queue. Never remove `miniAppId` or this
+# will create yet another mini-app (see ops trail in
+# `console-cli/docs/api/mini-apps.md` "sdk-example dog-food 앱 상태").
 workspaceId: 3095
 miniAppId: 31146
 
