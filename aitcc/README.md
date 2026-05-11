@@ -13,6 +13,9 @@ do **not** register additional apps.
 - `aitcc.yaml` — registration manifest (console-cli ≥ v0.1.20 dropped the
   `.app.` token from the filename).
 - `assets/logo.png` — 600×600 PNG app logo (AITC mark + `SDK Example`).
+  공식 Apps in Toss 브랜딩 가이드에 따라 **각진 정사각형** (모서리
+  둥글림 없음, alpha flatten된 RGB). 가이드:
+  <https://developers-apps-in-toss.toss.im/design/miniapp-branding-guide.html>
 - `assets/thumbnail.png` — 1932×828 PNG horizontal thumbnail (AITC.DEV
   banner, `aitc.dev` brand color, tagline).
 - `assets/screenshot-{1,2,3}-*.png` — 636×1048 PNG vertical screenshots
@@ -61,6 +64,8 @@ console-enforced dimensions:
 ```sh
 rsvg-convert -w 600  -h 600  brand-src/logo.svg      -o assets/logo.png
 rsvg-convert -w 1932 -h 828  brand-src/thumbnail.svg -o assets/thumbnail.png
+# logo는 각진 정사각형 + alpha flatten 필수 (RGBA 잔여물 NG):
+magick assets/logo.png -background "#3182f6" -flatten -type TrueColor assets/logo.png
 magick identify assets/*.png    # spot-check dimensions
 ```
 
