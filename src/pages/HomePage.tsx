@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { t } from '../i18n';
 
 const domains = [
   // SCAFFOLD_DOMAIN_ENTRIES_BEGIN
@@ -174,14 +175,16 @@ export function HomePage() {
         className="sticky z-10 bg-white pt-4 pb-3 border-b border-gray-100 dark:bg-gray-900 dark:border-gray-800"
         style={{ top: 'var(--safe-top, 0px)' }}
       >
-        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">SDK Example</h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">@apps-in-toss/web-framework</p>
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
+          {t('homePage.title')}
+        </h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">{t('homePage.subtitle')}</p>
         <div className="mt-3 flex gap-2">
           <input
             type="search"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="API 이름으로 검색..."
+            placeholder={t('homePage.searchPlaceholder')}
             className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm placeholder:text-gray-400 focus:border-gray-400 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:focus:border-gray-500"
           />
           {search && (
@@ -190,7 +193,7 @@ export function HomePage() {
               onClick={() => setSearch('')}
               className="rounded-xl border border-gray-200 px-3 py-2.5 text-sm text-gray-500 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:text-gray-400 dark:hover:bg-gray-800"
             >
-              초기화
+              {t('homePage.searchReset')}
             </button>
           )}
         </div>
@@ -205,14 +208,16 @@ export function HomePage() {
           >
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">{d.name}</h2>
-              <span className="text-xs text-gray-400 dark:text-gray-500">{d.apis.length} APIs</span>
+              <span className="text-xs text-gray-400 dark:text-gray-500">
+                {t('homePage.apiCount', { count: d.apis.length })}
+              </span>
             </div>
             <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{d.description}</p>
           </Link>
         ))}
         {filtered.length === 0 && (
           <p className="py-8 text-center text-sm text-gray-400 dark:text-gray-500">
-            검색 결과가 없습니다
+            {t('homePage.noResults')}
           </p>
         )}
       </div>

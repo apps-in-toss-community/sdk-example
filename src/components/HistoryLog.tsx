@@ -1,3 +1,5 @@
+import { t } from '../i18n';
+
 export interface HistoryEntry {
   id: string;
   timestamp: number;
@@ -38,16 +40,16 @@ export function HistoryLog({ entries, onClear }: HistoryLogProps) {
     <div className="mt-3 border-t border-gray-100 pt-2 dark:border-gray-800">
       <div className="flex items-center justify-between mb-1">
         <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-          History ({entries.length})
+          {t('historyLog.title', { count: entries.length })}
         </p>
         {onClear && (
           <button
             type="button"
             onClick={onClear}
-            aria-label="기록 지우기"
+            aria-label={t('historyLog.clearAriaLabel')}
             className="text-xs text-gray-500 hover:text-gray-900 underline-offset-2 hover:underline dark:text-gray-400 dark:hover:text-gray-100"
           >
-            Clear
+            {t('historyLog.clear')}
           </button>
         )}
       </div>
@@ -67,7 +69,7 @@ export function HistoryLog({ entries, onClear }: HistoryLogProps) {
               {entry.status === 'error'
                 ? entry.error
                 : entry.data === undefined
-                  ? '(no data)'
+                  ? t('historyLog.noData')
                   : JSON.stringify(entry.data)}
             </span>
           </div>

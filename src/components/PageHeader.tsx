@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { t } from '../i18n';
 
 export function PageHeader({ title }: { title: string }) {
   const navigate = useNavigate();
@@ -12,10 +13,10 @@ export function PageHeader({ title }: { title: string }) {
         type="button"
         onClick={() => navigate(-1)}
         className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-        aria-label="뒤로가기"
+        aria-label={t('pageHeader.back')}
       >
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-          <title>뒤로가기</title>
+          <title>{t('pageHeader.back')}</title>
           <path
             d="M12.5 15L7.5 10L12.5 5"
             stroke="currentColor"

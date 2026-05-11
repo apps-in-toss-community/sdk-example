@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { t } from '../i18n';
 
 interface Props {
   children: ReactNode;
@@ -43,10 +44,10 @@ export class ErrorBoundary extends Component<Props, State> {
         <div className="mx-auto max-w-[430px] min-h-screen bg-white shadow-sm flex items-center justify-center p-4 dark:bg-gray-900 dark:shadow-none">
           <div className="w-full rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
             <h1 className="text-base font-semibold text-gray-900 dark:text-gray-100">
-              문제가 발생했어요
+              {t('errorBoundary.title')}
             </h1>
             <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              렌더링 중 예기치 않은 에러가 발생했습니다.
+              {t('errorBoundary.description')}
             </p>
             <pre className="mt-3 max-h-48 bg-gray-50 rounded p-3 text-sm text-red-600 overflow-auto whitespace-pre-wrap dark:bg-gray-800 dark:text-red-400">
               {error.message}
@@ -57,14 +58,14 @@ export class ErrorBoundary extends Component<Props, State> {
                 onClick={this.handleRetry}
                 className="flex-1 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
               >
-                다시 시도
+                {t('errorBoundary.retry')}
               </button>
               <button
                 type="button"
                 onClick={this.handleGoHome}
                 className="flex-1 rounded-lg bg-gray-100 px-4 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-200 transition-colors dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
               >
-                홈으로
+                {t('errorBoundary.goHome')}
               </button>
             </div>
           </div>
