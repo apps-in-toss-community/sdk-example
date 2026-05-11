@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { Fragment, type ReactNode } from 'react';
 import { en } from './en';
 import { ko, type StringKey } from './ko';
 
@@ -33,14 +33,18 @@ export type { StringKey };
  * split point. Used to inject an element (e.g. `<code>...</code>`) into the
  * middle of a translated string without giving up locale extraction.
  *
+ * Returns keyed `<Fragment>` pairs so callers can render the result as JSX
+ * children without React warning about missing keys.
+ *
  * Example: `interleave(t('foo.desc'), '{webApis}', <code>{webApis}</code>)`
  */
-export function interleave(text: string, placeholder: string, node: ReactNode): ReactNode[] {
+export function interleave(text: string, placeholder: string, node: ReactNode): ReactNode {
   const parts = text.split(placeholder);
-  const out: ReactNode[] = [];
-  parts.forEach((part, i) => {
-    out.push(part);
-    if (i < parts.length - 1) out.push(node);
-  });
-  return out;
+  return parts.map((part, i) => (
+    // biome-ignore lint/suspicious/noArrayIndexKey: parts come from a static string split — order is fixed by the placeholder positions in the source string and never reorders.
+    <Fragment key={i}>
+      {part}
+      {i < parts.length - 1 && node}
+    </Fragment>
+  ));
 }
