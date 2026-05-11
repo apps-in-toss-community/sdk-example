@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { t } from '../i18n';
 import { CodeSnippet } from './CodeSnippet';
 import { appendHistory, createHistoryEntry, type HistoryEntry, HistoryLog } from './HistoryLog';
 import { ParamInput } from './ParamInput';
@@ -156,7 +157,7 @@ export function ApiCard<const Params extends AnyParamDef[]>({
             rel="noopener noreferrer"
             className="shrink-0 text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 underline-offset-2 hover:underline"
           >
-            Docs ↗
+            {t('apiCard.docsLink')}
           </a>
         )}
       </div>
@@ -190,10 +191,10 @@ export function ApiCard<const Params extends AnyParamDef[]>({
         {status === 'loading' ? (
           <span className="inline-flex items-center gap-2">
             <ExecuteSpinner />
-            실행 중...
+            {t('apiCard.executing')}
           </span>
         ) : (
-          '실행'
+          t('apiCard.execute')
         )}
       </button>
 

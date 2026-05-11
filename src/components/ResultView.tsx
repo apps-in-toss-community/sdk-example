@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { t } from '../i18n';
 
 interface ResultViewProps {
   status: 'idle' | 'loading' | 'success' | 'error';
@@ -12,7 +13,7 @@ export function ResultView({ status, data, error }: ResultViewProps) {
   if (status === 'loading') {
     return (
       <div className="mt-2 px-3 py-2 rounded-lg bg-gray-50 text-sm text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-        Loading...
+        {t('resultView.loading')}
       </div>
     );
   }
@@ -35,7 +36,7 @@ export function ResultView({ status, data, error }: ResultViewProps) {
               : 'bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-300'
           }`}
         >
-          {isError ? 'Error' : 'Success'}
+          {isError ? t('resultView.error') : t('resultView.success')}
         </span>
         {!isError && data !== undefined && data !== null && <CopyButton data={data} />}
       </div>
@@ -84,10 +85,10 @@ function CopyButton({ data }: { data: unknown }) {
     <button
       type="button"
       onClick={handleCopy}
-      aria-label="결과 JSON 복사"
+      aria-label={t('resultView.copyAriaLabel')}
       className="text-xs text-gray-500 hover:text-gray-900 underline-offset-2 hover:underline dark:text-gray-400 dark:hover:text-gray-100"
     >
-      {copied ? 'Copied!' : 'Copy'}
+      {copied ? t('resultView.copied') : t('resultView.copy')}
     </button>
   );
 }

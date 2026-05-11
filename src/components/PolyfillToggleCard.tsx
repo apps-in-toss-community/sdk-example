@@ -1,4 +1,5 @@
 import { type ReactNode, useId, useRef, useState } from 'react';
+import { t } from '../i18n';
 import { ExecuteSpinner, type ParamDef } from './ApiCard';
 import { CodeSnippet } from './CodeSnippet';
 import { appendHistory, createHistoryEntry, type HistoryEntry, HistoryLog } from './HistoryLog';
@@ -141,14 +142,14 @@ export function PolyfillToggleCard<
             rel="noopener noreferrer"
             className="shrink-0 text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 underline-offset-2 hover:underline"
           >
-            Docs ↗
+            {t('apiCard.docsLink')}
           </a>
         )}
       </div>
 
       <div
         role="tablist"
-        aria-label={`${title} 호출 경로`}
+        aria-label={t('polyfillToggle.tablistAriaLabel', { title })}
         className="mt-2 inline-flex rounded-lg border border-gray-200 bg-gray-50 p-0.5 text-xs dark:border-gray-800 dark:bg-gray-950"
       >
         <ToggleButton
@@ -206,10 +207,10 @@ export function PolyfillToggleCard<
           {state.status === 'loading' ? (
             <span className="inline-flex items-center gap-2">
               <ExecuteSpinner />
-              실행 중...
+              {t('apiCard.executing')}
             </span>
           ) : (
-            '실행'
+            t('apiCard.execute')
           )}
         </button>
 
