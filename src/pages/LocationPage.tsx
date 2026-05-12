@@ -3,6 +3,7 @@ import { Accuracy, getCurrentLocation, startUpdateLocation } from '@apps-in-toss
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
+import { t } from '../i18n';
 import { docsLink } from '../lib/docs';
 import getCurrentLocationSnippet from '../snippets/location/getCurrentLocation.ts?raw';
 import getCurrentPositionSnippet from '../snippets/location/getCurrentPosition.ts?raw';
@@ -33,7 +34,7 @@ export function LocationPage() {
 
         <ApiCard
           name="getCurrentLocation"
-          description="SDK — 현재 위치 조회"
+          description={t('pages.location.getCurrentLocation.description')}
           params={[]}
           execute={() => getCurrentLocation({ accuracy: Accuracy.Highest })}
           snippet={getCurrentLocationSnippet}
@@ -41,7 +42,7 @@ export function LocationPage() {
         />
         <ApiCard
           name="startUpdateLocation"
-          description="SDK — 위치 업데이트 시작"
+          description={t('pages.location.startUpdateLocation.description')}
           params={[]}
           execute={async () => {
             return new Promise<unknown>((resolve, reject) => {
@@ -59,7 +60,7 @@ export function LocationPage() {
 
         <ApiCard
           name="navigator.geolocation.getCurrentPosition"
-          description="표준 Web API (via @ait-co/polyfill)"
+          description={t('pages.location.navigatorGetCurrentPosition.description')}
           params={[]}
           execute={async () => {
             return new Promise<unknown>((resolve, reject) => {
@@ -75,7 +76,7 @@ export function LocationPage() {
         />
         <ApiCard
           name="navigator.geolocation.watchPosition"
-          description="표준 Web API (via @ait-co/polyfill) — 첫 위치 이벤트 이후 자동 clearWatch"
+          description={t('pages.location.navigatorWatchPosition.description')}
           params={[]}
           execute={async () => {
             return new Promise<unknown>((resolve, reject) => {

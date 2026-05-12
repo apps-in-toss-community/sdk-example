@@ -2,6 +2,7 @@ import { getClipboardText, setClipboardText } from '@apps-in-toss/web-framework'
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
 import { PolyfillToggleCard } from '../components/PolyfillToggleCard';
+import { t } from '../i18n';
 import { docsLink } from '../lib/docs';
 import clipboardReadTextSnippet from '../snippets/clipboard/clipboardReadText.ts?raw';
 import clipboardWriteTextSnippet from '../snippets/clipboard/clipboardWriteText.ts?raw';
@@ -16,10 +17,10 @@ export function ClipboardPage() {
         <PolyfillNotice webApis="navigator.clipboard.readText / writeText" />
 
         <PolyfillToggleCard
-          title="클립보드에 텍스트 복사"
+          title={t('pages.clipboard.writeText.title')}
           sdk={{
             name: 'setClipboardText',
-            description: 'SDK — 클립보드에 텍스트 복사',
+            description: t('pages.clipboard.setClipboardText.description'),
             params: [{ name: 'text', label: 'Text', placeholder: '복사할 텍스트' }],
             execute: async (p) => {
               await setClipboardText(p.text);
@@ -29,7 +30,7 @@ export function ClipboardPage() {
           }}
           polyfill={{
             name: 'navigator.clipboard.writeText',
-            description: '표준 Web API (via @ait-co/polyfill)',
+            description: t('pages.clipboard.navigatorWriteText.description'),
             params: [{ name: 'text', label: 'Text', placeholder: '복사할 텍스트' }],
             execute: async (p) => {
               await navigator.clipboard.writeText(p.text);
@@ -39,10 +40,10 @@ export function ClipboardPage() {
         />
 
         <PolyfillToggleCard
-          title="클립보드 텍스트 읽기"
+          title={t('pages.clipboard.readText.title')}
           sdk={{
             name: 'getClipboardText',
-            description: 'SDK — 클립보드 텍스트 읽기',
+            description: t('pages.clipboard.getClipboardText.description'),
             params: [],
             execute: () => getClipboardText(),
             snippet: getClipboardTextSnippet,
@@ -50,7 +51,7 @@ export function ClipboardPage() {
           }}
           polyfill={{
             name: 'navigator.clipboard.readText',
-            description: '표준 Web API (via @ait-co/polyfill)',
+            description: t('pages.clipboard.navigatorReadText.description'),
             params: [],
             execute: () => navigator.clipboard.readText(),
             snippet: clipboardReadTextSnippet,

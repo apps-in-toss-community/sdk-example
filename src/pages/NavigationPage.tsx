@@ -12,6 +12,7 @@ import {
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
+import { t } from '../i18n';
 import closeViewSnippet from '../snippets/navigation/closeView.ts?raw';
 import getTossShareLinkSnippet from '../snippets/navigation/getTossShareLink.ts?raw';
 import navigatorShareSnippet from '../snippets/navigation/navigatorShare.ts?raw';
@@ -32,7 +33,7 @@ export function NavigationPage() {
 
         <ApiCard
           name="closeView"
-          description="SDK — 현재 뷰 닫기"
+          description={t('pages.navigation.closeView.description')}
           params={[]}
           execute={async () => {
             closeView();
@@ -41,7 +42,7 @@ export function NavigationPage() {
         />
         <ApiCard
           name="openURL"
-          description="SDK — URL 열기"
+          description={t('pages.navigation.openURL.description')}
           params={[{ name: 'url', label: 'URL', placeholder: 'https://example.com' }]}
           execute={async (p) => {
             openURL(p.url);
@@ -50,7 +51,7 @@ export function NavigationPage() {
         />
         <ApiCard
           name="share"
-          description="SDK — 메시지 공유"
+          description={t('pages.navigation.share.description')}
           params={[{ name: 'message', label: 'Message', placeholder: '공유할 메시지' }]}
           execute={async (p) => {
             await share({ message: p.message });
@@ -59,7 +60,7 @@ export function NavigationPage() {
         />
         <ApiCard
           name="getTossShareLink"
-          description="토스 공유 링크 생성"
+          description={t('pages.navigation.getTossShareLink.description')}
           params={[
             { name: 'path', label: 'Path', placeholder: '/some/path' },
             { name: 'ogImageUrl', label: 'OG Image URL (optional)', placeholder: 'https://...' },
@@ -69,7 +70,7 @@ export function NavigationPage() {
         />
         <ApiCard
           name="setIosSwipeGestureEnabled"
-          description="iOS 스와이프 제스처 활성화"
+          description={t('pages.navigation.setIosSwipeGestureEnabled.description')}
           params={[
             {
               name: 'isEnabled',
@@ -86,7 +87,7 @@ export function NavigationPage() {
         />
         <ApiCard
           name="setDeviceOrientation"
-          description="화면 방향 설정"
+          description={t('pages.navigation.setDeviceOrientation.description')}
           params={[
             {
               name: 'type',
@@ -108,7 +109,7 @@ export function NavigationPage() {
         />
         <ApiCard
           name="setScreenAwakeMode"
-          description="화면 꺼짐 방지"
+          description={t('pages.navigation.setScreenAwakeMode.description')}
           params={[
             {
               name: 'enabled',
@@ -123,7 +124,7 @@ export function NavigationPage() {
         />
         <ApiCard
           name="setSecureScreen"
-          description="보안 화면 설정"
+          description={t('pages.navigation.setSecureScreen.description')}
           params={[
             {
               name: 'enabled',
@@ -138,7 +139,7 @@ export function NavigationPage() {
         />
         <ApiCard
           name="requestReview"
-          description="앱 리뷰 요청"
+          description={t('pages.navigation.requestReview.description')}
           params={[]}
           execute={async () => {
             await requestReview();
@@ -148,7 +149,7 @@ export function NavigationPage() {
 
         <ApiCard
           name="navigator.share"
-          description="표준 Web API (via @ait-co/polyfill)"
+          description={t('pages.navigation.navigatorShare.description')}
           params={[
             { name: 'title', label: 'Title (optional)', placeholder: '공유 제목' },
             { name: 'text', label: 'Text', placeholder: '공유할 본문' },

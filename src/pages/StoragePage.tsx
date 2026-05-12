@@ -1,6 +1,7 @@
 import { Storage } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import { t } from '../i18n';
 import { docsLink } from '../lib/docs';
 import clearItemsSnippet from '../snippets/storage/clearItems.ts?raw';
 import getItemSnippet from '../snippets/storage/getItem.ts?raw';
@@ -14,7 +15,7 @@ export function StoragePage() {
       <div className="p-4 space-y-3">
         <ApiCard
           name="Storage.setItem"
-          description="값 저장"
+          description={t('pages.storage.setItem.description')}
           params={[
             { name: 'key', label: 'Key', placeholder: 'myKey' },
             { name: 'value', label: 'Value', placeholder: 'myValue' },
@@ -27,7 +28,7 @@ export function StoragePage() {
         />
         <ApiCard
           name="Storage.getItem"
-          description="값 조회"
+          description={t('pages.storage.getItem.description')}
           params={[{ name: 'key', label: 'Key', placeholder: 'myKey' }]}
           execute={(p) => Storage.getItem(p.key)}
           snippet={getItemSnippet}
@@ -35,7 +36,7 @@ export function StoragePage() {
         />
         <ApiCard
           name="Storage.removeItem"
-          description="값 삭제"
+          description={t('pages.storage.removeItem.description')}
           params={[{ name: 'key', label: 'Key', placeholder: 'myKey' }]}
           execute={async (p) => {
             await Storage.removeItem(p.key);
@@ -45,7 +46,7 @@ export function StoragePage() {
         />
         <ApiCard
           name="Storage.clearItems"
-          description="전체 삭제"
+          description={t('pages.storage.clearItems.description')}
           params={[]}
           execute={async () => {
             await Storage.clearItems();

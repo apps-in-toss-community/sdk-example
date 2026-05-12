@@ -6,6 +6,7 @@ import {
 } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import { t } from '../i18n';
 import getPermissionSnippet from '../snippets/permissions/getPermission.ts?raw';
 import openPermissionDialogSnippet from '../snippets/permissions/openPermissionDialog.ts?raw';
 import requestPermissionSnippet from '../snippets/permissions/requestPermission.ts?raw';
@@ -26,7 +27,7 @@ export function PermissionsPage() {
       <div className="p-4 space-y-3">
         <ApiCard
           name="getPermission"
-          description="권한 상태 조회"
+          description={t('pages.permissions.getPermission.description')}
           params={[
             {
               name: 'name',
@@ -42,7 +43,7 @@ export function PermissionsPage() {
         />
         <ApiCard
           name="openPermissionDialog"
-          description="권한 요청 다이얼로그"
+          description={t('pages.permissions.openPermissionDialog.description')}
           params={[
             {
               name: 'name',
@@ -58,7 +59,7 @@ export function PermissionsPage() {
         />
         <ApiCard
           name="requestPermission"
-          description="권한 요청"
+          description={t('pages.permissions.requestPermission.description')}
           params={[
             {
               name: 'name',

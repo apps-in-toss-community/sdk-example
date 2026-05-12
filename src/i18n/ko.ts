@@ -94,6 +94,122 @@ export const ko = {
   'homePage.searchReset': '초기화',
   'homePage.apiCount': '{count} APIs',
   'homePage.noResults': '검색 결과가 없습니다',
+
+  // AuthPage
+  'pages.auth.appLogin.description': '앱 로그인, authorizationCode 반환',
+  'pages.auth.getIsTossLoginIntegratedService.description': '토스 로그인 연동 서비스 여부',
+  'pages.auth.getUserKeyForGame.description': '게임용 유저 해시 키',
+  'pages.auth.appsInTossSignTossCert.description': '토스 인증서 서명',
+
+  // IAPPage
+  'pages.iap.getProductItemList.description': '상품 목록 조회',
+  'pages.iap.getPendingOrders.description': '미완료 주문 조회',
+  'pages.iap.getCompletedOrRefundedOrders.description': '완료/환불 주문 조회',
+  'pages.iap.getSubscriptionInfo.description': '구독 정보 조회',
+  'pages.iap.checkoutPayment.description': 'TossPay 결제',
+
+  // EnvironmentPage
+  'pages.environment.getPlatformOS.description': 'SDK — 플랫폼 OS',
+  'pages.environment.getOperationalEnvironment.description': 'SDK — 실행 환경',
+  'pages.environment.getNetworkStatus.description': 'SDK — 네트워크 상태',
+  'pages.environment.getTossAppVersion.description': '토스 앱 버전',
+  'pages.environment.isMinVersionSupported.description': '최소 버전 지원 확인',
+  'pages.environment.getSchemeUri.description': '현재 scheme URI',
+  'pages.environment.getLocale.description': '로케일',
+  'pages.environment.getDeviceId.description': '디바이스 ID',
+  'pages.environment.getGroupId.description': '그룹 ID',
+  'pages.environment.getServerTime.description': '서버 시간',
+  'pages.environment.envGetDeploymentId.description': '배포 ID',
+  'pages.environment.getAppsInTossGlobals.description': '앱인토스 글로벌 설정',
+  'pages.environment.safeAreaInsetsGet.description': 'Safe Area Insets',
+  'pages.environment.getSafeAreaInsets.description': 'Safe Area Insets (legacy)',
+  'pages.environment.navigatorOnline.description': '표준 Web API (via @ait-co/polyfill)',
+  'pages.environment.navigatorConnection.description':
+    '표준 Web API (via @ait-co/polyfill) — NetworkInformation snapshot',
+
+  // NavigationPage
+  'pages.navigation.closeView.description': 'SDK — 현재 뷰 닫기',
+  'pages.navigation.openURL.description': 'SDK — URL 열기',
+  'pages.navigation.share.description': 'SDK — 메시지 공유',
+  'pages.navigation.getTossShareLink.description': '토스 공유 링크 생성',
+  'pages.navigation.setIosSwipeGestureEnabled.description': 'iOS 스와이프 제스처 활성화',
+  'pages.navigation.setDeviceOrientation.description': '화면 방향 설정',
+  'pages.navigation.setScreenAwakeMode.description': '화면 꺼짐 방지',
+  'pages.navigation.setSecureScreen.description': '보안 화면 설정',
+  'pages.navigation.requestReview.description': '앱 리뷰 요청',
+  'pages.navigation.navigatorShare.description': '표준 Web API (via @ait-co/polyfill)',
+
+  // ClipboardPage
+  'pages.clipboard.writeText.title': '클립보드에 텍스트 복사',
+  'pages.clipboard.setClipboardText.description': 'SDK — 클립보드에 텍스트 복사',
+  'pages.clipboard.navigatorWriteText.description': '표준 Web API (via @ait-co/polyfill)',
+  'pages.clipboard.readText.title': '클립보드 텍스트 읽기',
+  'pages.clipboard.getClipboardText.description': 'SDK — 클립보드 텍스트 읽기',
+  'pages.clipboard.navigatorReadText.description': '표준 Web API (via @ait-co/polyfill)',
+
+  // LocationPage
+  'pages.location.getCurrentLocation.description': 'SDK — 현재 위치 조회',
+  'pages.location.startUpdateLocation.description': 'SDK — 위치 업데이트 시작',
+  'pages.location.navigatorGetCurrentPosition.description': '표준 Web API (via @ait-co/polyfill)',
+  'pages.location.navigatorWatchPosition.description':
+    '표준 Web API (via @ait-co/polyfill) — 첫 위치 이벤트 이후 자동 clearWatch',
+
+  // HapticPage
+  'pages.haptic.hapticVibrate.title': '햅틱 피드백 / 진동',
+  'pages.haptic.generateHapticFeedback.description': 'SDK — 햅틱 피드백 생성',
+  'pages.haptic.navigatorVibrate.description':
+    '표준 Web API (via @ait-co/polyfill) — ms 단위 pattern. 쉼표로 구분하면 vibrate/pause 시퀀스.',
+  'pages.haptic.saveBase64Data.description': 'SDK — Base64 데이터 저장',
+
+  // CameraPage
+  'pages.camera.openCamera.description': '카메라 열기',
+  'pages.camera.fetchAlbumPhotos.description': '앨범 사진 가져오기',
+
+  // ContactsPage
+  'pages.contacts.fetchContacts.description': '연락처 가져오기',
+
+  // PermissionsPage
+  'pages.permissions.getPermission.description': '권한 상태 조회',
+  'pages.permissions.openPermissionDialog.description': '권한 요청 다이얼로그',
+  'pages.permissions.requestPermission.description': '권한 요청',
+
+  // StoragePage
+  'pages.storage.setItem.description': '값 저장',
+  'pages.storage.getItem.description': '값 조회',
+  'pages.storage.removeItem.description': '값 삭제',
+  'pages.storage.clearItems.description': '전체 삭제',
+
+  // AnalyticsPage
+  'pages.analytics.screen.description': '화면 조회 로그',
+  'pages.analytics.impression.description': '노출 로그',
+  'pages.analytics.click.description': '클릭 로그',
+  'pages.analytics.eventLog.description': '커스텀 이벤트 로그',
+
+  // GamePage
+  'pages.game.grantPromotionReward.description': '프로모션 리워드 지급',
+  'pages.game.grantPromotionRewardForGame.description': '게임 프로모션 리워드 지급',
+  'pages.game.submitGameCenterLeaderBoardScore.description': '리더보드 점수 제출',
+  'pages.game.getGameCenterGameProfile.description': '게임 프로필 조회',
+  'pages.game.openGameCenterLeaderboard.description': '리더보드 열기',
+  'pages.game.contactsViral.description': '연락처 바이럴 공유',
+
+  // AdsPage
+  'pages.ads.tossAdsInitialize.description': 'TossAds 초기화',
+  'pages.ads.tossAdsDestroyAll.description': '모든 TossAds 슬롯 제거',
+  'pages.ads.loadFullScreenAd.description': '전면 광고 로드 — 여러 이벤트를 수신합니다',
+  'pages.ads.showFullScreenAd.description': '전면 광고 표시 — 여러 이벤트를 수신합니다',
+
+  // EventsPage
+  'pages.events.graniteBackEvent.description': '뒤로가기 버튼 이벤트 구독',
+  'pages.events.graniteHomeEvent.description': '홈 버튼 이벤트 구독',
+  'pages.events.tdsNavigationAccessoryEvent.description':
+    '상단 네비게이션 액세서리 버튼 이벤트 구독',
+  'pages.events.onVisibilityChangedByTransparentServiceWeb.description':
+    '투명 서비스 웹 가시성 변경 이벤트 구독',
+
+  // PartnerPage
+  'pages.partner.addAccessoryButton.description': '액세서리 버튼 추가',
+  'pages.partner.removeAccessoryButton.description': '액세서리 버튼 제거',
 } as const;
 
 export type StringKey = keyof typeof ko;

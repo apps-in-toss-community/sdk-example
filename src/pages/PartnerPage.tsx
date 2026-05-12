@@ -1,6 +1,7 @@
 import { partner } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import { t } from '../i18n';
 import addAccessoryButtonSnippet from '../snippets/partner/addAccessoryButton.ts?raw';
 import removeAccessoryButtonSnippet from '../snippets/partner/removeAccessoryButton.ts?raw';
 
@@ -11,7 +12,7 @@ export function PartnerPage() {
       <div className="p-4 space-y-3">
         <ApiCard
           name="partner.addAccessoryButton"
-          description="액세서리 버튼 추가"
+          description={t('pages.partner.addAccessoryButton.description')}
           params={[
             { name: 'id', label: 'Button ID', placeholder: 'btn-1', defaultValue: 'btn-1' },
             { name: 'title', label: 'Title', placeholder: 'My Button', defaultValue: 'My Button' },
@@ -28,7 +29,7 @@ export function PartnerPage() {
         />
         <ApiCard
           name="partner.removeAccessoryButton"
-          description="액세서리 버튼 제거"
+          description={t('pages.partner.removeAccessoryButton.description')}
           params={[]}
           execute={async () => {
             await partner.removeAccessoryButton();

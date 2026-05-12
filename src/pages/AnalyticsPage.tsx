@@ -1,6 +1,7 @@
 import { Analytics, eventLog } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import { t } from '../i18n';
 import clickSnippet from '../snippets/analytics/click.ts?raw';
 import eventLogSnippet from '../snippets/analytics/eventLog.ts?raw';
 import impressionSnippet from '../snippets/analytics/impression.ts?raw';
@@ -35,7 +36,7 @@ export function AnalyticsPage() {
       <div className="p-4 space-y-3">
         <ApiCard
           name="Analytics.screen"
-          description="화면 조회 로그"
+          description={t('pages.analytics.screen.description')}
           params={[{ name: 'page', label: 'Page', placeholder: 'home', defaultValue: 'home' }]}
           execute={async (p) => {
             await Analytics.screen({ page: p.page });
@@ -44,7 +45,7 @@ export function AnalyticsPage() {
         />
         <ApiCard
           name="Analytics.impression"
-          description="노출 로그"
+          description={t('pages.analytics.impression.description')}
           params={[
             {
               name: 'component',
@@ -61,7 +62,7 @@ export function AnalyticsPage() {
         />
         <ApiCard
           name="Analytics.click"
-          description="클릭 로그"
+          description={t('pages.analytics.click.description')}
           params={[
             {
               name: 'component',
@@ -78,7 +79,7 @@ export function AnalyticsPage() {
         />
         <ApiCard
           name="eventLog"
-          description="커스텀 이벤트 로그"
+          description={t('pages.analytics.eventLog.description')}
           params={[
             {
               name: 'log_name',

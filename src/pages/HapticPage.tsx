@@ -4,6 +4,7 @@ import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
 import { PolyfillToggleCard } from '../components/PolyfillToggleCard';
+import { t } from '../i18n';
 import generateHapticFeedbackSnippet from '../snippets/haptic/generateHapticFeedback.ts?raw';
 import navigatorVibrateSnippet from '../snippets/haptic/navigatorVibrate.ts?raw';
 import saveBase64DataSnippet from '../snippets/haptic/saveBase64Data.ts?raw';
@@ -29,10 +30,10 @@ export function HapticPage() {
         <PolyfillNotice webApis="navigator.vibrate" />
 
         <PolyfillToggleCard
-          title="햅틱 피드백 / 진동"
+          title={t('pages.haptic.hapticVibrate.title')}
           sdk={{
             name: 'generateHapticFeedback',
-            description: 'SDK — 햅틱 피드백 생성',
+            description: t('pages.haptic.generateHapticFeedback.description'),
             params: [
               {
                 name: 'type',
@@ -50,8 +51,7 @@ export function HapticPage() {
           }}
           polyfill={{
             name: 'navigator.vibrate',
-            description:
-              '표준 Web API (via @ait-co/polyfill) — ms 단위 pattern. 쉼표로 구분하면 vibrate/pause 시퀀스.',
+            description: t('pages.haptic.navigatorVibrate.description'),
             params: [
               {
                 name: 'pattern',
@@ -79,7 +79,7 @@ export function HapticPage() {
 
         <ApiCard
           name="saveBase64Data"
-          description="SDK — Base64 데이터 저장"
+          description={t('pages.haptic.saveBase64Data.description')}
           params={[
             {
               name: 'data',

@@ -18,6 +18,7 @@ import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
 import { ShimCompositionCard } from '../components/ShimCompositionCard';
+import { t } from '../i18n';
 import envGetDeploymentIdSnippet from '../snippets/environment/envGetDeploymentId.ts?raw';
 import getAppsInTossGlobalsSnippet from '../snippets/environment/getAppsInTossGlobals.ts?raw';
 import getDeviceIdSnippet from '../snippets/environment/getDeviceId.ts?raw';
@@ -45,35 +46,35 @@ export function EnvironmentPage() {
 
         <ApiCard
           name="getPlatformOS"
-          description="SDK — 플랫폼 OS"
+          description={t('pages.environment.getPlatformOS.description')}
           params={[]}
           execute={async () => getPlatformOS()}
           snippet={getPlatformOSSnippet}
         />
         <ApiCard
           name="getOperationalEnvironment"
-          description="SDK — 실행 환경"
+          description={t('pages.environment.getOperationalEnvironment.description')}
           params={[]}
           execute={async () => getOperationalEnvironment()}
           snippet={getOperationalEnvironmentSnippet}
         />
         <ApiCard
           name="getNetworkStatus"
-          description="SDK — 네트워크 상태"
+          description={t('pages.environment.getNetworkStatus.description')}
           params={[]}
           execute={() => getNetworkStatus()}
           snippet={getNetworkStatusSnippet}
         />
         <ApiCard
           name="getTossAppVersion"
-          description="토스 앱 버전"
+          description={t('pages.environment.getTossAppVersion.description')}
           params={[]}
           execute={async () => getTossAppVersion()}
           snippet={getTossAppVersionSnippet}
         />
         <ApiCard
           name="isMinVersionSupported"
-          description="최소 버전 지원 확인"
+          description={t('pages.environment.isMinVersionSupported.description')}
           params={[
             { name: 'android', label: 'Android', placeholder: '5.0.0', defaultValue: '5.0.0' },
             { name: 'ios', label: 'iOS', placeholder: '5.0.0', defaultValue: '5.0.0' },
@@ -88,63 +89,63 @@ export function EnvironmentPage() {
         />
         <ApiCard
           name="getSchemeUri"
-          description="현재 scheme URI"
+          description={t('pages.environment.getSchemeUri.description')}
           params={[]}
           execute={async () => getSchemeUri()}
           snippet={getSchemeUriSnippet}
         />
         <ApiCard
           name="getLocale"
-          description="로케일"
+          description={t('pages.environment.getLocale.description')}
           params={[]}
           execute={async () => getLocale()}
           snippet={getLocaleSnippet}
         />
         <ApiCard
           name="getDeviceId"
-          description="디바이스 ID"
+          description={t('pages.environment.getDeviceId.description')}
           params={[]}
           execute={async () => getDeviceId()}
           snippet={getDeviceIdSnippet}
         />
         <ApiCard
           name="getGroupId"
-          description="그룹 ID"
+          description={t('pages.environment.getGroupId.description')}
           params={[]}
           execute={async () => getGroupId()}
           snippet={getGroupIdSnippet}
         />
         <ApiCard
           name="getServerTime"
-          description="서버 시간"
+          description={t('pages.environment.getServerTime.description')}
           params={[]}
           execute={() => getServerTime()}
           snippet={getServerTimeSnippet}
         />
         <ApiCard
           name="env.getDeploymentId"
-          description="배포 ID"
+          description={t('pages.environment.envGetDeploymentId.description')}
           params={[]}
           execute={async () => env.getDeploymentId()}
           snippet={envGetDeploymentIdSnippet}
         />
         <ApiCard
           name="getAppsInTossGlobals"
-          description="앱인토스 글로벌 설정"
+          description={t('pages.environment.getAppsInTossGlobals.description')}
           params={[]}
           execute={async () => getAppsInTossGlobals()}
           snippet={getAppsInTossGlobalsSnippet}
         />
         <ApiCard
           name="SafeAreaInsets.get"
-          description="Safe Area Insets"
+          description={t('pages.environment.safeAreaInsetsGet.description')}
           params={[]}
           execute={async () => SafeAreaInsets.get()}
           snippet={safeAreaInsetsGetSnippet}
         />
         <ApiCard
           name="getSafeAreaInsets"
-          description="Safe Area Insets (legacy)"
+          description={t('pages.environment.getSafeAreaInsets.description')}
           params={[]}
           execute={async () => getSafeAreaInsets()}
           snippet={getSafeAreaInsetsSnippet}
@@ -152,14 +153,14 @@ export function EnvironmentPage() {
 
         <ApiCard
           name="navigator.onLine"
-          description="표준 Web API (via @ait-co/polyfill)"
+          description={t('pages.environment.navigatorOnline.description')}
           params={[]}
           execute={async () => navigator.onLine}
           snippet={navigatorOnlineSnippet}
         />
         <ApiCard
           name="navigator.connection"
-          description="표준 Web API (via @ait-co/polyfill) — NetworkInformation snapshot"
+          description={t('pages.environment.navigatorConnection.description')}
           params={[]}
           execute={async () => {
             const c = navigator.connection;
