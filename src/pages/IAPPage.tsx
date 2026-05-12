@@ -11,6 +11,7 @@ import {
 } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
 import { WorkflowStepper } from '../components/WorkflowStepper';
+import { t } from '../i18n';
 import checkoutPaymentSnippet from '../snippets/iap/checkoutPayment.ts?raw';
 import createPurchaseOrderSnippet from '../snippets/iap/createPurchaseOrder.ts?raw';
 import getCompletedOrRefundedOrdersSnippet from '../snippets/iap/getCompletedOrRefundedOrders.ts?raw';
@@ -80,7 +81,7 @@ export function IAPPage() {
         <div className="space-y-3 py-2">
           <ApiCard
             name="IAP.getProductItemList"
-            description="상품 목록 조회"
+            description={t('pages.iap.getProductItemList.description')}
             params={[]}
             execute={async () => {
               const result = await IAP.getProductItemList();
@@ -172,28 +173,28 @@ export function IAPPage() {
         <div className="space-y-3 py-2">
           <ApiCard
             name="IAP.getPendingOrders"
-            description="미완료 주문 조회"
+            description={t('pages.iap.getPendingOrders.description')}
             params={[]}
             execute={() => IAP.getPendingOrders()}
             snippet={getPendingOrdersSnippet}
           />
           <ApiCard
             name="IAP.getCompletedOrRefundedOrders"
-            description="완료/환불 주문 조회"
+            description={t('pages.iap.getCompletedOrRefundedOrders.description')}
             params={[]}
             execute={() => IAP.getCompletedOrRefundedOrders()}
             snippet={getCompletedOrRefundedOrdersSnippet}
           />
           <ApiCard
             name="IAP.getSubscriptionInfo"
-            description="구독 정보 조회"
+            description={t('pages.iap.getSubscriptionInfo.description')}
             params={[{ name: 'orderId', label: 'Order ID', placeholder: 'order-123' }]}
             execute={(p) => IAP.getSubscriptionInfo({ params: { orderId: p.orderId } })}
             snippet={getSubscriptionInfoSnippet}
           />
           <ApiCard
             name="checkoutPayment"
-            description="TossPay 결제"
+            description={t('pages.iap.checkoutPayment.description')}
             params={[{ name: 'payToken', label: 'Pay Token', placeholder: 'token-123' }]}
             execute={(p) => checkoutPayment({ params: { payToken: p.payToken } })}
             snippet={checkoutPaymentSnippet}

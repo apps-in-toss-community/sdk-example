@@ -11,6 +11,7 @@ import { ApiCard } from '../components/ApiCard';
 import { CodeSnippet } from '../components/CodeSnippet';
 import { PageHeader } from '../components/PageHeader';
 import { ResultView } from '../components/ResultView';
+import { t } from '../i18n';
 import contactsViralSnippet from '../snippets/game/contactsViral.ts?raw';
 import getGameCenterGameProfileSnippet from '../snippets/game/getGameCenterGameProfile.ts?raw';
 import grantPromotionRewardSnippet from '../snippets/game/grantPromotionReward.ts?raw';
@@ -44,7 +45,9 @@ function ContactsViralCard() {
       <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">
         contactsViral
       </h3>
-      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">연락처 바이럴 공유</p>
+      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+        {t('pages.game.contactsViral.description')}
+      </p>
       <label className="block py-1.5 mt-2">
         <span className="text-sm text-gray-700 dark:text-gray-300">Module ID</span>
         <input
@@ -76,7 +79,7 @@ export function GamePage() {
       <div className="p-4 space-y-3">
         <ApiCard
           name="grantPromotionReward"
-          description="프로모션 리워드 지급"
+          description={t('pages.game.grantPromotionReward.description')}
           params={[
             {
               name: 'promotionCode',
@@ -101,7 +104,7 @@ export function GamePage() {
         />
         <ApiCard
           name="grantPromotionRewardForGame"
-          description="게임 프로모션 리워드 지급"
+          description={t('pages.game.grantPromotionRewardForGame.description')}
           params={[
             {
               name: 'promotionCode',
@@ -126,21 +129,21 @@ export function GamePage() {
         />
         <ApiCard
           name="submitGameCenterLeaderBoardScore"
-          description="리더보드 점수 제출"
+          description={t('pages.game.submitGameCenterLeaderBoardScore.description')}
           params={[{ name: 'score', label: 'Score', placeholder: '1000', defaultValue: '1000' }]}
           execute={(p) => submitGameCenterLeaderBoardScore({ score: p.score })}
           snippet={submitGameCenterLeaderBoardScoreSnippet}
         />
         <ApiCard
           name="getGameCenterGameProfile"
-          description="게임 프로필 조회"
+          description={t('pages.game.getGameCenterGameProfile.description')}
           params={[]}
           execute={() => getGameCenterGameProfile()}
           snippet={getGameCenterGameProfileSnippet}
         />
         <ApiCard
           name="openGameCenterLeaderboard"
-          description="리더보드 열기"
+          description={t('pages.game.openGameCenterLeaderboard.description')}
           params={[]}
           execute={async () => {
             await openGameCenterLeaderboard();

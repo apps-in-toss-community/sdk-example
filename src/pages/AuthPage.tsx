@@ -7,6 +7,7 @@ import {
 import { ApiCard } from '../components/ApiCard';
 import { OidcBridgeSection } from '../components/OidcBridgeSection';
 import { PageHeader } from '../components/PageHeader';
+import { t } from '../i18n';
 import appLoginSnippet from '../snippets/auth/appLogin.ts?raw';
 import appsInTossSignTossCertSnippet from '../snippets/auth/appsInTossSignTossCert.ts?raw';
 import getIsTossLoginIntegratedServiceSnippet from '../snippets/auth/getIsTossLoginIntegratedService.ts?raw';
@@ -19,28 +20,28 @@ export function AuthPage() {
       <div className="p-4 space-y-3">
         <ApiCard
           name="appLogin"
-          description="앱 로그인, authorizationCode 반환"
+          description={t('pages.auth.appLogin.description')}
           params={[]}
           execute={() => appLogin()}
           snippet={appLoginSnippet}
         />
         <ApiCard
           name="getIsTossLoginIntegratedService"
-          description="토스 로그인 연동 서비스 여부"
+          description={t('pages.auth.getIsTossLoginIntegratedService.description')}
           params={[]}
           execute={async () => getIsTossLoginIntegratedService()}
           snippet={getIsTossLoginIntegratedServiceSnippet}
         />
         <ApiCard
           name="getUserKeyForGame"
-          description="게임용 유저 해시 키"
+          description={t('pages.auth.getUserKeyForGame.description')}
           params={[]}
           execute={() => getUserKeyForGame()}
           snippet={getUserKeyForGameSnippet}
         />
         <ApiCard
           name="appsInTossSignTossCert"
-          description="토스 인증서 서명"
+          description={t('pages.auth.appsInTossSignTossCert.description')}
           params={[{ name: 'txId', label: 'txId', placeholder: 'transaction-id' }]}
           execute={(p) => appsInTossSignTossCert({ txId: p.txId })}
           snippet={appsInTossSignTossCertSnippet}

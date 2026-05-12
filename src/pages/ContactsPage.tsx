@@ -1,6 +1,7 @@
 import { fetchContacts } from '@apps-in-toss/web-framework';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
+import { t } from '../i18n';
 import fetchContactsSnippet from '../snippets/contacts/fetchContacts.ts?raw';
 
 export function ContactsPage() {
@@ -10,7 +11,7 @@ export function ContactsPage() {
       <div className="p-4 space-y-3">
         <ApiCard
           name="fetchContacts"
-          description="연락처 가져오기"
+          description={t('pages.contacts.fetchContacts.description')}
           params={[
             {
               name: 'size',

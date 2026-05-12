@@ -16,6 +16,7 @@ import {
 import { PageHeader } from '../components/PageHeader';
 import { ResultView } from '../components/ResultView';
 import { WorkflowStepper } from '../components/WorkflowStepper';
+import { t } from '../i18n';
 import loadAppsInTossAdMobSnippet from '../snippets/ads/loadAppsInTossAdMob.ts?raw';
 import loadFullScreenAdSnippet from '../snippets/ads/loadFullScreenAd.ts?raw';
 import showAppsInTossAdMobSnippet from '../snippets/ads/showAppsInTossAdMob.ts?raw';
@@ -202,7 +203,7 @@ export function AdsPage() {
                 loadFullScreenAd
               </h3>
               <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                전면 광고 로드 — 여러 이벤트를 수신합니다
+                {t('pages.ads.loadFullScreenAd.description')}
               </p>
               <button
                 type="button"
@@ -221,7 +222,7 @@ export function AdsPage() {
                 showFullScreenAd
               </h3>
               <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                전면 광고 표시 — 여러 이벤트를 수신합니다
+                {t('pages.ads.showFullScreenAd.description')}
               </p>
               <button
                 type="button"
@@ -245,7 +246,7 @@ export function AdsPage() {
           <div className="space-y-3">
             <ApiCard
               name="TossAds.initialize"
-              description="TossAds 초기화"
+              description={t('pages.ads.tossAdsInitialize.description')}
               params={[]}
               execute={async () => {
                 TossAds.initialize({});
@@ -254,7 +255,7 @@ export function AdsPage() {
             />
             <ApiCard
               name="TossAds.destroyAll"
-              description="모든 TossAds 슬롯 제거"
+              description={t('pages.ads.tossAdsDestroyAll.description')}
               params={[]}
               execute={async () => {
                 TossAds.destroyAll();

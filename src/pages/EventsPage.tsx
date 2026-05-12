@@ -12,6 +12,7 @@ import {
   HistoryLog,
 } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
+import { t } from '../i18n';
 import graniteBackEventSnippet from '../snippets/events/graniteBackEvent.ts?raw';
 import graniteHomeEventSnippet from '../snippets/events/graniteHomeEvent.ts?raw';
 import onVisibilityChangedByTransparentServiceWebSnippet from '../snippets/events/onVisibilityChangedByTransparentServiceWeb.ts?raw';
@@ -108,7 +109,7 @@ export function EventsPage() {
       <div className="p-4 space-y-3">
         <EventSubscriberCard
           name="graniteEvent — backEvent"
-          description="뒤로가기 버튼 이벤트 구독"
+          description={t('pages.events.graniteBackEvent.description')}
           subscribe={(onEvent) =>
             graniteEvent.addEventListener('backEvent', {
               onEvent: () => onEvent(undefined),
@@ -118,7 +119,7 @@ export function EventsPage() {
         />
         <EventSubscriberCard
           name="graniteEvent — homeEvent"
-          description="홈 버튼 이벤트 구독"
+          description={t('pages.events.graniteHomeEvent.description')}
           subscribe={(onEvent) =>
             graniteEvent.addEventListener('homeEvent', {
               onEvent: () => onEvent(undefined),
@@ -128,7 +129,7 @@ export function EventsPage() {
         />
         <EventSubscriberCard
           name="tdsEvent — navigationAccessoryEvent"
-          description="상단 네비게이션 액세서리 버튼 이벤트 구독"
+          description={t('pages.events.tdsNavigationAccessoryEvent.description')}
           subscribe={(onEvent) =>
             tdsEvent.addEventListener('navigationAccessoryEvent', {
               onEvent: (e) => onEvent(e),
@@ -138,7 +139,7 @@ export function EventsPage() {
         />
         <EventSubscriberCard
           name="onVisibilityChangedByTransparentServiceWeb"
-          description="투명 서비스 웹 가시성 변경 이벤트 구독"
+          description={t('pages.events.onVisibilityChangedByTransparentServiceWeb.description')}
           subscribe={(onEvent) =>
             onVisibilityChangedByTransparentServiceWeb({
               options: { callbackId: 'sdk-example-visibility' },
