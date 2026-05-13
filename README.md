@@ -174,3 +174,7 @@ UI 카피의 primary locale은 **`ko`** (한국어). 모든 UI string은 `src/i1
 
 - [`@apps-in-toss/web-framework`](https://github.com/apps-in-toss-community/web-framework) — 원본 SDK
 - [`@ait-co/devtools`](https://github.com/apps-in-toss-community/devtools) — mock 라이브러리, unplugin
+
+---
+
+커뮤니티 오픈소스 프로젝트입니다.
