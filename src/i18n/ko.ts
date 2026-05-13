@@ -219,6 +219,10 @@ export const ko = {
   // PartnerPage
   'pages.partner.addAccessoryButton.description': '액세서리 버튼 추가',
   'pages.partner.removeAccessoryButton.description': '액세서리 버튼 제거',
+
+  // PaymentPage
+  'pages.payment.requestTossPayPaysBilling.description':
+    '토스페이 정기결제 인증 — wrappedToken으로 사용자 인증 (실제 결제는 서버)',
 } as const;
 
 export type StringKey = keyof typeof ko;

@@ -17,6 +17,7 @@ import { IAPPage } from './pages/IAPPage';
 import { LocationPage } from './pages/LocationPage';
 import { NavigationPage } from './pages/NavigationPage';
 import { PartnerPage } from './pages/PartnerPage';
+import { PaymentPage } from './pages/PaymentPage';
 import { PermissionsPage } from './pages/PermissionsPage';
 import { StoragePage } from './pages/StoragePage';
 // SCAFFOLD_DOMAIN_IMPORTS_END
@@ -47,6 +48,7 @@ export function App() {
             <Route path="/analytics" element={<AnalyticsPage />} />
             <Route path="/partner" element={<PartnerPage />} />
             <Route path="/events" element={<EventsPage />} />
+            <Route path="/payment" element={<PaymentPage />} />
             {/* SCAFFOLD_DOMAIN_ROUTES_END */}
           </Route>
         </Routes>
