@@ -32,7 +32,7 @@
 | `/analytics` | Analytics | screen, impression, click, eventLog | 4 |
 | `/partner` | Partner | addAccessoryButton, removeAccessoryButton | 2 |
 | `/events` | Events | graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb | 3 |
-| `/payment` | Payment | 토스페이 정기결제창 — wrappedToken으로 사용자 인증 (실제 결제는 서버) | 0 |
+| `/payment` | Payment | 토스페이 정기결제창 — wrappedToken으로 사용자 인증 (실제 결제는 서버) | 1 |
 | `/notification` | Notification | 푸시 알림 동의 — newAgreement/alreadyAgreed/agreementRejected 3-way 결과 | 1 |
 
 <!-- DOMAIN_TABLE_END -->
