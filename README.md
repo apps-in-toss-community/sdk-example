@@ -45,7 +45,10 @@
 ```bash
 pnpm install
 pnpm dev        # Vite dev 서버 → http://localhost:5173
+pnpm dev:phone  # = AIT_TUNNEL=1 pnpm dev — Cloudflare quick tunnel + ASCII QR
 ```
+
+`pnpm dev:phone`은 dev 서버를 Cloudflare quick tunnel(`*.trycloudflare.com`)로 노출하고 QR을 출력한다. 폰에서 `https://devtools.aitc.dev/launcher/`를 한 번 열어 홈 화면에 추가한 뒤 QR을 스캔하면 미니앱을 풀스크린으로 확인할 수 있다. `cloudflared`는 첫 실행 시 한 번 다운로드되어 캐시된다.
 
 개발 중에는 `@ait-co/devtools`의 unplugin이 `@apps-in-toss/web-framework` import를 mock으로 자동 대체해준다. 토스 앱 없이 브라우저에서 바로 확인 가능하다.
 
@@ -54,6 +57,7 @@ pnpm dev        # Vite dev 서버 → http://localhost:5173
 | 명령 | 설명 |
 |---|---|
 | `pnpm dev` | Vite dev 서버 기동 |
+| `pnpm dev:phone` | `AIT_TUNNEL=1 pnpm dev` — Cloudflare quick tunnel로 dev 서버 노출 + QR 출력 (폰 실기 확인용) |
 | `pnpm build` | OG 이미지 생성(prebuild) + 타입 체크 + 프로덕션 빌드 + 라우트별 HTML 생성 → `dist/` |
 | `pnpm build:og` | OG 이미지(`public/og/*.png`)만 재생성 |
 | `pnpm preview` | 빌드 결과 로컬 서빙 |

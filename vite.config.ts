@@ -8,7 +8,11 @@ export default defineConfig({
   // Set BASE_PATH at build time (e.g. BASE_PATH=/sdk-example/) for Pages;
   // defaults to '/' for local dev and 앱인토스 배포.
   base: process.env.BASE_PATH ?? '/',
-  plugins: [react(), tailwindcss(), aitDevtools.vite({ panel: true })],
+  plugins: [
+    react(),
+    tailwindcss(),
+    aitDevtools.vite({ panel: true, tunnel: !!process.env.AIT_TUNNEL }),
+  ],
   // Keep the polyfill and the SDK (plus its transitive bridge/analytics
   // entry points) out of Vite's dep pre-bundle. Otherwise Vite ships the
   // real @apps-in-toss/web-* as pre-bundled modules and the devtools

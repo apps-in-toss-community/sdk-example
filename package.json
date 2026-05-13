@@ -12,6 +12,7 @@
   "packageManager": "pnpm@10.33.0",
   "scripts": {
     "dev": "vite",
+    "dev:phone": "AIT_TUNNEL=1 vite",
     "prebuild": "tsx scripts/build-og-images.tsx",
     "build": "tsc -b && vite build && tsx scripts/build-route-html.ts",
     "build:og": "tsx scripts/build-og-images.tsx",
@@ -30,7 +31,7 @@
     "sync:readme:check": "tsx scripts/sync-readme-domains.ts --check"
   },
   "dependencies": {
-    "@ait-co/devtools": "^0.1.12",
+    "@ait-co/devtools": "^0.1.19",
     "@ait-co/polyfill": "^0.1.8",
     "@apps-in-toss/web-framework": "^2.5.0",
     "qrcode": "^1.5.4",
