@@ -62,7 +62,14 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "cloudflared"
+      "cloudflared",
+      "esbuild",
+      "sharp"
+    ],
+    "ignoredBuiltDependencies": [
+      "@sentry/cli",
+      "@swc/core",
+      "protobufjs"
     ]
   }
 }
