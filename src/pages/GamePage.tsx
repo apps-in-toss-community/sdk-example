@@ -12,6 +12,7 @@ import { CodeSnippet } from '../components/CodeSnippet';
 import { PageHeader } from '../components/PageHeader';
 import { ResultView } from '../components/ResultView';
 import { t } from '../i18n';
+import { docsLink } from '../lib/docs';
 import contactsViralSnippet from '../snippets/game/contactsViral.ts?raw';
 import getGameCenterGameProfileSnippet from '../snippets/game/getGameCenterGameProfile.ts?raw';
 import grantPromotionRewardSnippet from '../snippets/game/grantPromotionReward.ts?raw';
@@ -42,9 +43,19 @@ function ContactsViralCard() {
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-      <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">
-        contactsViral
-      </h3>
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">
+          contactsViral
+        </h3>
+        <a
+          href={docsLink('game', 'contactsViral')}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 underline-offset-2 hover:underline"
+        >
+          {t('apiCard.docsLink')}
+        </a>
+      </div>
       <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
         {t('pages.game.contactsViral.description')}
       </p>
