@@ -28,6 +28,7 @@ import {
   loadFullScreenAd,
   openCamera,
   partner,
+  requestNotificationAgreement,
   requestReview,
   SafeAreaInsets,
   Storage,
@@ -63,6 +64,7 @@ export type _loadFullScreenAd = typeof loadFullScreenAd;
 export type _showFullScreenAd = typeof showFullScreenAd;
 export type _IAP = typeof IAP;
 export type _partner = typeof partner;
+export type _requestNotificationAgreement = typeof requestNotificationAgreement;
 export type _Analytics = typeof Analytics;
 
 // Type-only imports — used in the _SdkTypes alias below
@@ -107,6 +109,7 @@ import type {
   Location,
   LocationCoords,
   NonConsumableProductListItem,
+  NotificationAgreementResult,
   OpenCamera,
   OpenCameraOptions,
   PermissionAccess,
@@ -115,6 +118,7 @@ import type {
   PermissionFunctionWithDialog,
   PermissionName,
   PermissionStatus,
+  RequestNotificationAgreementOptions,
   RequestPermissionFunction,
   ResponseInfo,
   RewardedAd,
@@ -157,6 +161,8 @@ export type _SdkTypes = [
   IapSubscriptionInfoResponse,
   IapSubscriptionInfoResult,
   NonConsumableProductListItem,
+  NotificationAgreementResult,
+  RequestNotificationAgreementOptions,
   SubscriptionProductListItem,
   TdsEvent,
   TossAdsAttachBannerOptions,
