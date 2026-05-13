@@ -98,7 +98,9 @@ export const ko = {
   // AuthPage
   'pages.auth.appLogin.description': '앱 로그인, authorizationCode 반환',
   'pages.auth.getIsTossLoginIntegratedService.description': '토스 로그인 연동 서비스 여부',
-  'pages.auth.getUserKeyForGame.description': '게임용 유저 해시 키',
+  'pages.auth.getUserKeyForGame.description':
+    '게임용 유저 해시 키 (deprecated — getAnonymousKey 사용 권장)',
+  'pages.auth.getAnonymousKey.description': '익명 사용자 식별 키 — getUserKeyForGame 대체',
   'pages.auth.appsInTossSignTossCert.description': '토스 인증서 서명',
 
   // IAPPage
