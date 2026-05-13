@@ -173,6 +173,22 @@ export const GROUP_ENTRIES: OgEntry[] = [
     subtitle: 'graniteEvent, tdsEvent, visibility 구독.',
     footer: `${SITE}/events`,
   },
+  {
+    slug: 'payment',
+    route: '/payment',
+    eyebrow: 'SDK · Payment',
+    title: 'Payment',
+    subtitle: '토스페이 정기결제창 — wrappedToken으로 사용자 인증.',
+    footer: `${SITE}/payment`,
+  },
+  {
+    slug: 'notification',
+    route: '/notification',
+    eyebrow: 'SDK · Notification',
+    title: 'Notification',
+    subtitle: '푸시 알림 동의 — 3-way 결과.',
+    footer: `${SITE}/notification`,
+  },
 ];
 
 export const ALL_ENTRIES: OgEntry[] = [HOME_ENTRY, ...GROUP_ENTRIES];
