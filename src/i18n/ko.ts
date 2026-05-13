@@ -109,6 +109,7 @@ export const ko = {
   'pages.iap.getCompletedOrRefundedOrders.description': '완료/환불 주문 조회',
   'pages.iap.getSubscriptionInfo.description': '구독 정보 조회',
   'pages.iap.checkoutPayment.description': 'TossPay 결제',
+  'pages.iap.completeProductGrant.description': '상품 지급 완료 알림 (Android/iOS 5.233.0+)',
 
   // EnvironmentPage
   'pages.environment.getPlatformOS.description': 'SDK — 플랫폼 OS',

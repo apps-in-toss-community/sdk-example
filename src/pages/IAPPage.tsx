@@ -12,12 +12,27 @@ import {
 import { PageHeader } from '../components/PageHeader';
 import { WorkflowStepper } from '../components/WorkflowStepper';
 import { t } from '../i18n';
+import { docsLink } from '../lib/docs';
 import checkoutPaymentSnippet from '../snippets/iap/checkoutPayment.ts?raw';
+import completeProductGrantSnippet from '../snippets/iap/completeProductGrant.ts?raw';
 import createPurchaseOrderSnippet from '../snippets/iap/createPurchaseOrder.ts?raw';
 import getCompletedOrRefundedOrdersSnippet from '../snippets/iap/getCompletedOrRefundedOrders.ts?raw';
 import getPendingOrdersSnippet from '../snippets/iap/getPendingOrders.ts?raw';
 import getProductItemListSnippet from '../snippets/iap/getProductItemList.ts?raw';
 import getSubscriptionInfoSnippet from '../snippets/iap/getSubscriptionInfo.ts?raw';
+
+function DocsLink({ namespace, method }: { namespace: string; method: string }) {
+  return (
+    <a
+      href={docsLink(namespace, method)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="shrink-0 text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 underline-offset-2 hover:underline"
+    >
+      {t('apiCard.docsLink')}
+    </a>
+  );
+}
 
 export function IAPPage() {
   const [activeStep, setActiveStep] = useState(0);
@@ -135,6 +150,20 @@ export function IAPPage() {
           ) : (
             <p className="text-sm text-gray-500 dark:text-gray-400">상품을 먼저 선택하세요</p>
           )}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono text-gray-600 dark:text-gray-300">
+                IAP.createOneTimePurchaseOrder
+              </span>
+              <DocsLink namespace="iap" method="createOneTimePurchaseOrder" />
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-mono text-gray-600 dark:text-gray-300">
+                IAP.createSubscriptionPurchaseOrder
+              </span>
+              <DocsLink namespace="iap" method="createSubscriptionPurchaseOrder" />
+            </div>
+          </div>
           <div className="flex gap-2">
             <button
               type="button"
@@ -191,6 +220,14 @@ export function IAPPage() {
             params={[{ name: 'orderId', label: 'Order ID', placeholder: 'order-123' }]}
             execute={(p) => IAP.getSubscriptionInfo({ params: { orderId: p.orderId } })}
             snippet={getSubscriptionInfoSnippet}
+          />
+          <ApiCard
+            name="IAP.completeProductGrant"
+            description={t('pages.iap.completeProductGrant.description')}
+            params={[{ name: 'orderId', label: 'Order ID', placeholder: 'order-123' }]}
+            execute={(p) => IAP.completeProductGrant({ params: { orderId: p.orderId } })}
+            snippet={completeProductGrantSnippet}
+            docsUrl={docsLink('iap', 'completeProductGrant')}
           />
           <ApiCard
             name="checkoutPayment"
