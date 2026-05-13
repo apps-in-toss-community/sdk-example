@@ -4,7 +4,7 @@ import {
   showFullScreenAd,
   TossAds,
 } from '@apps-in-toss/web-framework';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { ApiCard } from '../components/ApiCard';
 import { CodeSnippet } from '../components/CodeSnippet';
 import {
@@ -17,12 +17,33 @@ import { PageHeader } from '../components/PageHeader';
 import { ResultView } from '../components/ResultView';
 import { WorkflowStepper } from '../components/WorkflowStepper';
 import { t } from '../i18n';
+import { docsLink } from '../lib/docs';
+import isAppsInTossAdMobLoadedSnippet from '../snippets/ads/isAppsInTossAdMobLoaded.ts?raw';
 import loadAppsInTossAdMobSnippet from '../snippets/ads/loadAppsInTossAdMob.ts?raw';
 import loadFullScreenAdSnippet from '../snippets/ads/loadFullScreenAd.ts?raw';
 import showAppsInTossAdMobSnippet from '../snippets/ads/showAppsInTossAdMob.ts?raw';
 import showFullScreenAdSnippet from '../snippets/ads/showFullScreenAd.ts?raw';
+import tossAdsAttachSnippet from '../snippets/ads/tossAdsAttach.ts?raw';
+import tossAdsAttachBannerSnippet from '../snippets/ads/tossAdsAttachBanner.ts?raw';
+import tossAdsDestroySnippet from '../snippets/ads/tossAdsDestroy.ts?raw';
 import tossAdsDestroyAllSnippet from '../snippets/ads/tossAdsDestroyAll.ts?raw';
 import tossAdsInitializeSnippet from '../snippets/ads/tossAdsInitialize.ts?raw';
+
+/** Small "Docs ↗" link rendered next to bespoke (non-ApiCard) section headers.
+ * Doubles as the verify-crosslinks signal — `docsLink('ads', '<method>')` is
+ * picked up by the DOCS_LINK_REGEX scan in apps-in-toss-community/docs. */
+function DocsLink({ namespace, method }: { namespace: string; method: string }) {
+  return (
+    <a
+      href={docsLink(namespace, method)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="shrink-0 text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 underline-offset-2 hover:underline"
+    >
+      {t('apiCard.docsLink')}
+    </a>
+  );
+}
 
 export function AdsPage() {
   // --- GoogleAdMob state ---
@@ -78,13 +99,19 @@ export function AdsPage() {
       description: '광고를 미리 로드합니다',
       content: (
         <div className="space-y-3 py-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-gray-600 dark:text-gray-300">
+              GoogleAdMob.loadAppsInTossAdMob
+            </span>
+            <DocsLink namespace="ads" method="loadAppsInTossAdMob" />
+          </div>
           <button
             type="button"
             onClick={handleLoad}
             disabled={loadStatus === 'loading'}
             className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
           >
-            GoogleAdMob.loadAppsInTossAdMob
+            실행
           </button>
           <ResultView status={loadStatus} data={loadResult} error={loadError} />
           <CodeSnippet
@@ -100,13 +127,19 @@ export function AdsPage() {
       description: '로드된 광고를 화면에 표시합니다',
       content: (
         <div className="space-y-3 py-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-mono text-gray-600 dark:text-gray-300">
+              GoogleAdMob.showAppsInTossAdMob
+            </span>
+            <DocsLink namespace="ads" method="showAppsInTossAdMob" />
+          </div>
           <button
             type="button"
             onClick={handleShow}
             disabled={!adLoaded}
             className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
           >
-            GoogleAdMob.showAppsInTossAdMob
+            실행
           </button>
           <HistoryLog entries={eventLog} onClear={() => setEventLog([])} />
           <CodeSnippet
@@ -171,6 +204,15 @@ export function AdsPage() {
     });
   }, [addFsLog]);
 
+  // --- TossAds attach / attachBanner slot targets ---
+  // We need DOM elements as `attach` / `attachBanner` targets. Refs keep them
+  // stable across renders; the attached placeholders accumulate visually below
+  // each card so the user can see the mock render the slot.
+  const attachSlotRef = useRef<HTMLDivElement>(null);
+  const attachBannerSlotRef = useRef<HTMLDivElement>(null);
+  // Most recent attachBanner result, so `destroy` can tear down the banner.
+  const lastAttachBannerRef = useRef<{ destroy: () => void } | null>(null);
+
   return (
     <div>
       <PageHeader title="Ads" />
@@ -189,6 +231,28 @@ export function AdsPage() {
             </button>
           </div>
           <WorkflowStepper steps={steps} activeStep={activeStep} onStepClick={setActiveStep} />
+
+          {/* isAppsInTossAdMobLoaded — standalone query, not part of the stepper */}
+          <div className="mt-3">
+            <ApiCard
+              name="GoogleAdMob.isAppsInTossAdMobLoaded"
+              description={t('pages.ads.isAppsInTossAdMobLoaded.description')}
+              params={[
+                {
+                  name: 'adGroupId',
+                  label: 'adGroupId',
+                  type: 'text',
+                  placeholder: 'adGroupId',
+                  defaultValue: 'demo-ad-group',
+                },
+              ]}
+              execute={async ({ adGroupId }) => {
+                return GoogleAdMob.isAppsInTossAdMobLoaded({ adGroupId });
+              }}
+              snippet={isAppsInTossAdMobLoadedSnippet}
+              docsUrl={docsLink('ads', 'isAppsInTossAdMobLoaded')}
+            />
+          </div>
         </div>
 
         {/* FullScreen Ad — dedicated event-log cards */}
@@ -199,9 +263,12 @@ export function AdsPage() {
           <div className="space-y-3">
             {/* loadFullScreenAd */}
             <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-              <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">
-                loadFullScreenAd
-              </h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">
+                  loadFullScreenAd
+                </h3>
+                <DocsLink namespace="ads" method="loadFullScreenAd" />
+              </div>
               <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                 {t('pages.ads.loadFullScreenAd.description')}
               </p>
@@ -218,9 +285,12 @@ export function AdsPage() {
             </div>
             {/* showFullScreenAd */}
             <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-              <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">
-                showFullScreenAd
-              </h3>
+              <div className="flex items-center justify-between gap-2">
+                <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">
+                  showFullScreenAd
+                </h3>
+                <DocsLink namespace="ads" method="showFullScreenAd" />
+              </div>
               <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                 {t('pages.ads.showFullScreenAd.description')}
               </p>
@@ -252,6 +322,75 @@ export function AdsPage() {
                 TossAds.initialize({});
               }}
               snippet={tossAdsInitializeSnippet}
+              docsUrl={docsLink('ads', 'initialize')}
+            />
+            <ApiCard
+              name="TossAds.attach"
+              description={t('pages.ads.tossAdsAttach.description')}
+              params={[
+                {
+                  name: 'adGroupId',
+                  label: 'adGroupId',
+                  type: 'text',
+                  defaultValue: 'demo-ad-group',
+                },
+              ]}
+              execute={async ({ adGroupId }) => {
+                if (!attachSlotRef.current) throw new Error('slot not mounted');
+                TossAds.attach(adGroupId, attachSlotRef.current);
+              }}
+              snippet={tossAdsAttachSnippet}
+              docsUrl={docsLink('ads', 'attach')}
+            />
+            <div
+              ref={attachSlotRef}
+              className="rounded-lg border border-dashed border-gray-300 p-1 dark:border-gray-700"
+            />
+            <ApiCard
+              name="TossAds.attachBanner"
+              description={t('pages.ads.tossAdsAttachBanner.description')}
+              params={[
+                {
+                  name: 'adGroupId',
+                  label: 'adGroupId',
+                  type: 'text',
+                  defaultValue: 'demo-ad-group',
+                },
+              ]}
+              execute={async ({ adGroupId }) => {
+                if (!attachBannerSlotRef.current) throw new Error('slot not mounted');
+                const result = TossAds.attachBanner(adGroupId, attachBannerSlotRef.current);
+                lastAttachBannerRef.current = result;
+                return { attached: true };
+              }}
+              snippet={tossAdsAttachBannerSnippet}
+              docsUrl={docsLink('ads', 'attachBanner')}
+            />
+            <div
+              ref={attachBannerSlotRef}
+              className="rounded-lg border border-dashed border-gray-300 p-1 dark:border-gray-700"
+            />
+            <ApiCard
+              name="TossAds.destroy"
+              description={t('pages.ads.tossAdsDestroy.description')}
+              params={[
+                {
+                  name: 'slotId',
+                  label: 'slotId',
+                  type: 'text',
+                  defaultValue: 'demo-slot',
+                },
+              ]}
+              execute={async ({ slotId }) => {
+                TossAds.destroy(slotId);
+                // If we still hold a banner handle, tear that down too —
+                // attachBanner returns its own destroy(), independent of
+                // TossAds.destroy(slotId). Matches real SDK ergonomics.
+                lastAttachBannerRef.current?.destroy();
+                lastAttachBannerRef.current = null;
+              }}
+              snippet={tossAdsDestroySnippet}
+              docsUrl={docsLink('ads', 'destroy')}
             />
             <ApiCard
               name="TossAds.destroyAll"
@@ -259,8 +398,10 @@ export function AdsPage() {
               params={[]}
               execute={async () => {
                 TossAds.destroyAll();
+                lastAttachBannerRef.current = null;
               }}
               snippet={tossAdsDestroyAllSnippet}
+              docsUrl={docsLink('ads', 'destroyAll')}
             />
           </div>
         </div>

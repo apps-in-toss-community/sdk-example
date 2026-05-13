@@ -195,9 +195,13 @@ export const ko = {
 
   // AdsPage
   'pages.ads.tossAdsInitialize.description': 'TossAds 초기화',
+  'pages.ads.tossAdsAttach.description': '배너 슬롯 부착 (deprecated — attachBanner 사용 권장)',
+  'pages.ads.tossAdsAttachBanner.description': '배너 슬롯 부착 — 반환된 destroy()로 해제',
+  'pages.ads.tossAdsDestroy.description': '특정 슬롯 ID 제거',
   'pages.ads.tossAdsDestroyAll.description': '모든 TossAds 슬롯 제거',
   'pages.ads.loadFullScreenAd.description': '전면 광고 로드 — 여러 이벤트를 수신합니다',
   'pages.ads.showFullScreenAd.description': '전면 광고 표시 — 여러 이벤트를 수신합니다',
+  'pages.ads.isAppsInTossAdMobLoaded.description': 'AdMob 광고가 로드 상태인지 확인',
 
   // EventsPage
   'pages.events.graniteBackEvent.description': '뒤로가기 버튼 이벤트 구독',
