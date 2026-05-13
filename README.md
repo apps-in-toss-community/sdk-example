@@ -1,5 +1,7 @@
 # sdk-example
 
+**한국어** · [English](./README.en.md)
+
 [`@apps-in-toss/web-framework`](https://github.com/apps-in-toss-community/web-framework) SDK의 모든 public API를 인터랙티브하게 테스트할 수 있는 레퍼런스 앱.
 
 - **앱인토스에 배포된 실제 앱**에서 네이티브 환경에서 API 동작을 확인할 수 있다.

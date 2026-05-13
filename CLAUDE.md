@@ -11,7 +11,9 @@
 
 대신 "커뮤니티(community)" 같은 자연스러운 표현. 의심스러우면 빼라.
 
-**톤 가이드** (방어적 disclaimer 금지): README 푸터에 한 줄로 1회만 명시 — `커뮤니티 오픈소스 프로젝트입니다.` (이 repo는 한국어 primary). "제휴 아님" 같은 방어적 표현 대신 "커뮤니티 오픈소스" 정체성만 자연스럽게. 헤더 직후의 `>` blockquote 박스, ⚠️ 아이콘, 굵은 글씨, `unofficial`/`비공식` 같은 강한 라벨, 영/한 병기는 모두 쓰지 않는다. 기술적 caveat은 disclaimer에 묶지 않고 자연스러운 본문 섹션에 둔다.
+**톤 가이드** (방어적 disclaimer 금지): README 푸터에 한 줄로 1회만 명시 — `README.md`(한국어)는 `커뮤니티 오픈소스 프로젝트입니다.`, `README.en.md`(영어)는 `Community open-source project.`. "제휴 아님" 같은 방어적 표현 대신 "커뮤니티 오픈소스" 정체성만 자연스럽게. 헤더 직후의 `>` blockquote 박스, ⚠️ 아이콘, 굵은 글씨, `unofficial`/`비공식` 같은 강한 라벨, 한 파일 안에서 영/한 병기는 모두 쓰지 않는다. 기술적 caveat은 disclaimer에 묶지 않고 자연스러운 본문 섹션에 둔다.
+
+**README i18n**: `README.md`(한국어, GitHub default) + `README.en.md`(영어). 두 파일 모두 상단에 상호 link, 동등 정본 — 한 쪽 갱신 시 같은 PR에서 반대쪽도 갱신. `README.md`의 도메인 표는 `scripts/sync-readme-domains.ts`가 생성(손수 편집 금지). `README.en.md`의 도메인 표는 수동 관리 — 도메인 추가/삭제 시 README.md sync 후 README.en.md도 같이 갱신. 자세한 정책은 umbrella `CLAUDE.md` "i18n 정책" 섹션.
 
 ## 프로젝트 개요
 
