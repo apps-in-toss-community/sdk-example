@@ -213,6 +213,8 @@ export const ko = {
     '상단 네비게이션 액세서리 버튼 이벤트 구독',
   'pages.events.onVisibilityChangedByTransparentServiceWeb.description':
     '투명 서비스 웹 가시성 변경 이벤트 구독',
+  'pages.events.appsInTossEventAddEventListener.description':
+    '앱인토스 플랫폼 이벤트 구독 — 현재 SDK 버전은 정의된 이벤트 키가 없어 예약 상태',
 
   // PartnerPage
   'pages.partner.addAccessoryButton.description': '액세서리 버튼 추가',

@@ -13,10 +13,30 @@ import {
 } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
 import { t } from '../i18n';
+import { docsLink } from '../lib/docs';
+import appsInTossEventAddEventListenerSnippet from '../snippets/events/appsInTossEventAddEventListener.ts?raw';
 import graniteBackEventSnippet from '../snippets/events/graniteBackEvent.ts?raw';
 import graniteHomeEventSnippet from '../snippets/events/graniteHomeEvent.ts?raw';
 import onVisibilityChangedByTransparentServiceWebSnippet from '../snippets/events/onVisibilityChangedByTransparentServiceWeb.ts?raw';
 import tdsNavigationAccessoryEventSnippet from '../snippets/events/tdsNavigationAccessoryEvent.ts?raw';
+
+/**
+ * Docs anchor marker for bespoke (non-ApiCard) cards. Doubles as the
+ * verify-crosslinks signal — `docsLink(namespace, method)` is what the docs
+ * scanner picks up via DOCS_LINK_JSX_REGEX.
+ */
+function DocsLink({ namespace, method }: { namespace: string; method: string }) {
+  return (
+    <a
+      href={docsLink(namespace, method)}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="shrink-0 text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 underline-offset-2 hover:underline"
+    >
+      {t('apiCard.docsLink')}
+    </a>
+  );
+}
 
 interface EventSubscriberCardProps {
   name: string;
@@ -28,9 +48,17 @@ interface EventSubscriberCardProps {
   subscribe: (onEvent: (payload: unknown) => void) => () => void;
   /** Source snippet for this event subscription. Loaded via Vite `?raw` import. */
   snippet?: string;
+  /** Optional docs slug under `events/` (e.g. `graniteEvent-addEventListener`). */
+  docsSlug?: string;
 }
 
-function EventSubscriberCard({ name, description, subscribe, snippet }: EventSubscriberCardProps) {
+function EventSubscriberCard({
+  name,
+  description,
+  subscribe,
+  snippet,
+  docsSlug,
+}: EventSubscriberCardProps) {
   const [events, setEvents] = useState<HistoryEntry[]>([]);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const unsubRef = useRef<(() => void) | null>(null);
@@ -60,22 +88,25 @@ function EventSubscriberCard({ name, description, subscribe, snippet }: EventSub
 
   return (
     <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">{name}</h3>
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-            isSubscribed
-              ? 'bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-300'
-              : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
-          }`}
-        >
+        <div className="flex items-center gap-2">
+          {docsSlug && <DocsLink namespace="events" method={docsSlug} />}
           <span
-            className={`inline-block h-1.5 w-1.5 rounded-full ${
-              isSubscribed ? 'bg-green-500' : 'bg-gray-400 dark:bg-gray-500'
+            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
+              isSubscribed
+                ? 'bg-green-100 text-green-700 dark:bg-green-900/60 dark:text-green-300'
+                : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
             }`}
-          />
-          {isSubscribed ? '구독 중' : '미구독'}
-        </span>
+          >
+            <span
+              className={`inline-block h-1.5 w-1.5 rounded-full ${
+                isSubscribed ? 'bg-green-500' : 'bg-gray-400 dark:bg-gray-500'
+              }`}
+            />
+            {isSubscribed ? '구독 중' : '미구독'}
+          </span>
+        </div>
       </div>
       <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{description}</p>
       <button
@@ -116,6 +147,7 @@ export function EventsPage() {
             })
           }
           snippet={graniteBackEventSnippet}
+          docsSlug="graniteEvent-addEventListener"
         />
         <EventSubscriberCard
           name="graniteEvent — homeEvent"
@@ -126,6 +158,7 @@ export function EventsPage() {
             })
           }
           snippet={graniteHomeEventSnippet}
+          docsSlug="graniteEvent-addEventListener"
         />
         <EventSubscriberCard
           name="tdsEvent — navigationAccessoryEvent"
@@ -136,6 +169,7 @@ export function EventsPage() {
             })
           }
           snippet={tdsNavigationAccessoryEventSnippet}
+          docsSlug="tdsEvent-addEventListener"
         />
         <EventSubscriberCard
           name="onVisibilityChangedByTransparentServiceWeb"
@@ -149,7 +183,39 @@ export function EventsPage() {
           }
           snippet={onVisibilityChangedByTransparentServiceWebSnippet}
         />
+        <AppsInTossEventCard />
       </div>
+    </div>
+  );
+}
+
+/**
+ * `appsInTossEvent.addEventListener` is exported by the SDK but the
+ * `AppsInTossEvent` type is currently `{}` — no event keys exist yet to
+ * subscribe to. This card documents the API surface and the planned use,
+ * with a DocsLink to the reference page that explains the empty type.
+ */
+function AppsInTossEventCard() {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">
+          appsInTossEvent.addEventListener
+        </h3>
+        <div className="flex items-center gap-2">
+          <DocsLink namespace="events" method="appsInTossEvent-addEventListener" />
+          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
+            예약됨
+          </span>
+        </div>
+      </div>
+      <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+        {t('pages.events.appsInTossEventAddEventListener.description')}
+      </p>
+      <CodeSnippet
+        code={appsInTossEventAddEventListenerSnippet}
+        label="appsInTossEvent.addEventListener source snippet"
+      />
     </div>
   );
 }
