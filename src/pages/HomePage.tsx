@@ -159,7 +159,7 @@ const domains = [
     path: '/payment',
     name: 'Payment',
     description: '토스페이 정기결제창 — wrappedToken으로 사용자 인증 (실제 결제는 서버)',
-    apis: [],
+    apis: ['requestTossPayPaysBilling'],
   },
   {
     path: '/notification',
