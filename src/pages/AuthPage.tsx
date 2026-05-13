@@ -1,6 +1,7 @@
 import {
   appLogin,
   appsInTossSignTossCert,
+  getAnonymousKey,
   getIsTossLoginIntegratedService,
   getUserKeyForGame,
 } from '@apps-in-toss/web-framework';
@@ -8,8 +9,10 @@ import { ApiCard } from '../components/ApiCard';
 import { OidcBridgeSection } from '../components/OidcBridgeSection';
 import { PageHeader } from '../components/PageHeader';
 import { t } from '../i18n';
+import { docsLink } from '../lib/docs';
 import appLoginSnippet from '../snippets/auth/appLogin.ts?raw';
 import appsInTossSignTossCertSnippet from '../snippets/auth/appsInTossSignTossCert.ts?raw';
+import getAnonymousKeySnippet from '../snippets/auth/getAnonymousKey.ts?raw';
 import getIsTossLoginIntegratedServiceSnippet from '../snippets/auth/getIsTossLoginIntegratedService.ts?raw';
 import getUserKeyForGameSnippet from '../snippets/auth/getUserKeyForGame.ts?raw';
 
@@ -31,6 +34,14 @@ export function AuthPage() {
           params={[]}
           execute={async () => getIsTossLoginIntegratedService()}
           snippet={getIsTossLoginIntegratedServiceSnippet}
+        />
+        <ApiCard
+          name="getAnonymousKey"
+          description={t('pages.auth.getAnonymousKey.description')}
+          params={[]}
+          execute={() => getAnonymousKey()}
+          snippet={getAnonymousKeySnippet}
+          docsUrl={docsLink('auth', 'getAnonymousKey')}
         />
         <ApiCard
           name="getUserKeyForGame"
