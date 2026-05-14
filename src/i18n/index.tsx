@@ -4,7 +4,8 @@ import { ko, type StringKey } from './ko';
 
 export type Locale = 'ko' | 'en';
 
-export const locale: Locale = 'ko';
+const _urlLang = new URLSearchParams(window.location.search).get('lang');
+export const locale: Locale = _urlLang === 'en' ? 'en' : 'ko';
 
 // `ko` is the source of truth (Record<StringKey, string>). Other locales are
 // allowed to be partial so that, once en.ts grows real translations, missing
