@@ -14,7 +14,7 @@
     "dev": "vite",
     "dev:phone": "AIT_TUNNEL=1 vite",
     "prebuild": "tsx scripts/build-og-images.tsx",
-    "build": "tsc -b && vite build && tsx scripts/build-route-html.ts",
+    "build": "tsc -b && vite build && tsx scripts/build-route-html.ts && tsx scripts/build-sitemap.ts",
     "build:og": "tsx scripts/build-og-images.tsx",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",

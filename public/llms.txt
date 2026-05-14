@@ -1,0 +1,58 @@
+# sdk-example — Apps In Toss Community SDK reference
+
+> Interactive reference app for `@apps-in-toss/web-framework`. Exercises every
+> public SDK API in a browser, with no Toss app required (mock by
+> `@ait-co/devtools`). Part of the Apps In Toss Community open-source project.
+
+## What this is
+
+`sdk-example` lets developers explore every Apps in Toss SDK API
+(`@apps-in-toss/web-framework`) interactively in a regular browser. Each
+domain page exposes the relevant SDK calls as `ApiCard` widgets that the user
+can fill in and execute live. Combined with `@ait-co/devtools`, the SDK is
+mocked at the import boundary so the same app boots without a device.
+
+Deployed at https://sdk-example.aitc.dev.
+
+## Stack
+
+- React 19 + TypeScript strict (`noUncheckedIndexedAccess`)
+- Vite 6, react-router-dom v7, Tailwind v4
+- `@apps-in-toss/web-framework` (SDK), `@ait-co/devtools` (mock),
+  `@ait-co/polyfill` (standard Web API shim)
+
+## Routes
+
+Each SDK domain has its own page. The home page shows all domains as cards.
+
+- `/` — home, domain catalog
+- `/auth` — Auth (appLogin, getUserKeyForGame, OIDC bridge)
+- `/navigation` — Navigation (closeView, openURL, share, deep links)
+- `/environment` — Environment (platform, network, server time, safe area)
+- `/permissions` — Permissions
+- `/storage` — Storage (setItem, getItem, removeItem, clearItems)
+- `/location` — Location (current, watch)
+- `/camera` — Camera
+- `/contacts` — Contacts
+- `/clipboard` — Clipboard
+- `/haptic` — Haptic feedback
+- `/iap` — In-app purchase workflow (Toss Pay)
+- `/payment` — Payment (`requestTossPayPaysBilling` etc.)
+- `/notification` — Notification (`requestNotificationAgreement`)
+- `/ads` — AdMob (banner, interstitial, rewarded)
+- `/game` — Game APIs
+- `/analytics` — Analytics
+- `/partner` — Partner APIs
+- `/events` — `appsInTossEvent` subscriptions
+
+## Related projects
+
+- DevTools (browser emulator + unplugin): https://github.com/apps-in-toss-community/devtools
+- Polyfill (standard Web API shim): https://github.com/apps-in-toss-community/polyfill
+- Docs (community guide & reference): https://docs.aitc.dev
+- Org landing: https://aitc.dev
+
+## Source
+
+- Repo: https://github.com/apps-in-toss-community/sdk-example
+- License: MIT

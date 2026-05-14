@@ -57,6 +57,63 @@ function imageUrl(siteOrigin: string, slug: string): string {
   return path;
 }
 
+function buildJsonLd(entry: OgEntry, siteOrigin: string, titleText: string): string {
+  const url = siteOrigin ? `${siteOrigin}${entry.route}` : entry.route;
+  const isHome = entry.slug === 'home';
+  const graph: unknown[] = [
+    isHome
+      ? {
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'sdk-example',
+          url,
+          applicationCategory: 'DeveloperApplication',
+          operatingSystem: 'Web',
+          description: entry.subtitle,
+          inLanguage: 'ko',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        }
+      : {
+          '@context': 'https://schema.org',
+          '@type': 'WebPage',
+          name: titleText,
+          url,
+          description: entry.subtitle,
+          isPartOf: {
+            '@type': 'WebSite',
+            name: 'sdk-example',
+            url: siteOrigin || '/',
+          },
+        },
+  ];
+  if (!isHome && siteOrigin) {
+    graph.push({
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'sdk-example', item: siteOrigin },
+        { '@type': 'ListItem', position: 2, name: entry.title, item: url },
+      ],
+    });
+  }
+  return JSON.stringify(graph);
+}
+
+function injectHeadExtras(
+  html: string,
+  entry: OgEntry,
+  siteOrigin: string,
+  titleText: string,
+): string {
+  const canonical = siteOrigin ? `${siteOrigin}${entry.route}` : entry.route;
+  const jsonLd = buildJsonLd(entry, siteOrigin, titleText);
+  const extras = [
+    `<link rel="canonical" href="${escapeHtml(canonical)}" />`,
+    `<script type="application/ld+json">${jsonLd}</script>`,
+  ].join('\n    ');
+  return html.replace(/<\/head>/i, `    ${extras}\n  </head>`);
+}
+
 function buildRouteHtml(template: string, entry: OgEntry, siteOrigin: string): string {
   const titleText = entry.pageTitle ?? `${entry.title} — sdk-example`;
   const ogImage = imageUrl(siteOrigin, entry.slug);
@@ -70,6 +127,7 @@ function buildRouteHtml(template: string, entry: OgEntry, siteOrigin: string): s
   html = patchMeta(html, 'name', 'twitter:title', titleText);
   html = patchMeta(html, 'name', 'twitter:description', entry.subtitle);
   html = patchMeta(html, 'name', 'twitter:image', ogImage);
+  html = injectHeadExtras(html, entry, siteOrigin, titleText);
   return html;
 }
 
