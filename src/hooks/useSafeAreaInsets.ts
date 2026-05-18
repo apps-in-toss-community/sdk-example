@@ -1,4 +1,4 @@
-import { SafeAreaInsets } from '@apps-in-toss/web-framework';
+import { getOperationalEnvironment, SafeAreaInsets } from '@apps-in-toss/web-framework';
 import { useEffect, useState } from 'react';
 
 export interface Insets {
@@ -8,9 +8,21 @@ export interface Insets {
   right: number;
 }
 
-// Frozen so a consumer accidentally mutating `insets.top` can't corrupt the
-// shared fallback used across every non-Toss render.
+export interface SafeAreaInsetsState {
+  insets: Insets;
+  /** True when running inside the actual Toss app (SDK reports 'toss'). */
+  isTossEnv: boolean;
+}
+
 const ZERO: Readonly<Insets> = Object.freeze({ top: 0, bottom: 0, left: 0, right: 0 });
+
+function detectTossEnv(): boolean {
+  try {
+    return getOperationalEnvironment() === 'toss';
+  } catch {
+    return false;
+  }
+}
 
 function safeGet(): Insets {
   try {
@@ -21,14 +33,21 @@ function safeGet(): Insets {
 }
 
 /**
- * Subscribes to SDK safe-area insets. Non-Toss environments (web demo) fall
- * back to zeros — Layout then applies CSS `env(safe-area-inset-*)` when the
- * SDK value is zero, so notched browsers like iOS Safari still work.
+ * Returns SDK safe-area insets plus an `isTossEnv` flag so Layout can decide
+ * whether to trust SDK values exclusively (mini-app) or fall back to CSS
+ * `env(safe-area-inset-*)` (regular web browser).
+ *
+ * Per the framework guide, `env()` is unreliable in the Toss WebView, so we
+ * never combine the two sources in-app — that double-counted padding before.
  */
-export function useSafeAreaInsets(): Insets {
+export function useSafeAreaInsets(): SafeAreaInsetsState {
   const [insets, setInsets] = useState<Insets>(safeGet);
+  const [isTossEnv, setIsTossEnv] = useState(detectTossEnv);
 
   useEffect(() => {
+    setIsTossEnv(detectTossEnv());
+    setInsets(safeGet());
+
     let cleanup: (() => void) | undefined;
     try {
       cleanup = SafeAreaInsets.subscribe({ onEvent: setInsets });
@@ -38,5 +57,5 @@ export function useSafeAreaInsets(): Insets {
     return () => cleanup?.();
   }, []);
 
-  return insets;
+  return { insets, isTossEnv };
 }
