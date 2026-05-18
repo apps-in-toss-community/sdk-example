@@ -1,6 +1,6 @@
 import { partner } from '@apps-in-toss/web-framework';
 
-// TDS monochrome icon name (예: 'icon-heart-mono'). 일반 ASCII 이름은 매칭되지 않아 빈 아이콘으로 나타나요.
+// TDS 모노크롬 아이콘 이름 (예: 'icon-heart-mono'). 임의 문자열은 매칭되지 않아 빈 아이콘이 표시돼요.
 await partner.addAccessoryButton({
   id,
   title,

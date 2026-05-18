@@ -21,8 +21,8 @@ export default defineConfig({
     { name: 'clipboard', access: 'write' },
     { name: 'contacts', access: 'read' },
     { name: 'geolocation', access: 'access' },
+    { name: 'microphone', access: 'access' },
     { name: 'photos', access: 'read' },
-    { name: 'photos', access: 'write' },
   ],
   outdir: 'dist',
 });
