@@ -7,11 +7,12 @@ const domains = [
   {
     path: '/auth',
     name: 'Auth',
-    description: 'appLogin, getUserKeyForGame 등',
+    description: 'appLogin, getAnonymousKey 등',
     apis: [
       'appLogin',
       'getIsTossLoginIntegratedService',
       'getUserKeyForGame',
+      'getAnonymousKey',
       'appsInTossSignTossCert',
     ],
   },
@@ -100,6 +101,7 @@ const domains = [
       'getPendingOrders',
       'getCompletedOrRefundedOrders',
       'getSubscriptionInfo',
+      'completeProductGrant',
       'checkoutPayment',
     ],
   },
@@ -148,11 +150,13 @@ const domains = [
   {
     path: '/events',
     name: 'Events',
-    description: 'graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb',
+    description:
+      'graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb, appsInTossEvent',
     apis: [
       'graniteEvent.addEventListener',
       'tdsEvent.addEventListener',
       'onVisibilityChangedByTransparentServiceWeb',
+      'appsInTossEvent.addEventListener',
     ],
   },
   {

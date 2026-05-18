@@ -104,7 +104,7 @@ function EventSubscriberCard({
                 isSubscribed ? 'bg-green-500' : 'bg-gray-400 dark:bg-gray-500'
               }`}
             />
-            {isSubscribed ? '구독 중' : '미구독'}
+            {isSubscribed ? t('pages.events.subscribing') : t('pages.events.notSubscribed')}
           </span>
         </div>
       </div>
@@ -118,7 +118,7 @@ function EventSubscriberCard({
             : 'bg-gray-900 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200'
         }`}
       >
-        {isSubscribed ? '구독 해제' : '구독'}
+        {isSubscribed ? t('pages.events.unsubscribe') : t('pages.events.subscribe')}
       </button>
 
       {snippet ? (
@@ -205,7 +205,7 @@ function AppsInTossEventCard() {
         <div className="flex items-center gap-2">
           <DocsLink namespace="events" method="appsInTossEvent-addEventListener" />
           <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500 dark:bg-gray-800 dark:text-gray-400">
-            예약됨
+            {t('pages.events.reserved')}
           </span>
         </div>
       </div>

@@ -104,6 +104,11 @@ export const ko = {
   'pages.auth.appsInTossSignTossCert.description': '토스 인증서 서명',
 
   // IAPPage
+  'pages.iap.selectProduct': '상품 선택',
+  'pages.iap.selectProductFirst': '상품을 먼저 선택하세요',
+  'pages.iap.onetimePurchase': '일회성 구매',
+  'pages.iap.subscriptionPurchase': '구독 구매',
+  'pages.iap.reset': '초기화',
   'pages.iap.getProductItemList.description': '상품 목록 조회',
   'pages.iap.getPendingOrders.description': '미완료 주문 조회',
   'pages.iap.getCompletedOrRefundedOrders.description': '완료/환불 주문 조회',
@@ -197,6 +202,8 @@ export const ko = {
   'pages.game.contactsViral.description': '연락처 바이럴 공유',
 
   // AdsPage
+  'pages.ads.reset': '초기화',
+  'pages.ads.resetAriaLabel': 'GoogleAdMob 워크플로우 초기화',
   'pages.ads.tossAdsInitialize.description': 'TossAds 초기화',
   'pages.ads.tossAdsAttach.description': '배너 슬롯 부착 (deprecated — attachBanner 사용 권장)',
   'pages.ads.tossAdsAttachBanner.description': '배너 슬롯 부착 — 반환된 destroy()로 해제',
@@ -207,6 +214,11 @@ export const ko = {
   'pages.ads.isAppsInTossAdMobLoaded.description': 'AdMob 광고가 로드 상태인지 확인',
 
   // EventsPage
+  'pages.events.subscribing': '구독 중',
+  'pages.events.notSubscribed': '미구독',
+  'pages.events.unsubscribe': '구독 해제',
+  'pages.events.subscribe': '구독',
+  'pages.events.reserved': '예약됨',
   'pages.events.graniteBackEvent.description': '뒤로가기 버튼 이벤트 구독',
   'pages.events.graniteHomeEvent.description': '홈 버튼 이벤트 구독',
   'pages.events.tdsNavigationAccessoryEvent.description':

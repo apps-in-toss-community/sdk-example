@@ -104,6 +104,11 @@ export const en: Record<StringKey, string> = {
   'pages.auth.appsInTossSignTossCert.description': 'Sign with Toss certificate',
 
   // IAPPage
+  'pages.iap.selectProduct': 'Select product',
+  'pages.iap.selectProductFirst': 'Select a product first',
+  'pages.iap.onetimePurchase': 'One-time purchase',
+  'pages.iap.subscriptionPurchase': 'Subscription purchase',
+  'pages.iap.reset': 'Reset',
   'pages.iap.getProductItemList.description': 'Fetch product list',
   'pages.iap.getPendingOrders.description': 'Fetch pending orders',
   'pages.iap.getCompletedOrRefundedOrders.description': 'Fetch completed or refunded orders',
@@ -199,6 +204,8 @@ export const en: Record<StringKey, string> = {
   'pages.game.contactsViral.description': 'Contacts viral sharing',
 
   // AdsPage
+  'pages.ads.reset': 'Reset',
+  'pages.ads.resetAriaLabel': 'Reset GoogleAdMob workflow',
   'pages.ads.tossAdsInitialize.description': 'Initialize TossAds',
   'pages.ads.tossAdsAttach.description':
     'Attach banner slot (deprecated — use attachBanner instead)',
@@ -211,6 +218,11 @@ export const en: Record<StringKey, string> = {
   'pages.ads.isAppsInTossAdMobLoaded.description': 'Check whether an AdMob ad is loaded',
 
   // EventsPage
+  'pages.events.subscribing': 'Subscribed',
+  'pages.events.notSubscribed': 'Not subscribed',
+  'pages.events.unsubscribe': 'Unsubscribe',
+  'pages.events.subscribe': 'Subscribe',
+  'pages.events.reserved': 'Reserved',
   'pages.events.graniteBackEvent.description': 'Subscribe to back button events',
   'pages.events.graniteHomeEvent.description': 'Subscribe to home button events',
   'pages.events.tdsNavigationAccessoryEvent.description':

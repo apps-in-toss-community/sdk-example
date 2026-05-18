@@ -13,7 +13,7 @@ do **not** register additional apps.
 - `aitcc.yaml` — registration manifest (console-cli ≥ v0.1.20 dropped the
   `.app.` token from the filename).
 - `assets/logo.png` — 600×600 PNG app logo (AITC mark + `SDK Example`).
-  공식 Apps in Toss 브랜딩 가이드에 따라 **각진 정사각형** (모서리
+  Apps in Toss 브랜딩 가이드 참고 — **각진 정사각형** (모서리
   둥글림 없음, alpha flatten된 RGB). 가이드:
   <https://developers-apps-in-toss.toss.im/design/miniapp-branding-guide.html>
 - `assets/thumbnail.png` — 1932×828 PNG horizontal thumbnail (AITC.DEV
