@@ -82,7 +82,7 @@ export const GROUP_ENTRIES: OgEntry[] = [
     route: '/storage',
     eyebrow: 'SDK · Storage',
     title: 'Storage',
-    subtitle: '미니앱 영구 저장소 — setItem, getItem, removeItem.',
+    subtitle: '미니앱 영구 저장소 — setItem, getItem, removeItem, saveBase64Data.',
     footer: `${SITE}/storage`,
   },
   {
@@ -122,7 +122,7 @@ export const GROUP_ENTRIES: OgEntry[] = [
     route: '/haptic',
     eyebrow: 'SDK · Haptic',
     title: 'Haptic',
-    subtitle: 'generateHapticFeedback, saveBase64Data.',
+    subtitle: 'generateHapticFeedback.',
     footer: `${SITE}/haptic`,
   },
   {

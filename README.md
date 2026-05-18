@@ -20,12 +20,12 @@
 | `/navigation` | Navigation | closeView, openURL, share 등 | 9 |
 | `/environment` | Environment | getPlatformOS, getNetworkStatus 등 | 14 |
 | `/permissions` | Permissions | getPermission, openPermissionDialog 등 | 3 |
-| `/storage` | Storage | setItem, getItem, removeItem 등 | 4 |
+| `/storage` | Storage | setItem, getItem, removeItem, saveBase64Data 등 | 5 |
 | `/location` | Location | getCurrentLocation, startUpdateLocation | 2 |
 | `/camera` | Camera & Photos | openCamera, fetchAlbumPhotos | 2 |
 | `/contacts` | Contacts | fetchContacts | 1 |
 | `/clipboard` | Clipboard | getClipboardText, setClipboardText | 2 |
-| `/haptic` | Haptic | generateHapticFeedback, saveBase64Data | 2 |
+| `/haptic` | Haptic | generateHapticFeedback | 1 |
 | `/iap` | IAP | 상품 조회, 구매, 주문 관리 | 7 |
 | `/ads` | Ads | GoogleAdMob, TossAds, FullScreenAd | 10 |
 | `/game` | Game | 게임센터, 프로모션, contactsViral | 6 |

@@ -61,8 +61,8 @@ const domains = [
   {
     path: '/storage',
     name: 'Storage',
-    description: 'setItem, getItem, removeItem 등',
-    apis: ['setItem', 'getItem', 'removeItem', 'clearItems'],
+    description: 'setItem, getItem, removeItem, saveBase64Data 등',
+    apis: ['setItem', 'getItem', 'removeItem', 'clearItems', 'saveBase64Data'],
   },
   {
     path: '/location',
@@ -86,8 +86,8 @@ const domains = [
   {
     path: '/haptic',
     name: 'Haptic',
-    description: 'generateHapticFeedback, saveBase64Data',
-    apis: ['generateHapticFeedback', 'saveBase64Data'],
+    description: 'generateHapticFeedback',
+    apis: ['generateHapticFeedback'],
   },
   {
     path: '/iap',
