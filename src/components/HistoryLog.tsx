@@ -60,11 +60,11 @@ export function HistoryLog({ entries, onClear }: HistoryLogProps) {
               {formatTime(entry.timestamp)}
             </span>
             <span
-              className={
+              className={`min-w-0 break-all ${
                 entry.status === 'error'
                   ? 'text-red-600 dark:text-red-400'
                   : 'text-green-600 dark:text-green-400'
-              }
+              }`}
             >
               {entry.status === 'error'
                 ? entry.error

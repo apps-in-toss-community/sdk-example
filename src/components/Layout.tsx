@@ -4,17 +4,25 @@ import { useSafeAreaInsets } from '../hooks/useSafeAreaInsets';
 import { BrandMark } from './BrandMark';
 import { DemoBanner } from './DemoBanner';
 
-function insetValue(sdk: number, edge: 'top' | 'bottom' | 'left' | 'right'): string {
+// In the Toss app the SDK is the only reliable source — `env(safe-area-inset-*)`
+// double-counts and produces extra top padding. Outside Toss (regular browser)
+// the SDK returns zeros, so CSS env() takes over and notched browsers still work.
+function resolveInset(
+  sdk: number,
+  edge: 'top' | 'bottom' | 'left' | 'right',
+  isTossEnv: boolean,
+): string {
+  if (isTossEnv) return `${sdk}px`;
   return sdk > 0 ? `${sdk}px` : `env(safe-area-inset-${edge})`;
 }
 
 export function Layout() {
-  const insets = useSafeAreaInsets();
+  const { insets, isTossEnv } = useSafeAreaInsets();
 
-  const top = insetValue(insets.top, 'top');
-  const bottom = insetValue(insets.bottom, 'bottom');
-  const left = insetValue(insets.left, 'left');
-  const right = insetValue(insets.right, 'right');
+  const top = resolveInset(insets.top, 'top', isTossEnv);
+  const bottom = resolveInset(insets.bottom, 'bottom', isTossEnv);
+  const left = resolveInset(insets.left, 'left', isTossEnv);
+  const right = resolveInset(insets.right, 'right', isTossEnv);
 
   // --safe-top is read by sticky descendants (PageHeader, HomePage search
   // header) — plain `sticky top-0` would anchor to the viewport and let

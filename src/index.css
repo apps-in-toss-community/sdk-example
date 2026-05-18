@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+/* Mini-app viewport hygiene: no horizontal scroll, no rubber-band, no pinch-zoom. */
+html,
+body {
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  touch-action: pan-y;
+}
+
+/* Wrap long lines in code blocks so a single ApiCard snippet can't widen
+   the page past 430px and trigger horizontal scroll. */
+pre,
+pre code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
