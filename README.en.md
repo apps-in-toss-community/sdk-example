@@ -95,6 +95,26 @@ The "OIDC bridge demo" section on `AuthPage` calls the community-hosted [`oidc-b
 
 To point at a self-hosted instance, update the `OIDC_BRIDGE_BASE_URL` constant in `src/components/OidcBridgeSection.tsx`.
 
+## Deploy
+
+Pushing a `v*` git tag triggers `.github/workflows/deploy-ait.yml`, which:
+
+1. builds the `.ait` bundle (`pnpm bundle:ait`)
+2. uploads it to `aitc-sdk-example` (miniAppId `31146`, workspace `3095`) via the Toss CLI (`ait deploy --scheme-only`) — the Deploy Key is provided through the `AITCC_API_KEY` GitHub secret
+3. renders the returned `intoss-private://` URL as a QR PNG
+4. attaches the URL, QR, and `.ait` bundle to a GitHub Release
+
+```bash
+git tag v0.1.5
+git push origin v0.1.5
+```
+
+To re-run for an existing tag, dispatch the "Deploy .ait bundle" workflow manually from the Actions tab and pass the tag as input.
+
+Opening the `intoss-private://` URL on a phone that has the Toss app installed (or scanning the QR with the camera) launches the mini-app full-screen — a dog-food path that bypasses the review queue.
+
+The Deploy Key is issued from the Apps in Toss console ("API key" in the console UI). This project standardises on the term `Deploy Key` in user-facing copy, but the CLI flag (`--api-key`) and the GitHub secret name (`AITCC_API_KEY`) are kept as-is for upstream compatibility. When the key expires, just rotate the secret value.
+
 ## Pre-commit hook
 
 Optional but recommended. After cloning, activate the standard pre-commit hook (runs `biome check` on staged files) with:
