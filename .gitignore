@@ -17,3 +17,7 @@ playwright/.cache/
 
 # aitcc dog-food per-run artifacts (not fixtures)
 aitcc/submit-*.json
+
+# Granite / @apps-in-toss/cli build artifacts
+.granite/
+*.ait

@@ -46,6 +46,43 @@ React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`),
 
 dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `getAppsInTossGlobals()`가 truthy를 반환한다는 이유로 SDK를 "present"로 감지하고, `navigator.clipboard.*` 등의 표준 API 호출을 SDK(=devtools mock) 경유로 라우팅한다. 이 합성을 sdk-example에서 명시적으로 가시화/회귀 검증하기 위해 `EnvironmentPage` 상단에 `ShimCompositionCard`를 둔다 (writeText round-trip이 `window.__ait` mock state를 갱신하는지 확인). e2e는 `e2e/shim-composition.spec.ts`.
 
+## Mini-app 번들 빌드 (`.ait`)
+
+이 repo는 두 산출물을 만든다:
+
+1. **웹 dist** (`pnpm build`) — `tsc -b && vite build && SSG + sitemap`. `sdk-example.aitc.dev` 정적 배포용.
+2. **`.ait` 번들** (`pnpm bundle:ait` → `ait build`) — 토스 앱이 로드하는 미니앱 패키지. `granite.config.ts`가 입력, `aitc-sdk-example.ait`가 산출.
+
+번들러는 **`@apps-in-toss/cli@2.5.2`** (공식 도구, dev dep). `ait build`는 `vite build`를 한 번 더 돌려 dist를 만들고 `AITBUNDL` magic + protobuf 헤더 + zip blob 포맷으로 wrap한다. 빌드 시 두 RN target(0.84.0 + 0.72.6)에 대해 산출.
+
+**`granite.config.ts`** — 미니앱 brand metadata + web build wiring. 핵심 필드:
+
+- `appName: 'aitc-sdk-example'` — 31146의 콘솔 등록명과 일치.
+- `brand.icon` — **`string` (URL) 필수**. `null` 주면 schema validation에서 fail (메시지는 `[Apps In Toss Plugin] 플러그인 옵션이 올바르지 않습니다.`로 추상적이라 발견 시간을 잡아먹는다).
+- `web.commands.build: 'vite build'` — sdk-example의 정식 `pnpm build`는 `tsc -b && vite build && SSG + sitemap`이지만, mini-app 번들에는 SSG/sitemap이 무의미하므로 vite build만 호출. 타입 체크가 따로 필요한 contributor는 `pnpm typecheck`를 별도 단계로 돌릴 것.
+- `permissions: []` — 처음 빌드 통과용 placeholder. SDK 호출에 권한 prompt가 필요한 도메인을 dog-food하려면 여기 추가.
+
+**산출물 / artifacts**
+
+- `aitc-sdk-example.ait` (~4 MB) — gitignored.
+- `.granite/app.json` — 빌드 메타. gitignored.
+
+**Deploy로 가는 prerequisite (2026-05-18 dry-run 캡처)**
+
+`aitcc app deploy <bundle.ait> --workspace 3095 --app 31146 --dry-run`은 우리 console-cli가 번들을 정확히 파싱함을 확인했다(`bundleFormat: ait`, embedded deploymentId 추출 성공). 그러나 실 deploy는 **워크스페이스 약관 7개 미체결**로 차단된 상태:
+
+| Scope | Type | errorCode | 약관 |
+|---|---|---|---|
+| workspace | TOSS_LOGIN | 4037 | [제휴용] 개인(신용)정보 보안관리 약정서 |
+| workspace | TOSS_LOGIN | 4037 | 토스 로그인 약관 |
+| workspace | BIZ_WORKSPACE | 4040 | 앱인토스 제휴 서비스 이용약관(제휴사용) |
+| workspace | BIZ_WORKSPACE | 4040 | [위탁용] 개인(신용)정보 보안관리 약정서 |
+| workspace | BIZ_WORKSPACE | 4040 | 앱인토스 보안점검 약관 |
+| workspace | IAA | 4099 | TOSS 광고대행 서비스 이용약관 |
+| workspace | IAP | 5001 | 앱인토스 디지털콘텐츠 위탁매매 약관 |
+
+각각 `aitcc workspace terms --type <TYPE>`로 동의 가능 — 단 (주)프로덕트팩토리 사업체 명의의 약관이라 maintainer 결정 필요. 동의 후에야 `aitcc app deploy ... --request-review --release-notes ...`가 통과한다.
+
 ## OIDC bridge URL
 
 `OidcBridgeSection`은 커뮤니티 공용 인스턴스 `https://oidc-bridge.aitc.dev`를 default 상수(`OIDC_BRIDGE_BASE_URL` in `src/components/OidcBridgeSection.tsx`)로 사용. 환경 변수/`.env` 안 씀 — self-host로 가리키려면 상수만 바꿔서 PR.
