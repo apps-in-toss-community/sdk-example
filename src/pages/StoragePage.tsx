@@ -82,6 +82,7 @@ export function StoragePage() {
             await saveBase64Data({ data: p.data, fileName: p.fileName, mimeType: p.mimeType });
           }}
           snippet={saveBase64DataSnippet}
+          docsUrl={docsLink('storage', 'saveBase64Data')}
         />
       </div>
     </div>
