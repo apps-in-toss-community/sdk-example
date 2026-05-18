@@ -1,3 +1,5 @@
+import { getOperationalEnvironment, setIosSwipeGestureEnabled } from '@apps-in-toss/web-framework';
+import { useEffect } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/Layout';
@@ -21,9 +23,27 @@ import { PartnerPage } from './pages/PartnerPage';
 import { PaymentPage } from './pages/PaymentPage';
 import { PermissionsPage } from './pages/PermissionsPage';
 import { StoragePage } from './pages/StoragePage';
+
 // SCAFFOLD_DOMAIN_IMPORTS_END
 
+// iOS swipe-back races with react-router history pop, exiting the mini-app
+// after a couple of pops (v0.1.1 dog-food, 2026-05-18). SDK exposes
+// setIosSwipeGestureEnabled exactly for apps that own their own navigation,
+// so disable the native gesture and rely on PageHeader's back button.
+// NavigationPage's demo card can still toggle it back on for inspection.
+function useDisableIosSwipeGestureInToss(): void {
+  useEffect(() => {
+    try {
+      if (getOperationalEnvironment() !== 'toss') return;
+    } catch {
+      return;
+    }
+    Promise.resolve(setIosSwipeGestureEnabled({ isEnabled: false })).catch(() => {});
+  }, []);
+}
+
 export function App() {
+  useDisableIosSwipeGestureInToss();
   // Honors Vite's BASE_URL so Pages (e.g. /sdk-example/) and 앱인토스 배포 (/) both work.
   const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
   return (
