@@ -15,8 +15,13 @@ export function PartnerPage() {
           description={t('pages.partner.addAccessoryButton.description')}
           params={[
             { name: 'id', label: 'Button ID', placeholder: 'btn-1', defaultValue: 'btn-1' },
-            { name: 'title', label: 'Title', placeholder: 'My Button', defaultValue: 'My Button' },
-            { name: 'iconName', label: 'Icon Name', placeholder: 'star', defaultValue: 'star' },
+            { name: 'title', label: 'Title', placeholder: '하트', defaultValue: '하트' },
+            {
+              name: 'iconName',
+              label: 'TDS Icon Name',
+              placeholder: 'icon-heart-mono',
+              defaultValue: 'icon-heart-mono',
+            },
           ]}
           execute={async (p) => {
             await partner.addAccessoryButton({
