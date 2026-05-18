@@ -1,0 +1,99 @@
+name: Deploy .ait bundle
+
+# Tag-gated deploy: pushing a v* tag builds the .ait bundle, uploads it to
+# the aitc-sdk-example mini-app (workspace 3095, app 31146) via the Toss CLI,
+# captures the returned intoss-private:// URL, renders it as a QR PNG, and
+# publishes everything as a GitHub Release. The Deploy Key is provided as
+# the AITCC_API_KEY secret (the CLI flag itself is --api-key for upstream
+# compatibility; in our docs we call it "Deploy Key").
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to deploy (must already exist on origin, e.g. v0.1.5)'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy-ait-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_DIR: .tmp/release
+      BUNDLE_PATH: aitc-sdk-example.ait
+    steps:
+      - name: Resolve ref
+        id: ref
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.ref.outputs.tag }}
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build .ait bundle
+        run: pnpm bundle:ait
+
+      - name: Deploy to aitc-sdk-example
+        id: deploy
+        env:
+          AITCC_API_KEY: ${{ secrets.AITCC_API_KEY }}
+          TAG: ${{ steps.ref.outputs.tag }}
+        run: |
+          set -euo pipefail
+          url=$(pnpm exec ait deploy \
+            --api-key "$AITCC_API_KEY" \
+            --scheme-only \
+            -m "Release $TAG" \
+            | tr -d '\r' \
+            | grep -m1 '^intoss-private://')
+          if [ -z "$url" ]; then
+            echo "::error::ait deploy did not emit an intoss-private:// URL"
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "::add-mask::$url"
+
+      - name: Render QR + release body
+        env:
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          TAG: ${{ steps.ref.outputs.tag }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: pnpm exec tsx scripts/generate-deploy-release.ts
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.ref.outputs.tag }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" \
+            --title "$TAG" \
+            --notes-file "$RELEASE_DIR/release-body.md" \
+            "$BUNDLE_PATH" \
+            "$RELEASE_DIR/qr.png"
