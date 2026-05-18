@@ -162,7 +162,6 @@ export const ko = {
   'pages.haptic.generateHapticFeedback.description': 'SDK — 햅틱 피드백 생성',
   'pages.haptic.navigatorVibrate.description':
     '표준 Web API (via @ait-co/polyfill) — ms 단위 pattern. 쉼표로 구분하면 vibrate/pause 시퀀스.',
-  'pages.haptic.saveBase64Data.description': 'SDK — Base64 데이터 저장',
 
   // CameraPage
   'pages.camera.openCamera.description': '카메라 열기',
@@ -181,6 +180,7 @@ export const ko = {
   'pages.storage.getItem.description': '값 조회',
   'pages.storage.removeItem.description': '값 삭제',
   'pages.storage.clearItems.description': '전체 삭제',
+  'pages.storage.saveBase64Data.description': 'SDK — Base64 데이터 저장',
 
   // AnalyticsPage
   'pages.analytics.screen.description': '화면 조회 로그',

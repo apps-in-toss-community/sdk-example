@@ -164,7 +164,6 @@ export const en: Record<StringKey, string> = {
   'pages.haptic.generateHapticFeedback.description': 'SDK — generate haptic feedback',
   'pages.haptic.navigatorVibrate.description':
     'Standard Web API (via @ait-co/polyfill) — pattern in ms; comma-separated values produce vibrate/pause sequences.',
-  'pages.haptic.saveBase64Data.description': 'SDK — save Base64 data',
 
   // CameraPage
   'pages.camera.openCamera.description': 'Open camera',
@@ -183,6 +182,7 @@ export const en: Record<StringKey, string> = {
   'pages.storage.getItem.description': 'Retrieve a value',
   'pages.storage.removeItem.description': 'Delete a value',
   'pages.storage.clearItems.description': 'Delete all values',
+  'pages.storage.saveBase64Data.description': 'SDK — save Base64 data',
 
   // AnalyticsPage
   'pages.analytics.screen.description': 'Screen view log',

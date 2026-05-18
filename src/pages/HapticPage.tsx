@@ -1,13 +1,11 @@
 import type { HapticFeedbackType } from '@apps-in-toss/web-framework';
-import { generateHapticFeedback, saveBase64Data } from '@apps-in-toss/web-framework';
-import { ApiCard } from '../components/ApiCard';
+import { generateHapticFeedback } from '@apps-in-toss/web-framework';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
 import { PolyfillToggleCard } from '../components/PolyfillToggleCard';
 import { t } from '../i18n';
 import generateHapticFeedbackSnippet from '../snippets/haptic/generateHapticFeedback.ts?raw';
 import navigatorVibrateSnippet from '../snippets/haptic/navigatorVibrate.ts?raw';
-import saveBase64DataSnippet from '../snippets/haptic/saveBase64Data.ts?raw';
 
 const hapticOptions: { label: string; value: HapticFeedbackType }[] = [
   { label: 'tickWeak', value: 'tickWeak' },
@@ -75,35 +73,6 @@ export function HapticPage() {
             },
             snippet: navigatorVibrateSnippet,
           }}
-        />
-
-        <ApiCard
-          name="saveBase64Data"
-          description={t('pages.haptic.saveBase64Data.description')}
-          params={[
-            {
-              name: 'data',
-              label: 'Base64 Data',
-              placeholder: 'SGVsbG8=',
-              defaultValue: 'SGVsbG8=',
-            },
-            {
-              name: 'fileName',
-              label: 'File Name',
-              placeholder: 'test.txt',
-              defaultValue: 'test.txt',
-            },
-            {
-              name: 'mimeType',
-              label: 'MIME Type',
-              placeholder: 'text/plain',
-              defaultValue: 'text/plain',
-            },
-          ]}
-          execute={async (p) => {
-            await saveBase64Data({ data: p.data, fileName: p.fileName, mimeType: p.mimeType });
-          }}
-          snippet={saveBase64DataSnippet}
         />
       </div>
     </div>
