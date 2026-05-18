@@ -83,6 +83,14 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 각각 `aitcc workspace terms --type <TYPE>`로 동의 가능 — 단 (주)프로덕트팩토리 사업체 명의의 약관이라 maintainer 결정 필요. 동의 후에야 `aitcc app deploy ... --request-review --release-notes ...`가 통과한다.
 
+## Deploy Key (= 콘솔 "API 키")
+
+앱인토스 콘솔이 "API 키"로 부르는 워크스페이스-scope 자격증명은 이 프로젝트 전반에서 **`Deploy Key`로 부른다** (사용자 노출 텍스트 통일 규칙, umbrella `CLAUDE.md` "용어: Deploy Key" 단락 참고). CLI flag(`ait deploy --api-key`)와 GitHub secret 이름(`AITCC_API_KEY`)은 외부 인터페이스라 그대로 유지.
+
+운영 중인 Deploy Key: workspace 3095 / scope `aitc-sdk-example` only / id 6905 / name `aitcc-sdk-ex-ci` / expire 2027-05-18. 평소 deploy 흐름은 `pnpm bundle:ait` → `pnpm exec ait deploy --api-key "$AITCC_API_KEY" --scheme-only -m "<memo>"` (stdout 마지막 줄이 `intoss-private://...` URL). GitHub Actions의 tag-gated workflow가 이 흐름을 자동화한다 — `.github/workflows/deploy-ait.yml` 참고.
+
+**Dog-food는 PREPARE 단계에선 `test-push`로**: 31146의 `serviceStatus`가 `PREPARE`(출시 review 통과 전)인 동안은 intoss-private URL을 폰에서 열어도 토스 앱이 actual bundle을 load하지 않는다 (`aitcc app bundles deployed`가 `null` 반환). 그 동안은 `aitcc app bundles test-push --workspace 3095 --app 31146 --deployment-id <id>`로 uploader 디바이스에 push를 보내고, 그 알림을 통해 bundle을 load해야 한다. v0.1.1에서 처음 확인됨 — 자세한 배경은 umbrella `CLAUDE.md` "Dog-food 흐름" 단락 참조.
+
 ## OIDC bridge URL
 
 `OidcBridgeSection`은 커뮤니티 공용 인스턴스 `https://oidc-bridge.aitc.dev`를 default 상수(`OIDC_BRIDGE_BASE_URL` in `src/components/OidcBridgeSection.tsx`)로 사용. 환경 변수/`.env` 안 씀 — self-host로 가리키려면 상수만 바꿔서 PR.

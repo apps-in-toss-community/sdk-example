@@ -57,23 +57,31 @@ async function main(): Promise<void> {
 
   const size = await bundleSizeMB();
   const shortSha = COMMIT_SHA === '(unknown)' ? COMMIT_SHA : COMMIT_SHA.slice(0, 12);
+  const deploymentId = new URL(DEPLOY_URL).searchParams.get('_deploymentId') ?? '(unknown)';
 
   const body = [
     '## 토스 앱에서 미니앱 열기',
     '',
-    '아래 URL을 토스 앱이 설치된 폰에서 열면 미니앱이 풀스크린으로 뜹니다 (리뷰 큐 통과 없이 직접 실행되는 dog-food 경로).',
+    '아래 intoss-private URL을 폰의 토스 앱에서 열거나 `qr.png`를 카메라로 스캔합니다.',
     '',
     '```',
     DEPLOY_URL,
     '```',
     '',
-    '첨부된 `qr.png`를 폰 카메라로 스캔해도 동일하게 열립니다.',
+    '> **미니앱이 안 뜬다면** — 31146이 아직 출시 review 통과 전(`serviceStatus: PREPARE`)이라 intoss-private URL만으론 bundle이 load되지 않을 수 있습니다. 그땐 운영자가 로컬에서 한 번 더 push를 보내야 합니다:',
+    '>',
+    '> ```sh',
+    `> aitcc app bundles test-push --workspace 3095 --app 31146 --deployment-id ${deploymentId}`,
+    '> ```',
+    '>',
+    '> 토스 앱에 push 알림이 오고, 그 알림을 통해 이 bundle이 load됩니다. 자세한 배경은 umbrella `CLAUDE.md` "Dog-food 흐름" 참고.',
     '',
     '## 빌드 정보',
     '',
     `- Tag: \`${TAG}\``,
     `- Commit: \`${shortSha}\``,
     `- Bundle: \`aitc-sdk-example.ait\` (${size})`,
+    `- DeploymentId: \`${deploymentId}\``,
     '- App: `aitc-sdk-example` (miniAppId 31146, workspace 3095)',
     '',
     '---',
