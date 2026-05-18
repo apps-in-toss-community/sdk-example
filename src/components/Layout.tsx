@@ -4,9 +4,9 @@ import { useSafeAreaInsets } from '../hooks/useSafeAreaInsets';
 import { BrandMark } from './BrandMark';
 import { DemoBanner } from './DemoBanner';
 
-// In the Toss app the SDK is the only reliable source — `env(safe-area-inset-*)`
-// double-counts and produces extra top padding. Outside Toss (regular browser)
-// the SDK returns zeros, so CSS env() takes over and notched browsers still work.
+// In the Toss app trust SDK insets only — the WebView's env(safe-area-inset-*)
+// double-counts. Outside Toss SDK returns zero, so env() fills in for notched
+// browsers.
 function resolveInset(
   sdk: number,
   edge: 'top' | 'bottom' | 'left' | 'right',

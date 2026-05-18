@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-/* Mini-app viewport hygiene: no horizontal scroll, no rubber-band, no pinch-zoom. */
+/* Mini-app viewport hygiene: no horizontal scroll, no rubber-band, no pinch-zoom.
+   `pan-y` blocks horizontal touch gestures — any future swipeable child
+   (carousel, slider) must opt back in with `touch-action: pan-x` on itself. */
 html,
 body {
   overflow-x: hidden;
