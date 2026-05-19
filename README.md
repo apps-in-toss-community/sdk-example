@@ -16,7 +16,7 @@
 
 | 경로 | 도메인 | 설명 | API 수 |
 |---|---|---|---|
-| `/auth` | Auth | appLogin, getUserKeyForGame 등 | 4 |
+| `/auth` | Auth | appLogin, getAnonymousKey 등 | 5 |
 | `/navigation` | Navigation | closeView, openURL, share 등 | 9 |
 | `/environment` | Environment | getPlatformOS, getNetworkStatus 등 | 14 |
 | `/permissions` | Permissions | getPermission, openPermissionDialog 등 | 3 |
@@ -26,12 +26,12 @@
 | `/contacts` | Contacts | fetchContacts | 1 |
 | `/clipboard` | Clipboard | getClipboardText, setClipboardText | 2 |
 | `/haptic` | Haptic | generateHapticFeedback | 1 |
-| `/iap` | IAP | 상품 조회, 구매, 주문 관리 | 7 |
+| `/iap` | IAP | 상품 조회, 구매, 주문 관리 | 8 |
 | `/ads` | Ads | GoogleAdMob, TossAds, FullScreenAd | 10 |
 | `/game` | Game | 게임센터, 프로모션, contactsViral | 6 |
 | `/analytics` | Analytics | screen, impression, click, eventLog | 4 |
 | `/partner` | Partner | addAccessoryButton, removeAccessoryButton | 2 |
-| `/events` | Events | graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb | 3 |
+| `/events` | Events | graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb, appsInTossEvent | 4 |
 | `/payment` | Payment | 토스페이 정기결제창 — wrappedToken으로 사용자 인증 (실제 결제는 서버) | 1 |
 | `/notification` | Notification | 푸시 알림 동의 — newAgreement/alreadyAgreed/agreementRejected 3-way 결과 | 1 |
 

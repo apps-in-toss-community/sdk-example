@@ -111,7 +111,7 @@ export function AdsPage() {
             disabled={loadStatus === 'loading'}
             className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
           >
-            실행
+            {t('apiCard.execute')}
           </button>
           <ResultView status={loadStatus} data={loadResult} error={loadError} />
           <CodeSnippet
@@ -139,7 +139,7 @@ export function AdsPage() {
             disabled={!adLoaded}
             className="w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
           >
-            실행
+            {t('apiCard.execute')}
           </button>
           <HistoryLog entries={eventLog} onClear={() => setEventLog([])} />
           <CodeSnippet
@@ -224,10 +224,10 @@ export function AdsPage() {
             <button
               type="button"
               onClick={handleReset}
-              aria-label="GoogleAdMob 워크플로우 초기화"
+              aria-label={t('pages.ads.resetAriaLabel')}
               className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
             >
-              초기화
+              {t('pages.ads.reset')}
             </button>
           </div>
           <WorkflowStepper steps={steps} activeStep={activeStep} onStepClick={setActiveStep} />
@@ -278,7 +278,7 @@ export function AdsPage() {
                 disabled={fsLoadStatus === 'loading'}
                 className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
               >
-                실행
+                {t('apiCard.execute')}
               </button>
               <ResultView status={fsLoadStatus} data={fsLoadResult} error={fsLoadError} />
               <CodeSnippet code={loadFullScreenAdSnippet} label="loadFullScreenAd source snippet" />
@@ -300,7 +300,7 @@ export function AdsPage() {
                 disabled={fsShowStatus === 'loading'}
                 className="mt-3 w-full rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
               >
-                실행
+                {t('apiCard.execute')}
               </button>
               <ResultView status={fsShowStatus} data={fsShowResult} error={fsShowError} />
               <CodeSnippet code={showFullScreenAdSnippet} label="showFullScreenAd source snippet" />

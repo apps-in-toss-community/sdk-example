@@ -109,7 +109,9 @@ export function IAPPage() {
           />
           {products.length > 0 && (
             <div className="rounded-lg border border-gray-200 p-3 dark:border-gray-800">
-              <p className="text-xs font-medium text-gray-500 mb-2 dark:text-gray-400">상품 선택</p>
+              <p className="text-xs font-medium text-gray-500 mb-2 dark:text-gray-400">
+                {t('pages.iap.selectProduct')}
+              </p>
               {products.map((p) => {
                 const sku = p.sku ?? '';
                 return (
@@ -140,7 +142,7 @@ export function IAPPage() {
       title: '구매',
       description: selectedSku
         ? `선택한 상품(${selectedSku})을 구매합니다`
-        : '상품을 먼저 선택하세요',
+        : t('pages.iap.selectProductFirst'),
       content: (
         <div className="space-y-3 py-2">
           {selectedSku ? (
@@ -148,7 +150,9 @@ export function IAPPage() {
               SKU: <span className="font-mono font-semibold">{selectedSku}</span>
             </p>
           ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400">상품을 먼저 선택하세요</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {t('pages.iap.selectProductFirst')}
+            </p>
           )}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -171,7 +175,7 @@ export function IAPPage() {
               disabled={!selectedSku || purchaseStatus === 'loading'}
               className="flex-1 rounded-lg bg-gray-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 transition-colors dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
             >
-              일회성 구매
+              {t('pages.iap.onetimePurchase')}
             </button>
             <button
               type="button"
@@ -179,7 +183,7 @@ export function IAPPage() {
               disabled={!selectedSku || purchaseStatus === 'loading'}
               className="flex-1 rounded-lg bg-gray-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-gray-600 disabled:opacity-50 transition-colors dark:bg-gray-400 dark:text-gray-900 dark:hover:bg-gray-500"
             >
-              구독 구매
+              {t('pages.iap.subscriptionPurchase')}
             </button>
           </div>
           {purchaseStatus === 'error' && (
@@ -251,7 +255,7 @@ export function IAPPage() {
             onClick={handleReset}
             className="rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
           >
-            초기화
+            {t('pages.iap.reset')}
           </button>
         </div>
         <WorkflowStepper steps={steps} activeStep={activeStep} onStepClick={setActiveStep} />
