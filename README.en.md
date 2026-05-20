@@ -16,7 +16,7 @@ A reference app for interactively testing all public APIs of the [`@apps-in-toss
 
 | Path | Domain | Description | APIs |
 |---|---|---|---|
-| `/auth` | Auth | appLogin, getUserKeyForGame, etc. | 4 |
+| `/auth` | Auth | appLogin, getAnonymousKey, etc. | 5 |
 | `/navigation` | Navigation | closeView, openURL, share, etc. | 9 |
 | `/environment` | Environment | getPlatformOS, getNetworkStatus, etc. | 14 |
 | `/permissions` | Permissions | getPermission, openPermissionDialog, etc. | 3 |
@@ -26,12 +26,12 @@ A reference app for interactively testing all public APIs of the [`@apps-in-toss
 | `/contacts` | Contacts | fetchContacts | 1 |
 | `/clipboard` | Clipboard | getClipboardText, setClipboardText | 2 |
 | `/haptic` | Haptic | generateHapticFeedback | 1 |
-| `/iap` | IAP | product listing, purchase, order management | 7 |
+| `/iap` | IAP | product listing, purchase, order management | 8 |
 | `/ads` | Ads | GoogleAdMob, TossAds, FullScreenAd | 10 |
 | `/game` | Game | game center, promotions, contactsViral | 6 |
 | `/analytics` | Analytics | screen, impression, click, eventLog | 4 |
 | `/partner` | Partner | addAccessoryButton, removeAccessoryButton | 2 |
-| `/events` | Events | graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb | 3 |
+| `/events` | Events | graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb, appsInTossEvent | 4 |
 | `/payment` | Payment | TossPay recurring-billing sheet — user auth via `wrappedToken` (real charge runs server-side) | 1 |
 | `/notification` | Notification | Push-notification opt-in — 3-way result: `newAgreement` / `alreadyAgreed` / `agreementRejected` | 1 |
 
