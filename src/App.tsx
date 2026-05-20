@@ -27,7 +27,7 @@ import { StoragePage } from './pages/StoragePage';
 // SCAFFOLD_DOMAIN_IMPORTS_END
 
 // iOS swipe-back races with react-router history pop, exiting the mini-app
-// after a couple of pops (v0.1.1 dog-food, 2026-05-18). SDK exposes
+// after a couple of pops. SDK exposes
 // setIosSwipeGestureEnabled exactly for apps that own their own navigation,
 // so disable the native gesture and rely on PageHeader's back button.
 // NavigationPage's demo card can still toggle it back on for inspection.

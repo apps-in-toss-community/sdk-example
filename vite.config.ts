@@ -16,16 +16,6 @@ export default defineConfig({
   define: {
     __DEBUG_BUILD__: JSON.stringify(process.env.RELEASE_CHANNEL === 'dogfood'),
   },
-  // Verification escape hatch: the in-app debug gate (`@ait-co/devtools/in-app`)
-  // landed on devtools `main` after the 0.1.22 npm publish, so the installed
-  // package has no `/in-app` subpath yet. Point `AIT_DEBUG_INAPP_SRC` at a
-  // local devtools `src/in-app/index.ts` to alias the dynamic import for
-  // dogfood-channel verification before a devtools release ships the entry.
-  // Unset (the default) leaves the bare `@ait-co/devtools/in-app` specifier so
-  // the real dogfood `.ait` bundle consumes the published package.
-  resolve: process.env.AIT_DEBUG_INAPP_SRC
-    ? { alias: { '@ait-co/devtools/in-app': process.env.AIT_DEBUG_INAPP_SRC } }
-    : undefined,
   plugins: [
     react(),
     tailwindcss(),
