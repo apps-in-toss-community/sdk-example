@@ -12,60 +12,108 @@
 import {
   Accuracy,
   Analytics,
+  appLogin,
   appsInTossEvent,
+  checkoutPayment,
+  closeView,
   env,
+  eventLog,
   fetchAlbumPhotos,
   fetchContacts,
   GoogleAdMob,
+  generateHapticFeedback,
   getAppsInTossGlobals,
   getClipboardText,
   getCurrentLocation,
+  getDeviceId,
+  getGroupId,
+  getLocale,
+  getNetworkStatus,
+  getOperationalEnvironment,
+  getPermission,
+  getPlatformOS,
   getSafeAreaInsets,
+  getSchemeUri,
   getServerTime,
+  getTossAppVersion,
+  getTossShareLink,
   graniteEvent,
   IAP,
   isMinVersionSupported,
   loadFullScreenAd,
   openCamera,
+  openPermissionDialog,
+  openURL,
   partner,
   requestNotificationAgreement,
+  requestPermission,
   requestReview,
+  requestTossPayPaysBilling,
   SafeAreaInsets,
   Storage,
   setClipboardText,
+  setDeviceOrientation,
+  setIosSwipeGestureEnabled,
+  setScreenAwakeMode,
+  setSecureScreen,
+  share,
   showFullScreenAd,
   startUpdateLocation,
   TossAds,
   tdsEvent,
 } from '@apps-in-toss/web-framework';
 
-export type _Storage = typeof Storage;
 export type _Accuracy = typeof Accuracy;
-export type _getCurrentLocation = typeof getCurrentLocation;
-export type _startUpdateLocation = typeof startUpdateLocation;
-export type _openCamera = typeof openCamera;
+export type _Analytics = typeof Analytics;
+export type _appLogin = typeof appLogin;
+export type _appsInTossEvent = typeof appsInTossEvent;
+export type _checkoutPayment = typeof checkoutPayment;
+export type _closeView = typeof closeView;
+export type _env = typeof env;
+export type _eventLog = typeof eventLog;
 export type _fetchAlbumPhotos = typeof fetchAlbumPhotos;
 export type _fetchContacts = typeof fetchContacts;
-export type _getClipboardText = typeof getClipboardText;
-export type _setClipboardText = typeof setClipboardText;
-export type _SafeAreaInsets = typeof SafeAreaInsets;
-export type _getSafeAreaInsets = typeof getSafeAreaInsets;
-export type _isMinVersionSupported = typeof isMinVersionSupported;
-export type _getServerTime = typeof getServerTime;
-export type _requestReview = typeof requestReview;
+export type _generateHapticFeedback = typeof generateHapticFeedback;
 export type _getAppsInTossGlobals = typeof getAppsInTossGlobals;
-export type _graniteEvent = typeof graniteEvent;
-export type _appsInTossEvent = typeof appsInTossEvent;
-export type _tdsEvent = typeof tdsEvent;
-export type _env = typeof env;
+export type _getClipboardText = typeof getClipboardText;
+export type _getCurrentLocation = typeof getCurrentLocation;
+export type _getDeviceId = typeof getDeviceId;
+export type _getGroupId = typeof getGroupId;
+export type _getLocale = typeof getLocale;
+export type _getNetworkStatus = typeof getNetworkStatus;
+export type _getOperationalEnvironment = typeof getOperationalEnvironment;
+export type _getPermission = typeof getPermission;
+export type _getPlatformOS = typeof getPlatformOS;
+export type _getSafeAreaInsets = typeof getSafeAreaInsets;
+export type _getSchemeUri = typeof getSchemeUri;
+export type _getServerTime = typeof getServerTime;
+export type _getTossAppVersion = typeof getTossAppVersion;
+export type _getTossShareLink = typeof getTossShareLink;
 export type _GoogleAdMob = typeof GoogleAdMob;
-export type _TossAds = typeof TossAds;
-export type _loadFullScreenAd = typeof loadFullScreenAd;
-export type _showFullScreenAd = typeof showFullScreenAd;
+export type _graniteEvent = typeof graniteEvent;
 export type _IAP = typeof IAP;
+export type _isMinVersionSupported = typeof isMinVersionSupported;
+export type _loadFullScreenAd = typeof loadFullScreenAd;
+export type _openCamera = typeof openCamera;
+export type _openPermissionDialog = typeof openPermissionDialog;
+export type _openURL = typeof openURL;
 export type _partner = typeof partner;
 export type _requestNotificationAgreement = typeof requestNotificationAgreement;
-export type _Analytics = typeof Analytics;
+export type _requestPermission = typeof requestPermission;
+export type _requestReview = typeof requestReview;
+export type _requestTossPayPaysBilling = typeof requestTossPayPaysBilling;
+export type _SafeAreaInsets = typeof SafeAreaInsets;
+export type _setClipboardText = typeof setClipboardText;
+export type _setDeviceOrientation = typeof setDeviceOrientation;
+export type _setIosSwipeGestureEnabled = typeof setIosSwipeGestureEnabled;
+export type _setScreenAwakeMode = typeof setScreenAwakeMode;
+export type _setSecureScreen = typeof setSecureScreen;
+export type _share = typeof share;
+export type _showFullScreenAd = typeof showFullScreenAd;
+export type _startUpdateLocation = typeof startUpdateLocation;
+export type _Storage = typeof Storage;
+export type _tdsEvent = typeof tdsEvent;
+export type _TossAds = typeof TossAds;
 
 // Type-only imports — used in the _SdkTypes alias below
 import type {
