@@ -1,30 +1,33 @@
 import { appLogin } from '@apps-in-toss/web-framework';
-import oidcFirebaseTokenSnippet from '../snippets/auth/oidcFirebaseToken.ts?raw';
-import oidcVerifySnippet from '../snippets/auth/oidcVerify.ts?raw';
+import oidcExchangeSnippet from '../snippets/auth/oidcExchange.ts?raw';
+import oidcFirebaseSnippet from '../snippets/auth/oidcFirebaseToken.ts?raw';
 import { ApiCard } from './ApiCard';
 
 const BRIDGE_REPO_URL = 'https://github.com/apps-in-toss-community/oidc-bridge';
 export const OIDC_BRIDGE_BASE_URL = 'https://oidc-bridge.aitc.dev';
 
-/** Shape documented by oidc-bridge `POST /verify`. */
-interface VerifyResponse {
-  sub: string;
-  provider: 'toss';
-  claims: Record<string, unknown>;
-  tossAccessTokenExpiresAt: number;
+/**
+ * Backend endpoint that performs the bridge exchange. In a real app this is
+ * your own consumer backend (e.g. a Supabase Edge Function); see
+ * `supabase/functions/toss-login`. The mini-app never calls the bridge
+ * `/oidc/token` endpoint directly — the bridge authenticates the caller per
+ * registered app, so the exchange stays server-side.
+ */
+const EXCHANGE_ENDPOINT = '/functions/v1/toss-login';
+
+/** What the backend returns after a successful `/oidc/token` exchange. */
+interface ExchangeResponse {
+  id_token: string;
+  expires_in: number;
+  scope: string;
 }
 
-/** OAuth 2.0 / OIDC error envelope used by every oidc-bridge endpoint. */
+/** OAuth 2.0 / OIDC error envelope, passed through from the bridge. */
 interface OAuthErrorBody {
   error: string;
   error_description?: string;
 }
 
-/**
- * Distinguish bridge-side errors (HTTP non-2xx with structured body) from
- * client-side network failures (fetch rejection, CORS, DNS, bridge down).
- * Both surface in the standard ApiCard error panel via `Error.message`.
- */
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   let response: Response;
   try {
@@ -36,7 +39,7 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   } catch (err) {
     const cause = err instanceof Error ? err.message : String(err);
     throw new Error(
-      `Network error contacting oidc-bridge (${cause}). Is it reachable from this origin? Check CORS/ALLOWED_ORIGINS.`,
+      `Network error reaching the exchange backend (${cause}). On the static sdk-example site this endpoint is not deployed — see the snippet for the real flow.`,
     );
   }
 
@@ -45,7 +48,9 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   try {
     parsed = text.length > 0 ? JSON.parse(text) : {};
   } catch {
-    throw new Error(`oidc-bridge returned non-JSON (${response.status}): ${text.slice(0, 200)}`);
+    throw new Error(
+      `Exchange backend returned non-JSON (${response.status}): ${text.slice(0, 200)}`,
+    );
   }
 
   if (!response.ok) {
@@ -55,6 +60,11 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
     throw new Error(`${code}: ${description}`);
   }
   return parsed as T;
+}
+
+async function exchange(referrer: string): Promise<ExchangeResponse> {
+  const { authorizationCode } = await appLogin();
+  return await postJson<ExchangeResponse>(EXCHANGE_ENDPOINT, { authorizationCode, referrer });
 }
 
 export function OidcBridgeSection() {
@@ -73,16 +83,22 @@ export function OidcBridgeSection() {
       </div>
       <p className="text-xs text-gray-500 dark:text-gray-400">
         Community-operated bridge that turns a Toss{' '}
-        <code className="font-mono">authorizationCode</code> into normalized OIDC claims (and, when
-        self-hosted with a Firebase service account, a Firebase custom token). Best-effort, no SLA —
-        security-sensitive workloads should self-host.
+        <code className="font-mono">authorizationCode</code> into a standard OIDC{' '}
+        <code className="font-mono">id_token</code>, which you exchange for a session on Supabase,
+        Firebase, Auth0, or any OIDC-aware backend. Best-effort, no SLA — security-sensitive
+        workloads should self-host.
       </p>
       <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300">
-        Bridge: <span className="font-mono">{OIDC_BRIDGE_BASE_URL}</span>
+        Flow: <code className="font-mono">appLogin()</code> → your backend (
+        <code className="font-mono">{EXCHANGE_ENDPOINT}</code>) → bridge{' '}
+        <code className="font-mono">{OIDC_BRIDGE_BASE_URL}/oidc/token</code> →{' '}
+        <code className="font-mono">id_token</code>. The public bridge instance gates token issuance
+        until its cloud rollout completes, so this card surfaces the bridge response rather than a
+        finished session.
       </p>
       <ApiCard
-        name="POST /verify"
-        description="appLogin() → exchange authorizationCode for normalized claims"
+        name="appLogin → /oidc/token"
+        description="Exchange a Toss authorizationCode for an OIDC id_token via your backend"
         params={[
           {
             name: 'referrer',
@@ -95,18 +111,12 @@ export function OidcBridgeSection() {
             ],
           },
         ]}
-        execute={async ({ referrer }) => {
-          const { authorizationCode } = await appLogin();
-          return await postJson<VerifyResponse>(`${OIDC_BRIDGE_BASE_URL}/verify`, {
-            authorizationCode,
-            referrer,
-          });
-        }}
-        snippet={oidcVerifySnippet}
+        execute={({ referrer }) => exchange(referrer)}
+        snippet={oidcExchangeSnippet}
       />
       <ApiCard
-        name="POST /firebase-token"
-        description="Self-host only. Public instance responds 501 not_configured."
+        name="Firebase (OIDC provider)"
+        description="Same id_token, consumed via Firebase Identity Platform's OIDC provider"
         params={[
           {
             name: 'referrer',
@@ -119,14 +129,8 @@ export function OidcBridgeSection() {
             ],
           },
         ]}
-        execute={async ({ referrer }) => {
-          const { authorizationCode } = await appLogin();
-          return await postJson<unknown>(`${OIDC_BRIDGE_BASE_URL}/firebase-token`, {
-            authorizationCode,
-            referrer,
-          });
-        }}
-        snippet={oidcFirebaseTokenSnippet}
+        execute={({ referrer }) => exchange(referrer)}
+        snippet={oidcFirebaseSnippet}
       />
     </section>
   );
