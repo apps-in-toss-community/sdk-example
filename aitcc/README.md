@@ -47,10 +47,15 @@ pnpm dlx @ait-co/console-cli@latest app status <new-miniAppId> --json | jq .
 
 ## Updating
 
-The CLI does **not** yet expose update mode (`aitcc app register` always
-creates). Once it does, run it against the same manifest with the
-existing `miniAppId` injected. Until then, edits go through the console
-web UI (`/mini-app/<id>/meta/edit`).
+`aitcc app register` runs in update mode when the manifest carries an
+existing `miniApp.miniAppId` in the submit payload — register against
+the same `aitcc.yaml` with `miniAppId: 31146` set and it applies the
+change to the existing app instead of creating a new one. Do **not**
+register a fresh app to push edits.
+
+If the app is mid-review the update returns `errorCode 4046` (REVIEW
+lock); in that case wait for the ops team to clear the queue rather than
+working around it with a new registration.
 
 REVIEW lock semantics, the `errorCode 4046` branch, and the payload
 shape are documented in

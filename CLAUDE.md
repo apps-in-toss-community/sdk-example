@@ -112,14 +112,15 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 ```
 src/
-├── App.tsx                # React Router 설정, 16개 라우트
+├── App.tsx                # React Router 설정, 18개 라우트
 ├── __typecheck.ts         # SDK export 커버리지 컴파일 타임 검증
 ├── components/            # Layout, PageHeader, ApiCard, ParamInput,
 │                          # ResultView, HistoryLog, WorkflowStepper
-└── pages/                 # 16개 도메인 페이지 (Home, Auth, Navigation,
+└── pages/                 # 18개 도메인 페이지 (Home, Auth, Navigation,
                            # Environment, Permissions, Storage, Location,
                            # Camera, Contacts, Clipboard, Haptic, IAP,
-                           # Ads, Game, Analytics, Partner, Events)
+                           # Ads, Game, Analytics, Partner, Events,
+                           # Payment, Notification)
 ```
 
 ## 컴포넌트 디자인
@@ -156,7 +157,7 @@ scaffold가 의존하는 BEGIN/END 마커는 `src/App.tsx` (imports/routes)와 `
 
 워크플로: `pnpm dev` → `browser_navigate` → `browser_snapshot`(DOM/구조 회귀) → `browser_take_screenshot`(시각) → `browser_console_messages`(런타임 에러) → 필요 시 `browser_click`/`browser_fill_form`.
 
-전체 회귀: 홈에서 16개 도메인 카드 + 검색 필터 → 각 페이지 API 실행 → IAP/Ads 워크플로우 → EventsPage 구독 → 콘솔 에러 확인.
+전체 회귀: 홈에서 18개 도메인 카드 + 검색 필터 → 각 페이지 API 실행 → IAP/Ads 워크플로우 → EventsPage 구독 → 콘솔 에러 확인.
 
 ## 이슈 / 제안
 
