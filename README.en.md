@@ -2,7 +2,7 @@
 
 [한국어](./README.md) · **English**
 
-A reference app for interactively testing all public APIs of the [`@apps-in-toss/web-framework`](https://github.com/apps-in-toss-community/web-framework) SDK.
+A reference app for interactively testing all public APIs of the [`@apps-in-toss/web-framework`](https://www.npmjs.com/package/@apps-in-toss/web-framework) SDK.
 
 - Try every API in its **native environment** by running the app on Apps in Toss directly.
 - Use a **regular web browser** too — the [`@ait-co/devtools`](https://github.com/apps-in-toss-community/devtools) mock layer lets you develop and test without the Toss app.
@@ -196,7 +196,7 @@ The UI copy primary locale is **`ko`** (Korean). All UI strings are looked up fr
 
 ## Related repos
 
-- [`@apps-in-toss/web-framework`](https://github.com/apps-in-toss-community/web-framework) — the original SDK
+- [`@apps-in-toss/web-framework`](https://www.npmjs.com/package/@apps-in-toss/web-framework) — the original SDK
 - [`@ait-co/devtools`](https://github.com/apps-in-toss-community/devtools) — mock library and unplugin
 
 ---

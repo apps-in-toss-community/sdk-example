@@ -2,7 +2,7 @@
 
 **한국어** · [English](./README.en.md)
 
-[`@apps-in-toss/web-framework`](https://github.com/apps-in-toss-community/web-framework) SDK의 모든 public API를 인터랙티브하게 테스트할 수 있는 레퍼런스 앱.
+[`@apps-in-toss/web-framework`](https://www.npmjs.com/package/@apps-in-toss/web-framework) SDK의 모든 public API를 인터랙티브하게 테스트할 수 있는 레퍼런스 앱.
 
 - **앱인토스에 배포된 실제 앱**에서 네이티브 환경에서 API 동작을 확인할 수 있다.
 - **일반 웹 브라우저**에서도 [`@ait-co/devtools`](https://github.com/apps-in-toss-community/devtools)의 mock 레이어로 토스 앱 없이 개발/테스트할 수 있다.
@@ -196,7 +196,7 @@ UI 카피의 primary locale은 **`ko`** (한국어). 모든 UI string은 `src/i1
 
 ## 관련 레포
 
-- [`@apps-in-toss/web-framework`](https://github.com/apps-in-toss-community/web-framework) — 원본 SDK
+- [`@apps-in-toss/web-framework`](https://www.npmjs.com/package/@apps-in-toss/web-framework) — 원본 SDK
 - [`@ait-co/devtools`](https://github.com/apps-in-toss-community/devtools) — mock 라이브러리, unplugin
 
 ---
