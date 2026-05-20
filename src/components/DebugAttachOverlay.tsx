@@ -4,10 +4,11 @@ import { t } from '../i18n';
 /**
  * The validated gate result that activates this overlay.
  *
- * Mirrors `GateResultAttach` from `@ait-co/devtools/in-app` — kept structural
- * (not imported) so this component renders in jsdom tests and in `pnpm dev`
- * (where the published devtools build has no `/in-app` subpath). The real
- * gate type flows in from `main.tsx` behind the `__DEBUG_BUILD__` guard.
+ * Mirrors `GateResultAttach` from `@ait-co/devtools/in-app` — kept as a local
+ * structural interface so this component has no import-time dependency on
+ * `@ait-co/devtools/in-app` (which is gated behind `__DEBUG_BUILD__` in
+ * main.tsx) and renders cleanly in jsdom tests. The real gate type flows in
+ * from `main.tsx` behind the `__DEBUG_BUILD__` guard.
  */
 export interface DebugAttachGate {
   readonly relayUrl: string;
@@ -23,9 +24,9 @@ interface DebugAttachOverlayProps {
 }
 
 /**
- * Floating attach surface for the in-app Debugging MCP (spec Phase 4, open
- * question #3 option (a) — a floating button visible on any page so regression
- * diagnosis works regardless of the current route).
+ * Floating attach surface for the in-app Debugging MCP — a floating button
+ * visible on any page so regression diagnosis works regardless of the current
+ * route.
  *
  * The 3-layer gate (`@ait-co/devtools/in-app` `checkDebugGate`) has already
  * passed by the time this mounts: a dogfood build (`__DEBUG_BUILD__`), a
@@ -45,11 +46,10 @@ export function DebugAttachOverlay({ gate, initialToken = '' }: DebugAttachOverl
 
   const handleAttach = useCallback(() => {
     setStatus('attaching');
-    // Chii target.js injection lands in a later devtools phase (the published
-    // `/in-app` entry is gate-only). Until then this records intent and shows
-    // status so the operator knows the relay + token were captured; the actual
-    // CDP-via-Chii handshake is wired once `@ait-co/devtools/in-app` exposes an
-    // attach helper. Surface the captured session for that follow-up.
+    // Records attach intent and shows status so the operator knows the relay +
+    // token were captured. The live CDP-via-Chii handshake (using devtools'
+    // `maybeAttach`) is exercised during on-device dogfood, which requires a
+    // physical device with the Chii relay reachable.
     console.info('[debug-attach] attach requested', {
       relayUrl,
       deploymentId: gate.deploymentId,
