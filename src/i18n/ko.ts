@@ -84,6 +84,28 @@ export const ko = {
   'shimComposition.row.no': 'no',
   'shimComposition.row.pending': '…',
 
+  // DebugAttachOverlay (in-app Debugging MCP attach surface)
+  'debugAttach.fabAriaLabel': '디버그 attach 패널 열기',
+  'debugAttach.fabLabel': 'Debug',
+  'debugAttach.title': 'Debugging MCP attach',
+  'debugAttach.closeAriaLabel': '디버그 패널 닫기',
+  'debugAttach.deploymentId': 'Deployment ID',
+  'debugAttach.relayUrl': 'Relay (wss://)',
+  'debugAttach.relayPlaceholder': 'wss://<id>.trycloudflare.com',
+  'debugAttach.token': 'Secret token',
+  'debugAttach.tokenPlaceholder': 'devtools-mcp가 출력한 토큰',
+  'debugAttach.attach': 'Attach',
+  'debugAttach.attaching': 'attach 중…',
+  'debugAttach.statusReady':
+    'relay와 token이 query로 전달되었습니다. attach를 눌러 세션을 시작하세요.',
+  'debugAttach.statusNeedsToken':
+    'relay는 감지됐지만 token이 없습니다. devtools-mcp가 출력한 secret token을 붙여넣으세요.',
+  'debugAttach.statusAttaching': 'relay에 연결 중입니다…',
+  'debugAttach.statusAttached':
+    'attach 요청을 보냈습니다 — devtools-mcp 콘솔에서 세션을 확인하세요.',
+  'debugAttach.hint':
+    'AI 에이전트의 devtools-mcp가 출력한 wss:// relay URL과 secret token으로 이 dogfood 번들에 read-only attach합니다.',
+
   // PolyfillToggleCard
   'polyfillToggle.tablistAriaLabel': '{title} 호출 경로',
 

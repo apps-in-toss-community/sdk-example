@@ -8,6 +8,24 @@ export default defineConfig({
   // Set BASE_PATH at build time (e.g. BASE_PATH=/sdk-example/) for Pages;
   // defaults to '/' for local dev and 앱인토스 배포.
   base: process.env.BASE_PATH ?? '/',
+  // Build-time channel flag for the in-app debug surface (Layer A of the
+  // 3-layer gate). Only a `RELEASE_CHANNEL=dogfood` build inlines `true`,
+  // which lets the bundler keep the `@ait-co/devtools/in-app` dynamic import
+  // and the floating attach UI. Every other build (dev, preview, release,
+  // tests) inlines `false`, so the whole debug path is dead-code-eliminated.
+  define: {
+    __DEBUG_BUILD__: JSON.stringify(process.env.RELEASE_CHANNEL === 'dogfood'),
+  },
+  // Verification escape hatch: the in-app debug gate (`@ait-co/devtools/in-app`)
+  // landed on devtools `main` after the 0.1.22 npm publish, so the installed
+  // package has no `/in-app` subpath yet. Point `AIT_DEBUG_INAPP_SRC` at a
+  // local devtools `src/in-app/index.ts` to alias the dynamic import for
+  // dogfood-channel verification before a devtools release ships the entry.
+  // Unset (the default) leaves the bare `@ait-co/devtools/in-app` specifier so
+  // the real dogfood `.ait` bundle consumes the published package.
+  resolve: process.env.AIT_DEBUG_INAPP_SRC
+    ? { alias: { '@ait-co/devtools/in-app': process.env.AIT_DEBUG_INAPP_SRC } }
+    : undefined,
   plugins: [
     react(),
     tailwindcss(),

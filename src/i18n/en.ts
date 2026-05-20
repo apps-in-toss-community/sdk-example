@@ -82,6 +82,28 @@ export const en: Record<StringKey, string> = {
   'shimComposition.row.no': 'no',
   'shimComposition.row.pending': '…',
 
+  // DebugAttachOverlay (in-app Debugging MCP attach surface)
+  'debugAttach.fabAriaLabel': 'Open debug attach panel',
+  'debugAttach.fabLabel': 'Debug',
+  'debugAttach.title': 'Debugging MCP attach',
+  'debugAttach.closeAriaLabel': 'Close debug panel',
+  'debugAttach.deploymentId': 'Deployment ID',
+  'debugAttach.relayUrl': 'Relay (wss://)',
+  'debugAttach.relayPlaceholder': 'wss://<id>.trycloudflare.com',
+  'debugAttach.token': 'Secret token',
+  'debugAttach.tokenPlaceholder': 'token printed by devtools-mcp',
+  'debugAttach.attach': 'Attach',
+  'debugAttach.attaching': 'Attaching…',
+  'debugAttach.statusReady':
+    'relay and token arrived via query params. Press Attach to start the session.',
+  'debugAttach.statusNeedsToken':
+    'relay detected but no token. Paste the secret token printed by devtools-mcp.',
+  'debugAttach.statusAttaching': 'Connecting to the relay…',
+  'debugAttach.statusAttached':
+    'Attach request sent — check the devtools-mcp console for the session.',
+  'debugAttach.hint':
+    'Read-only attach to this dogfood bundle using the wss:// relay URL and secret token printed by the AI agent’s devtools-mcp.',
+
   // PolyfillToggleCard
   'polyfillToggle.tablistAriaLabel': '{title} call path',
 

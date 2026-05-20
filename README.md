@@ -115,6 +115,28 @@ git push origin v0.1.5
 
 Deploy Key는 앱인토스 콘솔의 "API 키" 기능으로 발급한다 (이 프로젝트에서는 노출 문구를 `Deploy Key`로 통일하지만, 콘솔 UI와 CLI flag(`--api-key`)는 그대로 유지). 만료 시 새 키를 발급해 secret 값만 교체하면 된다.
 
+## 디버그 모드
+
+폰에서 도는 dogfood 번들에 AI 에이전트가 `devtools-mcp`로 read-only attach해, 사람이 화면을 지켜보지 않고도 회귀를 진단할 수 있다. 활성화는 [`@ait-co/devtools`](https://github.com/apps-in-toss-community/devtools)의 3-layer gate를 따른다.
+
+1. **dogfood 번들 빌드** — `RELEASE_CHANNEL=dogfood`일 때만 `__DEBUG_BUILD__` 빌드 상수가 `true`로 인라인되어 디버그 경로가 번들에 포함된다 (Layer A). 일반 빌드에서는 `false`로 접혀 dead-code elimination되므로, 디버그 코드와 `@ait-co/devtools/in-app` import가 release 번들에 아예 들어가지 않는다.
+
+   ```bash
+   RELEASE_CHANNEL=dogfood pnpm bundle:ait
+   ```
+
+2. **에이전트의 `devtools-mcp` 기동** — AI host(`~/.mcp.json`)에 등록된 `devtools-mcp`가 Chii 서버 + Cloudflare quick tunnel을 띄우고 `wss://` relay URL과 secret token을 출력한다.
+
+3. **gate 통과 진입** — dogfood 번들을 `_deploymentId`가 붙은 entry로 열고(Layer B), URL에 `?debug=1`과 유효한 `wss:` relay를 더한다(Layer C). 세 layer가 모두 맞을 때만 attach가 활성화된다.
+
+   ```
+   intoss-private://...&debug=1&relay=wss://<id>.trycloudflare.com&token=<secret>
+   ```
+
+4. **floating attach UI** — gate가 통과하면 어느 페이지에서든 우하단에 floating "Debug" 버튼이 뜬다. 눌러서 relay URL과 secret token을 확인/붙여넣고 attach를 시작한다. `relay`/`token`이 query로 이미 전달됐다면 값이 미리 채워진다. gate가 통과하지 않은 일반 로드에서는 버튼이 렌더되지 않는다.
+
+`token`이 없으면 quick tunnel URL이 노출돼도 attach가 거부된다. relay는 stateless이고 서버 영구 저장이 없다.
+
 ## Pre-commit hook
 
 선택 사항이지만 권장. clone 후 다음 한 줄로 표준 pre-commit hook(스테이지된 파일에 `biome check` 실행)을 활성화한다:
