@@ -115,6 +115,28 @@ Opening the `intoss-private://` URL on a phone that has the Toss app installed (
 
 The Deploy Key is issued from the Apps in Toss console ("API key" in the console UI). This project standardises on the term `Deploy Key` in user-facing copy, but the CLI flag (`--api-key`) and the GitHub secret name (`AITCC_API_KEY`) are kept as-is for upstream compatibility. When the key expires, just rotate the secret value.
 
+## Debug mode
+
+An AI agent can read-only attach to a dogfood bundle running on a phone via `devtools-mcp`, so regressions can be diagnosed without a human watching the screen. Activation follows the 3-layer gate in [`@ait-co/devtools`](https://github.com/apps-in-toss-community/devtools).
+
+1. **Build a dogfood bundle** — only when `RELEASE_CHANNEL=dogfood` does the `__DEBUG_BUILD__` build constant inline to `true`, keeping the debug path in the bundle (Layer A). Other builds fold it to `false` and dead-code-eliminate it, so neither the debug code nor the `@ait-co/devtools/in-app` import ever reaches a release bundle.
+
+   ```bash
+   RELEASE_CHANNEL=dogfood pnpm bundle:ait
+   ```
+
+2. **Start the agent's `devtools-mcp`** — the `devtools-mcp` registered in the AI host (`~/.mcp.json`) spins up a Chii server + Cloudflare quick tunnel and prints a `wss://` relay URL and a secret token.
+
+3. **Enter through the gate** — open the dogfood bundle through an entry that carries `_deploymentId` (Layer B), then add `?debug=1` and a valid `wss:` relay to the URL (Layer C). Attach only activates when all three layers line up.
+
+   ```
+   intoss-private://...&debug=1&relay=wss://<id>.trycloudflare.com&token=<secret>
+   ```
+
+4. **Floating attach UI** — once the gate passes, a floating "Debug" button appears at the bottom-right on any page. Tap it to review / paste the relay URL and secret token, then start the attach. If `relay`/`token` already arrived as query params, the fields are pre-filled. On a normal load (gate not passed) the button does not render.
+
+Without a `token`, attach is rejected even if the quick tunnel URL leaks. The relay is stateless with no server-side persistence.
+
 ## Pre-commit hook
 
 Optional but recommended. After cloning, activate the standard pre-commit hook (runs `biome check` on staged files) with:
