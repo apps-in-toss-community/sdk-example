@@ -61,17 +61,5 @@
     "typescript": "~6.0.3",
     "vite": "^8.0.11",
     "vitest": "^4.1.5"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "cloudflared",
-      "esbuild",
-      "sharp"
-    ],
-    "ignoredBuiltDependencies": [
-      "@sentry/cli",
-      "@swc/core",
-      "protobufjs"
-    ]
   }
 }
