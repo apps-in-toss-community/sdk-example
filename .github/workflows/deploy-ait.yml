@@ -6,6 +6,12 @@ name: Deploy .ait bundle
 # publishes everything as a GitHub Release. The Deploy Key is provided as
 # the AITCC_API_KEY secret (the CLI flag itself is --api-key for upstream
 # compatibility; in our docs we call it "Deploy Key").
+#
+# The `channel` input selects the build channel. `release` (default, also
+# used for v* tag pushes) builds a normal bundle. `dogfood` sets
+# RELEASE_CHANNEL=dogfood so vite.config.ts inlines __DEBUG_BUILD__=true,
+# keeping the in-app debug attach surface for on-device CDP relay sessions
+# (devtools-mcp). dogfood builds are workflow_dispatch only.
 
 on:
   push:
@@ -17,6 +23,14 @@ on:
         description: 'Tag to deploy (must already exist on origin, e.g. v0.1.5)'
         required: true
         type: string
+      channel:
+        description: 'Build channel — dogfood keeps the in-app debug attach surface'
+        required: true
+        type: choice
+        default: release
+        options:
+          - release
+          - dogfood
 
 permissions:
   contents: write
@@ -37,8 +51,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+            echo "channel=${{ inputs.channel }}" >> "$GITHUB_OUTPUT"
           else
             echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "channel=release" >> "$GITHUB_OUTPUT"
           fi
 
       - uses: actions/checkout@v4
@@ -57,19 +73,29 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build .ait bundle
-        run: pnpm bundle:ait
+        env:
+          CHANNEL: ${{ steps.ref.outputs.channel }}
+        run: |
+          set -euo pipefail
+          if [ "$CHANNEL" = "dogfood" ]; then
+            echo "Building dogfood channel — __DEBUG_BUILD__=true (in-app debug attach surface kept)"
+            pnpm bundle:ait:dogfood
+          else
+            pnpm bundle:ait
+          fi
 
       - name: Deploy to aitc-sdk-example
         id: deploy
         env:
           AITCC_API_KEY: ${{ secrets.AITCC_API_KEY }}
           TAG: ${{ steps.ref.outputs.tag }}
+          CHANNEL: ${{ steps.ref.outputs.channel }}
         run: |
           set -euo pipefail
           url=$(pnpm exec ait deploy \
             --api-key "$AITCC_API_KEY" \
             --scheme-only \
-            -m "Release $TAG" \
+            -m "Release $TAG ($CHANNEL)" \
             | tr -d '\r' \
             | grep -m1 '^intoss-private://')
           if [ -z "$url" ]; then
@@ -84,16 +110,33 @@ jobs:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
           TAG: ${{ steps.ref.outputs.tag }}
           COMMIT_SHA: ${{ github.sha }}
+          CHANNEL: ${{ steps.ref.outputs.channel }}
         run: pnpm exec tsx scripts/generate-deploy-release.ts
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.ref.outputs.tag }}
+          CHANNEL: ${{ steps.ref.outputs.channel }}
         run: |
           set -euo pipefail
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --notes-file "$RELEASE_DIR/release-body.md" \
-            "$BUNDLE_PATH" \
-            "$RELEASE_DIR/qr.png"
+          # A dogfood deploy reuses an existing release tag, so it publishes
+          # under a channel-suffixed pre-release tag (e.g. v0.1.5-dogfood)
+          # to avoid colliding with the release. The git tag stays the same;
+          # gh creates the release object on the suffixed name.
+          if [ "$CHANNEL" = "dogfood" ]; then
+            RELEASE_TAG="${TAG}-dogfood"
+            gh release create "$RELEASE_TAG" \
+              --title "$RELEASE_TAG" \
+              --notes-file "$RELEASE_DIR/release-body.md" \
+              --prerelease \
+              --target "${{ github.sha }}" \
+              "$BUNDLE_PATH" \
+              "$RELEASE_DIR/qr.png"
+          else
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes-file "$RELEASE_DIR/release-body.md" \
+              "$BUNDLE_PATH" \
+              "$RELEASE_DIR/qr.png"
+          fi

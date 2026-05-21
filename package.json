@@ -27,6 +27,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:install": "playwright install chromium",
     "bundle:ait": "ait build",
+    "bundle:ait:dogfood": "RELEASE_CHANNEL=dogfood ait build",
     "scaffold:domain": "node scripts/scaffold-domain.ts",
     "sync:readme": "tsx scripts/sync-readme-domains.ts",
     "sync:readme:check": "tsx scripts/sync-readme-domains.ts --check"
