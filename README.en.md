@@ -111,7 +111,7 @@ git push origin v0.1.5
 
 To re-run for an existing tag, dispatch the "Deploy .ait bundle" workflow manually from the Actions tab and pass the tag as input.
 
-Opening the `intoss-private://` URL on a phone that has the Toss app installed (or scanning the QR with the camera) launches the mini-app full-screen — a dog-food path that bypasses the review queue.
+Once the mini-app's `serviceStatus` clears the release review and flips to `OPENED` (or similar), opening the `intoss-private://` URL on a phone that has the Toss app installed (or scanning the QR with the camera) launches the mini-app full-screen. While it is still `PREPARE` (pre-review), opening that URL does not load the bundle, so push it to the uploader device with `aitcc app bundles test-push --workspace 3095 --app 31146 --deployment-id <id>` and load the bundle from that notification.
 
 The Deploy Key is issued from the Apps in Toss console ("API key" in the console UI). This project standardises on the term `Deploy Key` in user-facing copy, but the CLI flag (`--api-key`) and the GitHub secret name (`AITCC_API_KEY`) are kept as-is for upstream compatibility. When the key expires, just rotate the secret value.
 
