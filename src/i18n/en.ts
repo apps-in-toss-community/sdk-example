@@ -117,6 +117,10 @@ export const en: Record<StringKey, string> = {
   'debugDiag.params': 'Detected params',
   'debugDiag.hint':
     'Always shown in a dogfood build. This diagnostic confirms whether an intoss-private deep link propagates query params (debug=1, relay, …) into the WebView.',
+  'debugDiag.copy': 'Copy log',
+  'debugDiag.copying': 'Copying...',
+  'debugDiag.copied': 'Copied',
+  'debugDiag.copyFailed': 'Copy failed',
 
   // PolyfillToggleCard
   'polyfillToggle.tablistAriaLabel': '{title} call path',

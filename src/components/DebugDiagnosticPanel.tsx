@@ -1,3 +1,4 @@
+import { setClipboardText } from '@apps-in-toss/web-framework';
 import { useState } from 'react';
 import { t } from '../i18n';
 
@@ -20,6 +21,33 @@ interface DebugDiagnosticPanelProps {
 }
 
 /**
+ * Builds the plain-text diagnostic block copied to the clipboard.
+ *
+ * Pure so it can be unit-tested without rendering. The block is meant to be
+ * pasted back into a chat/issue verbatim: it carries the raw `location.search`,
+ * each parsed param on its own line, the gate verdict, and the WebView's
+ * `userAgent` — everything needed to diagnose why a gate layer blocked on a
+ * real device.
+ */
+export function buildDiagnosticLog(locationSearch: string, gate: DebugGateSnapshot): string {
+  const params = [...new URLSearchParams(locationSearch).entries()];
+  const gateLine = gate.attach ? 'attach=true' : `attach=false reason=${gate.reason ?? '(none)'}`;
+
+  return [
+    '--- sdk-example debug diagnostic ---',
+    `time: ${new Date().toISOString()}`,
+    `location.search: ${locationSearch === '' ? '(empty)' : locationSearch}`,
+    'params:',
+    ...(params.length === 0 ? ['  (none)'] : params.map(([k, v]) => `  ${k}=${v}`)),
+    `gate: ${gateLine}`,
+    `userAgent: ${navigator.userAgent}`,
+  ].join('\n');
+}
+
+/** Transient state of the "copy log" button, surfaced as the button label. */
+type CopyState = 'idle' | 'copying' | 'copied' | 'failed';
+
+/**
  * Always-visible diagnostic panel for dogfood builds.
  *
  * Unlike `DebugAttachOverlay` — which only mounts when the 3-layer gate fully
@@ -35,11 +63,37 @@ interface DebugDiagnosticPanelProps {
  */
 export function DebugDiagnosticPanel({ locationSearch, gate }: DebugDiagnosticPanelProps) {
   const [open, setOpen] = useState(false);
+  const [copyState, setCopyState] = useState<CopyState>('idle');
 
   // Parse the captured search string into visible key/value rows. Done at
   // render time from the prop (not `window`) so the panel reflects exactly
   // what was captured at mount.
   const params = [...new URLSearchParams(locationSearch).entries()];
+
+  // Copy the diagnostic block via the Apps in Toss SDK clipboard API.
+  // `setClipboardText` is used instead of `navigator.clipboard.writeText`
+  // because this runs inside the Toss WebView, where the SDK path is the
+  // reliable one (no secure-context / permission caveats). Static import is
+  // safe: this whole module is DCE'd from release bundles by the
+  // `if (__DEBUG_BUILD__)` guard in `main.tsx`.
+  const handleCopy = async () => {
+    setCopyState('copying');
+    try {
+      await setClipboardText(buildDiagnosticLog(locationSearch, gate));
+      setCopyState('copied');
+    } catch {
+      setCopyState('failed');
+    }
+    // Revert the label after a moment so the button is reusable.
+    setTimeout(() => setCopyState('idle'), 2000);
+  };
+
+  const copyLabel: Record<CopyState, string> = {
+    idle: t('debugDiag.copy'),
+    copying: t('debugDiag.copying'),
+    copied: t('debugDiag.copied'),
+    failed: t('debugDiag.copyFailed'),
+  };
 
   return (
     // Pin to the bottom-left so it never overlaps the devtools panel toggle or
@@ -100,6 +154,16 @@ export function DebugDiagnosticPanel({ locationSearch, gate }: DebugDiagnosticPa
               {gate.reason !== undefined ? ` · ${t('debugDiag.gateReason')}=${gate.reason}` : ''}
             </dd>
           </dl>
+
+          <button
+            type="button"
+            data-testid="debug-diagnostic-copy"
+            onClick={handleCopy}
+            disabled={copyState === 'copying'}
+            className="mt-3 w-full rounded-lg bg-gray-700 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-gray-600 disabled:opacity-60 dark:bg-gray-300 dark:text-gray-900 dark:hover:bg-gray-200"
+          >
+            {copyLabel[copyState]}
+          </button>
         </div>
       )}
 
