@@ -5,6 +5,7 @@ import {
 } from '@apps-in-toss/web-framework';
 import { useEffect, useRef, useState } from 'react';
 import { CodeSnippet } from '../components/CodeSnippet';
+import { DocsLink } from '../components/DocsLink';
 import {
   appendHistory,
   createHistoryEntry,
@@ -13,30 +14,11 @@ import {
 } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
 import { t } from '../i18n';
-import { docsLink } from '../lib/docs';
 import appsInTossEventAddEventListenerSnippet from '../snippets/events/appsInTossEventAddEventListener.ts?raw';
 import graniteBackEventSnippet from '../snippets/events/graniteBackEvent.ts?raw';
 import graniteHomeEventSnippet from '../snippets/events/graniteHomeEvent.ts?raw';
 import onVisibilityChangedByTransparentServiceWebSnippet from '../snippets/events/onVisibilityChangedByTransparentServiceWeb.ts?raw';
 import tdsNavigationAccessoryEventSnippet from '../snippets/events/tdsNavigationAccessoryEvent.ts?raw';
-
-/**
- * Docs anchor marker for bespoke (non-ApiCard) cards. Doubles as the
- * verify-crosslinks signal — `docsLink(namespace, method)` is what the docs
- * scanner picks up via DOCS_LINK_JSX_REGEX.
- */
-function DocsLink({ namespace, method }: { namespace: string; method: string }) {
-  return (
-    <a
-      href={docsLink(namespace, method)}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="shrink-0 text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 underline-offset-2 hover:underline"
-    >
-      {t('apiCard.docsLink')}
-    </a>
-  );
-}
 
 interface EventSubscriberCardProps {
   name: string;

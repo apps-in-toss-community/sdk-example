@@ -1,5 +1,6 @@
 import type { StartUpdateLocationEventParams } from '@apps-in-toss/web-framework';
 import { Accuracy, getCurrentLocation, startUpdateLocation } from '@apps-in-toss/web-framework';
+import { useEffect, useRef } from 'react';
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
@@ -26,6 +27,17 @@ function pickStandardCoords(pos: GeolocationPosition) {
 }
 
 export function LocationPage() {
+  // Holds the unsubscribe handle from the most recent startUpdateLocation call.
+  // Calling before re-subscribing prevents orphaned watchers; the useEffect
+  // cleanup tears it down if the component unmounts mid-watch.
+  const stopLocationRef = useRef<(() => void) | null>(null);
+
+  useEffect(() => {
+    return () => {
+      stopLocationRef.current?.();
+    };
+  }, []);
+
   return (
     <div>
       <PageHeader title="Location" />
@@ -45,13 +57,16 @@ export function LocationPage() {
           description={t('pages.location.startUpdateLocation.description')}
           params={[]}
           execute={async () => {
+            // Tear down any previous watch before starting a new one.
+            stopLocationRef.current?.();
+            stopLocationRef.current = null;
             return new Promise<unknown>((resolve, reject) => {
               const params: StartUpdateLocationEventParams = {
                 options: { accuracy: Accuracy.Highest, timeInterval: 1000, distanceInterval: 0 },
                 onEvent: (location) => resolve(location),
                 onError: (err) => reject(err),
               };
-              startUpdateLocation(params);
+              stopLocationRef.current = startUpdateLocation(params);
             });
           }}
           snippet={startUpdateLocationSnippet}
