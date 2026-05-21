@@ -53,7 +53,7 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 1. **웹 dist** (`pnpm build`) — `tsc -b && vite build && SSG + sitemap`. `sdk-example.aitc.dev` 정적 배포용.
 2. **`.ait` 번들** (`pnpm bundle:ait` → `ait build`) — 토스 앱이 로드하는 미니앱 패키지. `granite.config.ts`가 입력, `aitc-sdk-example.ait`가 산출.
 
-번들러는 **`@apps-in-toss/cli@2.5.2`** (공식 도구, dev dep). `ait build`는 `vite build`를 한 번 더 돌려 dist를 만들고 `AITBUNDL` magic + protobuf 헤더 + zip blob 포맷으로 wrap한다. 빌드 시 두 RN target(0.84.0 + 0.72.6)에 대해 산출.
+번들러는 **`@apps-in-toss/cli@2.5.2`** (upstream CLI, dev dep). `ait build`는 `vite build`를 한 번 더 돌려 dist를 만들고 `AITBUNDL` magic + protobuf 헤더 + zip blob 포맷으로 wrap한다. 빌드 시 두 RN target(0.84.0 + 0.72.6)에 대해 산출.
 
 **`granite.config.ts`** — 미니앱 brand metadata + web build wiring. 핵심 필드:
 
@@ -112,7 +112,7 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 ```
 src/
-├── App.tsx                # React Router 설정, 18개 라우트
+├── App.tsx                # React Router 설정, 19개 라우트 (홈 + 18개 도메인)
 ├── __typecheck.ts         # SDK export 커버리지 컴파일 타임 검증
 ├── components/            # Layout, PageHeader, ApiCard, ParamInput,
 │                          # ResultView, HistoryLog, WorkflowStepper
