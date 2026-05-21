@@ -41,7 +41,7 @@ if (__DEBUG_BUILD__) {
  *    attach UI.
  */
 async function mountDebugSurfaces(): Promise<void> {
-  const { checkDebugGate } = await import('@ait-co/devtools/in-app');
+  const { checkDebugGate, maybeAttach } = await import('@ait-co/devtools/in-app');
   const gate = checkDebugGate();
   const locationSearch = window.location.search;
 
@@ -72,10 +72,16 @@ async function mountDebugSurfaces(): Promise<void> {
     </StrictMode>,
   );
 
-  // Layers B/C: only mount the attach overlay when `_deploymentId` + `?debug=1`
-  // + a valid `wss:` relay all line up. Otherwise the floating button never
-  // renders.
+  // Layers B/C: only proceed when `_deploymentId` + `?debug=1` + a valid `wss:`
+  // relay all line up. Otherwise neither the attach nor the overlay happens.
   if (!gate.attach) return;
+
+  // Auto-attach: inject the Chii `target.js` script the moment the gate passes,
+  // with no operator click. `maybeAttach` re-uses the gate result we already
+  // evaluated, so it is a pure script injection here (idempotent — safe even
+  // if called again). The `DebugAttachOverlay` below is then a status-display
+  // surface only; the actual relay handshake is wired by this call.
+  maybeAttach(gate);
 
   const { DebugAttachOverlay } = await import('./components/DebugAttachOverlay');
   const token = new URLSearchParams(locationSearch).get('token') ?? '';
@@ -88,6 +94,8 @@ async function mountDebugSurfaces(): Promise<void> {
       <DebugAttachOverlay
         gate={{ relayUrl: gate.relayUrl, deploymentId: gate.deploymentId }}
         initialToken={token}
+        maybeAttach={maybeAttach}
+        autoAttached
       />
     </StrictMode>,
   );

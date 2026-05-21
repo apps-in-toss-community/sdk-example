@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DebugAttachOverlay } from './DebugAttachOverlay';
 
 const gate = {
@@ -30,5 +30,29 @@ describe('DebugAttachOverlay', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Attach' }));
 
     expect(screen.getByTestId('debug-attach-status')).toHaveAttribute('data-status', 'attached');
+  });
+
+  it('starts in the attached state when main.tsx already auto-attached', () => {
+    render(<DebugAttachOverlay gate={gate} autoAttached />);
+    fireEvent.click(screen.getByTestId('debug-attach-fab'));
+
+    expect(screen.getByTestId('debug-attach-status')).toHaveAttribute('data-status', 'attached');
+  });
+
+  it('calls maybeAttach with the (possibly edited) relay url on re-attach', () => {
+    const maybeAttach = vi.fn();
+    render(<DebugAttachOverlay gate={gate} maybeAttach={maybeAttach} autoAttached />);
+    fireEvent.click(screen.getByTestId('debug-attach-fab'));
+
+    fireEvent.change(screen.getByDisplayValue('wss://example.trycloudflare.com'), {
+      target: { value: 'wss://edited.trycloudflare.com' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Attach' }));
+
+    expect(maybeAttach).toHaveBeenCalledWith({
+      attach: true,
+      relayUrl: 'wss://edited.trycloudflare.com',
+      deploymentId: 'test-deployment',
+    });
   });
 });

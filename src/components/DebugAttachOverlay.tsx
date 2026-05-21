@@ -2,6 +2,18 @@ import { useCallback, useState } from 'react';
 import { t } from '../i18n';
 
 /**
+ * The `maybeAttach` entry point of `@ait-co/devtools/in-app`, threaded in from
+ * `main.tsx`. Typed as a local function signature so this component keeps no
+ * import-time dependency on `@ait-co/devtools/in-app` (gated behind
+ * `__DEBUG_BUILD__`) and still renders in jsdom tests with a stub.
+ */
+export type MaybeAttach = (gateResult: {
+  readonly attach: true;
+  readonly relayUrl: string;
+  readonly deploymentId: string;
+}) => void;
+
+/**
  * The validated gate result that activates this overlay.
  *
  * Mirrors `GateResultAttach` from `@ait-co/devtools/in-app` — kept as a local
@@ -21,42 +33,54 @@ interface DebugAttachOverlayProps {
   readonly gate: DebugAttachGate;
   /** The secret token from the `token` query param, if the URL carried one. */
   readonly initialToken?: string;
+  /**
+   * `maybeAttach` from `@ait-co/devtools/in-app`, passed in from `main.tsx`.
+   * When omitted (jsdom tests) the manual re-attach button is a no-op.
+   */
+  readonly maybeAttach?: MaybeAttach;
+  /**
+   * Whether `main.tsx` already auto-attached on gate pass. When `true` the
+   * overlay opens in the `attached` state — it is then a status surface, and
+   * the button re-attaches only if the operator edits the relay URL.
+   */
+  readonly autoAttached?: boolean;
 }
 
 /**
- * Floating attach surface for the in-app Debugging MCP — a floating button
- * visible on any page so regression diagnosis works regardless of the current
- * route.
+ * Floating status + re-attach surface for the in-app Debugging MCP — a floating
+ * button visible on any page so regression diagnosis works regardless of the
+ * current route.
  *
  * The 3-layer gate (`@ait-co/devtools/in-app` `checkDebugGate`) has already
  * passed by the time this mounts: a dogfood build (`__DEBUG_BUILD__`), a
- * `_deploymentId` entry, `?debug=1` opt-in, and a valid `wss:` relay URL. This
- * component only renders the human-facing attach step — paste / confirm the
- * relay URL + the secret token that the AI agent's `devtools-mcp` printed, then
- * trigger attach.
+ * `_deploymentId` entry, `?debug=1` opt-in, and a valid `wss:` relay URL. By
+ * that point `main.tsx` has already called `maybeAttach` to inject the Chii
+ * `target.js` script — attach is automatic, no click required. This overlay is
+ * the human-facing status surface: it shows that auto-attach fired and lets an
+ * operator re-attach to a different relay URL if they edit the field.
  *
  * Because the mount site in `main.tsx` is guarded by `if (__DEBUG_BUILD__)`,
  * this whole module is dead-code-eliminated from release bundles.
  */
-export function DebugAttachOverlay({ gate, initialToken = '' }: DebugAttachOverlayProps) {
+export function DebugAttachOverlay({
+  gate,
+  initialToken = '',
+  maybeAttach,
+  autoAttached = false,
+}: DebugAttachOverlayProps) {
   const [open, setOpen] = useState(false);
   const [relayUrl, setRelayUrl] = useState(gate.relayUrl);
   const [token, setToken] = useState(initialToken);
-  const [status, setStatus] = useState<AttachStatus>('idle');
+  const [status, setStatus] = useState<AttachStatus>(autoAttached ? 'attached' : 'idle');
 
   const handleAttach = useCallback(() => {
     setStatus('attaching');
-    // Records attach intent and shows status so the operator knows the relay +
-    // token were captured. The live CDP-via-Chii handshake (using devtools'
-    // `maybeAttach`) is exercised during on-device dogfood, which requires a
-    // physical device with the Chii relay reachable.
-    console.info('[debug-attach] attach requested', {
-      relayUrl,
-      deploymentId: gate.deploymentId,
-      hasToken: token.length > 0,
-    });
+    // Real re-attach: inject the Chii `target.js` for the (possibly edited)
+    // relay URL. `maybeAttach` is idempotent — re-pointing the relay is the
+    // only reason an operator clicks this after `main.tsx` already auto-attached.
+    maybeAttach?.({ attach: true, relayUrl, deploymentId: gate.deploymentId });
     setStatus('attached');
-  }, [relayUrl, token, gate.deploymentId]);
+  }, [relayUrl, gate.deploymentId, maybeAttach]);
 
   const statusMessage =
     status === 'attaching'
