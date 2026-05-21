@@ -106,6 +106,20 @@ export const ko = {
   'debugAttach.hint':
     'AI 에이전트의 devtools-mcp가 출력한 wss:// relay URL과 secret token으로 이 dogfood 번들에 read-only attach합니다.',
 
+  // DebugDiagnosticPanel (dogfood-build URL/gate diagnostic — always mounted)
+  'debugDiag.title': '디버그 진단 (dogfood)',
+  'debugDiag.fabLabel': 'Diag',
+  'debugDiag.fabAriaLabel': '디버그 진단 패널 열기',
+  'debugDiag.closeAriaLabel': '진단 패널 닫기',
+  'debugDiag.locationSearch': 'location.search',
+  'debugDiag.locationSearchEmpty': '(빈 문자열 — query param 없음)',
+  'debugDiag.gateResult': 'Gate 결과',
+  'debugDiag.gateAttach': 'attach',
+  'debugDiag.gateReason': 'reason',
+  'debugDiag.params': '감지된 param',
+  'debugDiag.hint':
+    'dogfood 빌드에서 항상 표시됩니다. intoss-private 딥링크가 debug=1·relay 등 query를 WebView로 전파하는지 확인하는 진단 패널입니다.',
+
   // PolyfillToggleCard
   'polyfillToggle.tablistAriaLabel': '{title} 호출 경로',
 

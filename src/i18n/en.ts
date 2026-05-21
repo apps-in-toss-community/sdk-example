@@ -104,6 +104,20 @@ export const en: Record<StringKey, string> = {
   'debugAttach.hint':
     'Read-only attach to this dogfood bundle using the wss:// relay URL and secret token printed by the AI agent’s devtools-mcp.',
 
+  // DebugDiagnosticPanel (dogfood-build URL/gate diagnostic — always mounted)
+  'debugDiag.title': 'Debug diagnostic (dogfood)',
+  'debugDiag.fabLabel': 'Diag',
+  'debugDiag.fabAriaLabel': 'Open debug diagnostic panel',
+  'debugDiag.closeAriaLabel': 'Close diagnostic panel',
+  'debugDiag.locationSearch': 'location.search',
+  'debugDiag.locationSearchEmpty': '(empty string — no query params)',
+  'debugDiag.gateResult': 'Gate result',
+  'debugDiag.gateAttach': 'attach',
+  'debugDiag.gateReason': 'reason',
+  'debugDiag.params': 'Detected params',
+  'debugDiag.hint':
+    'Always shown in a dogfood build. This diagnostic confirms whether an intoss-private deep link propagates query params (debug=1, relay, …) into the WebView.',
+
   // PolyfillToggleCard
   'polyfillToggle.tablistAriaLabel': '{title} call path',
 

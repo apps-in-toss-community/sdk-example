@@ -22,18 +22,49 @@ createRoot(document.getElementById('root')!).render(
 // Must NOT statically import `@ait-co/devtools/in-app` at module top level —
 // that would keep the module alive and defeat DCE.
 if (__DEBUG_BUILD__) {
-  void mountDebugAttachOverlay();
+  void mountDebugSurfaces();
 }
 
-async function mountDebugAttachOverlay(): Promise<void> {
+/**
+ * Mounts the dogfood-only debug surfaces.
+ *
+ * Two surfaces with different mount conditions:
+ *
+ *  - `DebugDiagnosticPanel` — mounts UNCONDITIONALLY in a dogfood build. It
+ *    renders the raw `window.location.search` and the gate result, so an
+ *    operator can see exactly which query params the WebView received. This is
+ *    the instrument for verifying intoss-private deep-link query propagation
+ *    (in-app debug MCP spec, open question 6).
+ *  - `DebugAttachOverlay` — mounts only when all three gate layers pass
+ *    (`_deploymentId` + `?debug=1` + a valid `wss:` relay). It is the actual
+ *    attach UI.
+ */
+async function mountDebugSurfaces(): Promise<void> {
   const { checkDebugGate } = await import('@ait-co/devtools/in-app');
   const gate = checkDebugGate();
-  // Layers B/C: only mount when `_deploymentId` + `?debug=1` + a valid `wss:`
-  // relay all line up. Otherwise the floating button never renders.
+  const locationSearch = window.location.search;
+
+  // Diagnostic panel — always mounted in a dogfood build, gate result and all.
+  const { DebugDiagnosticPanel } = await import('./components/DebugDiagnosticPanel');
+  const diagHost = document.createElement('div');
+  diagHost.id = 'debug-diagnostic-root';
+  document.body.appendChild(diagHost);
+  createRoot(diagHost).render(
+    <StrictMode>
+      <DebugDiagnosticPanel
+        locationSearch={locationSearch}
+        gate={gate.attach ? { attach: true } : { attach: false, reason: gate.reason }}
+      />
+    </StrictMode>,
+  );
+
+  // Layers B/C: only mount the attach overlay when `_deploymentId` + `?debug=1`
+  // + a valid `wss:` relay all line up. Otherwise the floating button never
+  // renders.
   if (!gate.attach) return;
 
   const { DebugAttachOverlay } = await import('./components/DebugAttachOverlay');
-  const token = new URLSearchParams(window.location.search).get('token') ?? '';
+  const token = new URLSearchParams(locationSearch).get('token') ?? '';
 
   const host = document.createElement('div');
   host.id = 'debug-attach-root';
