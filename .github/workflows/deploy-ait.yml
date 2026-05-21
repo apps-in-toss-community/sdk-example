@@ -92,14 +92,27 @@ jobs:
           CHANNEL: ${{ steps.ref.outputs.channel }}
         run: |
           set -euo pipefail
-          url=$(pnpm exec ait deploy \
+          # Capture the full `ait deploy` output to a file so a failure (or a
+          # run that emits no intoss-private:// URL) is visible in the log
+          # instead of being swallowed by command substitution.
+          set +e
+          pnpm exec ait deploy \
             --api-key "$AITCC_API_KEY" \
             --scheme-only \
             -m "Release $TAG ($CHANNEL)" \
-            | tr -d '\r' \
-            | grep -m1 '^intoss-private://')
+            > deploy-output.txt 2>&1
+          deploy_exit=$?
+          set -e
+          echo "----- ait deploy output -----"
+          cat deploy-output.txt
+          echo "----- ait deploy exit: $deploy_exit -----"
+          if [ "$deploy_exit" -ne 0 ]; then
+            echo "::error::ait deploy exited $deploy_exit — see output above"
+            exit 1
+          fi
+          url=$(tr -d '\r' < deploy-output.txt | grep -m1 '^intoss-private://' || true)
           if [ -z "$url" ]; then
-            echo "::error::ait deploy did not emit an intoss-private:// URL"
+            echo "::error::ait deploy succeeded but emitted no intoss-private:// URL"
             exit 1
           fi
           echo "url=$url" >> "$GITHUB_OUTPUT"
