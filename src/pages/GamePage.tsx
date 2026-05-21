@@ -6,7 +6,7 @@ import {
   openGameCenterLeaderboard,
   submitGameCenterLeaderBoardScore,
 } from '@apps-in-toss/web-framework';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiCard } from '../components/ApiCard';
 import { CodeSnippet } from '../components/CodeSnippet';
 import { PageHeader } from '../components/PageHeader';
@@ -25,10 +25,21 @@ function ContactsViralCard() {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [result, setResult] = useState<unknown>(undefined);
   const [error, setError] = useState('');
+  const unsubRef = useRef<(() => void) | null>(null);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      unsubRef.current?.();
+    };
+  }, []);
 
   const handleExecute = useCallback(() => {
+    // Cancel any in-flight subscription before starting a new one
+    unsubRef.current?.();
+    unsubRef.current = null;
     setStatus('loading');
-    contactsViral({
+    unsubRef.current = contactsViral({
       options: { moduleId },
       onEvent: (event) => {
         setStatus('success');

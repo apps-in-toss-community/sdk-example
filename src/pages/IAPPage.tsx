@@ -1,6 +1,6 @@
 import type { IapProductListItem } from '@apps-in-toss/web-framework';
 import { checkoutPayment, IAP } from '@apps-in-toss/web-framework';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ApiCard } from '../components/ApiCard';
 import { CodeSnippet } from '../components/CodeSnippet';
 import { DocsLink } from '../components/DocsLink';
@@ -31,6 +31,14 @@ export function IAPPage() {
   );
   const [purchaseError, setPurchaseError] = useState('');
   const [eventLog, setEventLog] = useState<HistoryEntry[]>([]);
+  const purchaseUnsubRef = useRef<(() => void) | null>(null);
+
+  // Clean up in-flight purchase subscription on unmount
+  useEffect(() => {
+    return () => {
+      purchaseUnsubRef.current?.();
+    };
+  }, []);
 
   const addLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
     setEventLog((prev) => appendHistory(prev, createHistoryEntry({ status, data, error })));
@@ -39,10 +47,13 @@ export function IAPPage() {
   const handlePurchase = useCallback(
     (type: 'onetime' | 'subscription') => {
       if (!selectedSku) return;
+      // Cancel any previous in-flight purchase subscription before starting a new one
+      purchaseUnsubRef.current?.();
+      purchaseUnsubRef.current = null;
       setPurchaseStatus('loading');
       const method =
         type === 'onetime' ? IAP.createOneTimePurchaseOrder : IAP.createSubscriptionPurchaseOrder;
-      method({
+      purchaseUnsubRef.current = method({
         options: {
           sku: selectedSku,
           processProductGrant: async () => {
