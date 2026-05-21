@@ -4,7 +4,7 @@
 
 [`@apps-in-toss/web-framework`](https://www.npmjs.com/package/@apps-in-toss/web-framework) SDK의 모든 public API를 인터랙티브하게 테스트할 수 있는 레퍼런스 앱.
 
-- **앱인토스에 배포된 실제 앱**에서 네이티브 환경에서 API 동작을 확인할 수 있다.
+- **앱인토스에 배포된 실제 앱**으로 네이티브 환경에서 API 동작을 직접 확인할 수 있다.
 - **일반 웹 브라우저**에서도 [`@ait-co/devtools`](https://github.com/apps-in-toss-community/devtools)의 mock 레이어로 토스 앱 없이 개발/테스트할 수 있다.
 - 앱 코드 자체가 SDK 사용 예제로 동작한다.
 
