@@ -117,6 +117,9 @@ export const ko = {
   'debugDiag.gateAttach': 'attach',
   'debugDiag.gateReason': 'reason',
   'debugDiag.params': '감지된 param',
+  'debugDiag.schemeUri': 'getSchemeUri()',
+  'debugDiag.schemeUriEmpty': '(빈 문자열 — 진입 스킴 URI 없음)',
+  'debugDiag.schemeUriQuery': 'schemeUri query',
   'debugDiag.hint':
     'dogfood 빌드에서 항상 표시됩니다. intoss-private 딥링크가 debug=1·relay 등 query를 WebView로 전파하는지 확인하는 진단 패널입니다.',
   'debugDiag.copy': '로그 복사',

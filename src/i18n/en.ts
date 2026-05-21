@@ -115,6 +115,9 @@ export const en: Record<StringKey, string> = {
   'debugDiag.gateAttach': 'attach',
   'debugDiag.gateReason': 'reason',
   'debugDiag.params': 'Detected params',
+  'debugDiag.schemeUri': 'getSchemeUri()',
+  'debugDiag.schemeUriEmpty': '(empty string — no entry scheme URI)',
+  'debugDiag.schemeUriQuery': 'schemeUri query',
   'debugDiag.hint':
     'Always shown in a dogfood build. This diagnostic confirms whether an intoss-private deep link propagates query params (debug=1, relay, …) into the WebView.',
   'debugDiag.copy': 'Copy log',

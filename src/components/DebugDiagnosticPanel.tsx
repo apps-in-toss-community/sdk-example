@@ -16,6 +16,15 @@ export interface DebugGateSnapshot {
 interface DebugDiagnosticPanelProps {
   /** Raw `window.location.search` captured at mount time. */
   readonly locationSearch: string;
+  /**
+   * Raw return value of the SDK's `getSchemeUri()` — the deep-link URI the
+   * mini-app was entered with. Captured at mount time. The gate currently
+   * reads `window.location.search`, but the Toss app does not propagate
+   * arbitrary query params there; `getSchemeUri()` is the candidate signal
+   * that *does* carry the entry deep link's query, so this panel surfaces
+   * both side by side for direct comparison on a real device.
+   */
+  readonly schemeUri: string;
   /** The 3-layer gate result for the current URL. */
   readonly gate: DebugGateSnapshot;
 }
@@ -25,12 +34,17 @@ interface DebugDiagnosticPanelProps {
  *
  * Pure so it can be unit-tested without rendering. The block is meant to be
  * pasted back into a chat/issue verbatim: it carries the raw `location.search`,
- * each parsed param on its own line, the gate verdict, and the WebView's
- * `userAgent` — everything needed to diagnose why a gate layer blocked on a
- * real device.
+ * each parsed param on its own line, the `getSchemeUri()` entry URI and its
+ * parsed query, the gate verdict, and the WebView's `userAgent` — everything
+ * needed to diagnose why a gate layer blocked on a real device.
  */
-export function buildDiagnosticLog(locationSearch: string, gate: DebugGateSnapshot): string {
+export function buildDiagnosticLog(
+  locationSearch: string,
+  schemeUri: string,
+  gate: DebugGateSnapshot,
+): string {
   const params = [...new URLSearchParams(locationSearch).entries()];
+  const schemeQuery = parseSchemeQuery(schemeUri);
   const gateLine = gate.attach ? 'attach=true' : `attach=false reason=${gate.reason ?? '(none)'}`;
 
   return [
@@ -39,9 +53,30 @@ export function buildDiagnosticLog(locationSearch: string, gate: DebugGateSnapsh
     `location.search: ${locationSearch === '' ? '(empty)' : locationSearch}`,
     'params:',
     ...(params.length === 0 ? ['  (none)'] : params.map(([k, v]) => `  ${k}=${v}`)),
+    `getSchemeUri(): ${schemeUri === '' ? '(empty)' : schemeUri}`,
+    'schemeUri query:',
+    ...(schemeQuery.length === 0 ? ['  (none)'] : schemeQuery.map(([k, v]) => `  ${k}=${v}`)),
     `gate: ${gateLine}`,
     `userAgent: ${navigator.userAgent}`,
   ].join('\n');
+}
+
+/**
+ * Extracts the query params from a `getSchemeUri()` return value.
+ *
+ * The value is a deep-link URI (e.g. `intoss-private://…?debug=1`) rather than
+ * a bare query string, so it is parsed via `URL`. The URI may also be a
+ * relative path (the devtools mock falls back to `window.location.pathname`),
+ * which `URL` cannot parse alone — hence the dummy base. Any parse failure
+ * yields an empty list rather than throwing, so the panel always renders.
+ */
+function parseSchemeQuery(schemeUri: string): [string, string][] {
+  if (schemeUri === '') return [];
+  try {
+    return [...new URL(schemeUri, 'intoss-private://entry').searchParams.entries()];
+  } catch {
+    return [];
+  }
 }
 
 /** Transient state of the "copy log" button, surfaced as the button label. */
@@ -61,7 +96,11 @@ type CopyState = 'idle' | 'copying' | 'copied' | 'failed';
  * The mount site in `main.tsx` is guarded by `if (__DEBUG_BUILD__)`, so this
  * whole module is dead-code-eliminated from release bundles.
  */
-export function DebugDiagnosticPanel({ locationSearch, gate }: DebugDiagnosticPanelProps) {
+export function DebugDiagnosticPanel({
+  locationSearch,
+  schemeUri,
+  gate,
+}: DebugDiagnosticPanelProps) {
   const [open, setOpen] = useState(false);
   const [copyState, setCopyState] = useState<CopyState>('idle');
 
@@ -69,6 +108,11 @@ export function DebugDiagnosticPanel({ locationSearch, gate }: DebugDiagnosticPa
   // render time from the prop (not `window`) so the panel reflects exactly
   // what was captured at mount.
   const params = [...new URLSearchParams(locationSearch).entries()];
+
+  // Parse the entry deep-link URI's own query. Compared against `params`
+  // above on a real device: if the entry query lands here but not in
+  // `location.search`, `getSchemeUri()` is the signal the gate should read.
+  const schemeQuery = parseSchemeQuery(schemeUri);
 
   // Copy the diagnostic block via the Apps in Toss SDK clipboard API.
   // `setClipboardText` is used instead of `navigator.clipboard.writeText`
@@ -79,7 +123,7 @@ export function DebugDiagnosticPanel({ locationSearch, gate }: DebugDiagnosticPa
   const handleCopy = async () => {
     setCopyState('copying');
     try {
-      await setClipboardText(buildDiagnosticLog(locationSearch, gate));
+      await setClipboardText(buildDiagnosticLog(locationSearch, schemeUri, gate));
       setCopyState('copied');
     } catch {
       setCopyState('failed');
@@ -139,6 +183,30 @@ export function DebugDiagnosticPanel({ locationSearch, gate }: DebugDiagnosticPa
               {params.length === 0
                 ? '—'
                 : params.map(([k, v]) => (
+                    <div key={k}>
+                      {k}={v}
+                    </div>
+                  ))}
+            </dd>
+
+            <dt className="mt-3 text-gray-500 dark:text-gray-400">{t('debugDiag.schemeUri')}</dt>
+            <dd
+              data-testid="debug-diagnostic-scheme-uri"
+              className="mt-0.5 rounded bg-gray-100 px-2 py-1 font-mono text-[11px] break-all text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+            >
+              {schemeUri === '' ? t('debugDiag.schemeUriEmpty') : schemeUri}
+            </dd>
+
+            <dt className="mt-3 text-gray-500 dark:text-gray-400">
+              {t('debugDiag.schemeUriQuery')}
+            </dt>
+            <dd
+              data-testid="debug-diagnostic-scheme-query"
+              className="mt-0.5 rounded bg-gray-100 px-2 py-1 font-mono text-[11px] break-all text-gray-800 dark:bg-gray-800 dark:text-gray-200"
+            >
+              {schemeQuery.length === 0
+                ? '—'
+                : schemeQuery.map(([k, v]) => (
                     <div key={k}>
                       {k}={v}
                     </div>
