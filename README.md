@@ -111,7 +111,7 @@ git push origin v0.1.5
 
 수동 트리거가 필요하면 Actions 탭에서 "Deploy .ait bundle" workflow를 `workflow_dispatch`로 실행하면서 기존 tag를 입력한다.
 
-토스 앱이 설치된 폰에서 Release 페이지의 `intoss-private://` URL을 직접 열거나 QR을 카메라로 스캔하면 미니앱이 풀스크린으로 뜬다 (리뷰 큐 통과 없이 직접 실행되는 dog-food 경로).
+미니앱의 `serviceStatus`가 출시 review를 통과해 `OPENED` 등으로 전환되면, 토스 앱이 설치된 폰에서 Release 페이지의 `intoss-private://` URL을 직접 열거나 QR을 카메라로 스캔하면 미니앱이 풀스크린으로 뜬다. 아직 `PREPARE`(review 통과 전)인 동안은 그 URL을 열어도 토스 앱이 번들을 로드하지 않으므로, `aitcc app bundles test-push --workspace 3095 --app 31146 --deployment-id <id>`로 uploader 디바이스에 push를 보내 그 알림으로 번들을 로드한다.
 
 Deploy Key는 앱인토스 콘솔의 "API 키" 기능으로 발급한다 (이 프로젝트에서는 노출 문구를 `Deploy Key`로 통일하지만, 콘솔 UI와 CLI flag(`--api-key`)는 그대로 유지). 만료 시 새 키를 발급해 secret 값만 교체하면 된다.
 
