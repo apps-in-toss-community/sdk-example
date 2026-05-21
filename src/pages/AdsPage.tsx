@@ -7,6 +7,7 @@ import {
 import { useCallback, useRef, useState } from 'react';
 import { ApiCard } from '../components/ApiCard';
 import { CodeSnippet } from '../components/CodeSnippet';
+import { DocsLink } from '../components/DocsLink';
 import {
   appendHistory,
   createHistoryEntry,
@@ -28,22 +29,6 @@ import tossAdsAttachBannerSnippet from '../snippets/ads/tossAdsAttachBanner.ts?r
 import tossAdsDestroySnippet from '../snippets/ads/tossAdsDestroy.ts?raw';
 import tossAdsDestroyAllSnippet from '../snippets/ads/tossAdsDestroyAll.ts?raw';
 import tossAdsInitializeSnippet from '../snippets/ads/tossAdsInitialize.ts?raw';
-
-/** Small "Docs ↗" link rendered next to bespoke (non-ApiCard) section headers.
- * Doubles as the verify-crosslinks signal — `docsLink('ads', '<method>')` is
- * picked up by the DOCS_LINK_REGEX scan in apps-in-toss-community/docs. */
-function DocsLink({ namespace, method }: { namespace: string; method: string }) {
-  return (
-    <a
-      href={docsLink(namespace, method)}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="shrink-0 text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 underline-offset-2 hover:underline"
-    >
-      {t('apiCard.docsLink')}
-    </a>
-  );
-}
 
 export function AdsPage() {
   // --- GoogleAdMob state ---
