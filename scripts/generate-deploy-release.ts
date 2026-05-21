@@ -10,6 +10,9 @@
  *   DEPLOY_URL    intoss-private:// URL (required)
  *   TAG           release tag, e.g. v0.1.5 (optional — falls back to "(unknown)")
  *   COMMIT_SHA    full commit SHA (optional)
+ *   CHANNEL       build channel: "release" (default) or "dogfood" — a dogfood
+ *                 build inlines __DEBUG_BUILD__=true, keeping the in-app debug
+ *                 attach surface for on-device CDP relay sessions
  *   RELEASE_DIR   output directory (default .tmp/release)
  *   BUNDLE_PATH   path to the .ait bundle for size reporting (default aitc-sdk-example.ait)
  */
@@ -25,6 +28,7 @@ const ROOT = resolve(SCRIPT_DIR, '..');
 const DEPLOY_URL = process.env.DEPLOY_URL ?? '';
 const TAG = process.env.TAG ?? '(unknown)';
 const COMMIT_SHA = process.env.COMMIT_SHA ?? '(unknown)';
+const CHANNEL = process.env.CHANNEL === 'dogfood' ? 'dogfood' : 'release';
 const RELEASE_DIR = resolve(ROOT, process.env.RELEASE_DIR ?? '.tmp/release');
 const BUNDLE_PATH = resolve(ROOT, process.env.BUNDLE_PATH ?? 'aitc-sdk-example.ait');
 
@@ -59,6 +63,22 @@ async function main(): Promise<void> {
   const shortSha = COMMIT_SHA === '(unknown)' ? COMMIT_SHA : COMMIT_SHA.slice(0, 12);
   const deploymentId = new URL(DEPLOY_URL).searchParams.get('_deploymentId') ?? '(unknown)';
 
+  const isDogfood = CHANNEL === 'dogfood';
+
+  const dogfoodNote = [
+    '## dogfood 빌드 — on-device 디버깅 가능',
+    '',
+    '이 번들은 `RELEASE_CHANNEL=dogfood`로 빌드돼 in-app 디버그 attach surface(`@ait-co/devtools/in-app` 3-layer gate + 플로팅 attach 버튼)를 포함합니다. 일반 release 번들과 달리 `devtools-mcp`로 on-device CDP relay 세션을 붙일 수 있습니다.',
+    '',
+    '연결 절차:',
+    '',
+    '1. 노트북에서 `pnpm exec devtools-mcp` 실행 → cloudflared quick tunnel + relay QR 출력',
+    '2. 폰에서 이 미니앱을 `?debug=1`로 열기',
+    '3. 미니앱의 플로팅 attach 폼에서 relay QR을 스캔(또는 relay URL + token 붙여넣기)',
+    '',
+    '',
+  ];
+
   const body = [
     '## 토스 앱에서 미니앱 열기',
     '',
@@ -76,8 +96,10 @@ async function main(): Promise<void> {
     '>',
     '> 토스 앱에 push 알림이 오고, 그 알림을 통해 이 bundle이 load됩니다. 자세한 배경은 umbrella `CLAUDE.md` "Dog-food 흐름" 참고.',
     '',
+    ...(isDogfood ? dogfoodNote : []),
     '## 빌드 정보',
     '',
+    `- Channel: \`${CHANNEL}\`${isDogfood ? ' — in-app 디버그 attach surface 포함' : ''}`,
     `- Tag: \`${TAG}\``,
     `- Commit: \`${shortSha}\``,
     `- Bundle: \`aitc-sdk-example.ait\` (${size})`,
