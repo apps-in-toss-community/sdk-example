@@ -7,7 +7,13 @@ vi.mock('@apps-in-toss/web-framework', () => ({ setClipboardText }));
 
 describe('DebugDiagnosticPanel', () => {
   it('renders the floating button collapsed by default', () => {
-    render(<DebugDiagnosticPanel locationSearch="" gate={{ attach: false, reason: 'opt-in' }} />);
+    render(
+      <DebugDiagnosticPanel
+        locationSearch=""
+        schemeUri=""
+        gate={{ attach: false, reason: 'opt-in' }}
+      />,
+    );
     expect(screen.getByTestId('debug-diagnostic-fab')).toBeInTheDocument();
     expect(screen.queryByTestId('debug-diagnostic-panel')).not.toBeInTheDocument();
   });
@@ -16,6 +22,7 @@ describe('DebugDiagnosticPanel', () => {
     render(
       <DebugDiagnosticPanel
         locationSearch="?_deploymentId=abc&debug=1&relay=wss%3A%2F%2Fr.example"
+        schemeUri=""
         gate={{ attach: true }}
       />,
     );
@@ -30,10 +37,42 @@ describe('DebugDiagnosticPanel', () => {
     expect(params).toHaveTextContent('relay=wss://r.example');
   });
 
+  it('shows the getSchemeUri value and its parsed query when opened', () => {
+    render(
+      <DebugDiagnosticPanel
+        locationSearch=""
+        schemeUri="intoss-private://entry?debug=1&relay=wss%3A%2F%2Fr.example"
+        gate={{ attach: false, reason: 'opt-in' }}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('debug-diagnostic-fab'));
+
+    expect(screen.getByTestId('debug-diagnostic-scheme-uri')).toHaveTextContent(
+      'intoss-private://entry?debug=1&relay=wss%3A%2F%2Fr.example',
+    );
+    const query = screen.getByTestId('debug-diagnostic-scheme-query');
+    expect(query).toHaveTextContent('debug=1');
+    expect(query).toHaveTextContent('relay=wss://r.example');
+  });
+
+  it('shows a dash for the scheme query when getSchemeUri is empty', () => {
+    render(
+      <DebugDiagnosticPanel
+        locationSearch=""
+        schemeUri=""
+        gate={{ attach: false, reason: 'opt-in' }}
+      />,
+    );
+    fireEvent.click(screen.getByTestId('debug-diagnostic-fab'));
+
+    expect(screen.getByTestId('debug-diagnostic-scheme-query')).toHaveTextContent('—');
+  });
+
   it('reports the gate reason when the gate is blocked', () => {
     render(
       <DebugDiagnosticPanel
         locationSearch="?_deploymentId=abc"
+        schemeUri=""
         gate={{ attach: false, reason: 'opt-in' }}
       />,
     );
@@ -48,6 +87,7 @@ describe('DebugDiagnosticPanel', () => {
     render(
       <DebugDiagnosticPanel
         locationSearch="?_deploymentId=abc"
+        schemeUri="intoss-private://entry?debug=1"
         gate={{ attach: false, reason: 'opt-in' }}
       />,
     );
@@ -59,12 +99,19 @@ describe('DebugDiagnosticPanel', () => {
     });
     const copied = setClipboardText.mock.calls[0]?.[0] ?? '';
     expect(copied).toContain('location.search: ?_deploymentId=abc');
+    expect(copied).toContain('getSchemeUri(): intoss-private://entry?debug=1');
     expect(copied).toContain('gate: attach=false reason=opt-in');
   });
 
   it('shows a failure label when the SDK clipboard call rejects', async () => {
     setClipboardText.mockRejectedValueOnce(new Error('denied'));
-    render(<DebugDiagnosticPanel locationSearch="" gate={{ attach: false, reason: 'opt-in' }} />);
+    render(
+      <DebugDiagnosticPanel
+        locationSearch=""
+        schemeUri=""
+        gate={{ attach: false, reason: 'opt-in' }}
+      />,
+    );
     fireEvent.click(screen.getByTestId('debug-diagnostic-fab'));
     fireEvent.click(screen.getByTestId('debug-diagnostic-copy'));
 
@@ -76,7 +123,7 @@ describe('DebugDiagnosticPanel', () => {
 
 describe('buildDiagnosticLog', () => {
   it('renders each query param on its own line plus the gate verdict', () => {
-    const log = buildDiagnosticLog('?_deploymentId=abc&debug=1', {
+    const log = buildDiagnosticLog('?_deploymentId=abc&debug=1', '', {
       attach: false,
       reason: 'invalid-relay',
     });
@@ -88,9 +135,24 @@ describe('buildDiagnosticLog', () => {
   });
 
   it('marks an empty search and a passing gate', () => {
-    const log = buildDiagnosticLog('', { attach: true });
+    const log = buildDiagnosticLog('', '', { attach: true });
     expect(log).toContain('location.search: (empty)');
     expect(log).toContain('  (none)');
     expect(log).toContain('gate: attach=true');
+  });
+
+  it('renders the getSchemeUri value and its parsed query', () => {
+    const log = buildDiagnosticLog('', 'intoss-private://entry?debug=1&relay=wss%3A%2F%2Fr', {
+      attach: true,
+    });
+    expect(log).toContain('getSchemeUri(): intoss-private://entry?debug=1&relay=wss%3A%2F%2Fr');
+    expect(log).toContain('  debug=1');
+    expect(log).toContain('  relay=wss://r');
+  });
+
+  it('marks an empty getSchemeUri', () => {
+    const log = buildDiagnosticLog('', '', { attach: true });
+    expect(log).toContain('getSchemeUri(): (empty)');
+    expect(log).toContain('schemeUri query:\n  (none)');
   });
 });

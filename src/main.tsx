@@ -31,10 +31,11 @@ if (__DEBUG_BUILD__) {
  * Two surfaces with different mount conditions:
  *
  *  - `DebugDiagnosticPanel` — mounts UNCONDITIONALLY in a dogfood build. It
- *    renders the raw `window.location.search` and the gate result, so an
- *    operator can see exactly which query params the WebView received. This is
- *    the instrument for verifying intoss-private deep-link query propagation
- *    (in-app debug MCP spec, open question 6).
+ *    renders the raw `window.location.search`, the SDK `getSchemeUri()` entry
+ *    URI, and the gate result, so an operator can see exactly which query
+ *    params the WebView received and where. This is the instrument for
+ *    verifying intoss-private deep-link query propagation (in-app debug MCP
+ *    spec, open question 6).
  *  - `DebugAttachOverlay` — mounts only when all three gate layers pass
  *    (`_deploymentId` + `?debug=1` + a valid `wss:` relay). It is the actual
  *    attach UI.
@@ -43,6 +44,18 @@ async function mountDebugSurfaces(): Promise<void> {
   const { checkDebugGate } = await import('@ait-co/devtools/in-app');
   const gate = checkDebugGate();
   const locationSearch = window.location.search;
+
+  // Capture the SDK entry deep-link URI. Dynamically imported (rather than a
+  // top-level static import) to keep `main.tsx` free of any SDK dependency
+  // outside this `__DEBUG_BUILD__`-guarded block. `getSchemeUri()` is
+  // synchronous; any throw is swallowed so the panel still mounts.
+  let schemeUri = '';
+  try {
+    const { getSchemeUri } = await import('@apps-in-toss/web-framework');
+    schemeUri = getSchemeUri();
+  } catch {
+    schemeUri = '';
+  }
 
   // Diagnostic panel — always mounted in a dogfood build, gate result and all.
   const { DebugDiagnosticPanel } = await import('./components/DebugDiagnosticPanel');
@@ -53,6 +66,7 @@ async function mountDebugSurfaces(): Promise<void> {
     <StrictMode>
       <DebugDiagnosticPanel
         locationSearch={locationSearch}
+        schemeUri={schemeUri}
         gate={gate.attach ? { attach: true } : { attach: false, reason: gate.reason }}
       />
     </StrictMode>,
