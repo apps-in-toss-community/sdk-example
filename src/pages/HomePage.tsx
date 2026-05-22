@@ -23,6 +23,7 @@ const domains = [
     apis: [
       'closeView',
       'openURL',
+      'openPDFViewer',
       'share',
       'getTossShareLink',
       'setIosSwipeGestureEnabled',
@@ -74,8 +75,8 @@ const domains = [
   {
     path: '/camera',
     name: 'Camera & Photos',
-    description: 'openCamera, fetchAlbumPhotos',
-    apis: ['openCamera', 'fetchAlbumPhotos'],
+    description: 'openCamera, fetchAlbumPhotos, fetchAlbumItems',
+    apis: ['openCamera', 'fetchAlbumPhotos', 'fetchAlbumItems'],
   },
   { path: '/contacts', name: 'Contacts', description: 'fetchContacts', apis: ['fetchContacts'] },
   {

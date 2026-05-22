@@ -182,6 +182,7 @@ export const en: Record<StringKey, string> = {
   // NavigationPage
   'pages.navigation.closeView.description': 'SDK — close the current view',
   'pages.navigation.openURL.description': 'SDK — open a URL',
+  'pages.navigation.openPDFViewer.description': 'Open PDF viewer',
   'pages.navigation.share.description': 'SDK — share a message',
   'pages.navigation.getTossShareLink.description': 'Generate a Toss share link',
   'pages.navigation.setIosSwipeGestureEnabled.description': 'Enable iOS swipe gesture',
@@ -216,6 +217,7 @@ export const en: Record<StringKey, string> = {
   // CameraPage
   'pages.camera.openCamera.description': 'Open camera',
   'pages.camera.fetchAlbumPhotos.description': 'Fetch photos from album',
+  'pages.camera.fetchAlbumItems.description': 'Fetch photos and videos from album',
 
   // ContactsPage
   'pages.contacts.fetchContacts.description': 'Fetch contacts',

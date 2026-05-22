@@ -1,6 +1,7 @@
 import {
   closeView,
   getTossShareLink,
+  openPDFViewer,
   openURL,
   requestReview,
   setDeviceOrientation,
@@ -16,6 +17,7 @@ import { t } from '../i18n';
 import closeViewSnippet from '../snippets/navigation/closeView.ts?raw';
 import getTossShareLinkSnippet from '../snippets/navigation/getTossShareLink.ts?raw';
 import navigatorShareSnippet from '../snippets/navigation/navigatorShare.ts?raw';
+import openPDFViewerSnippet from '../snippets/navigation/openPDFViewer.ts?raw';
 import openURLSnippet from '../snippets/navigation/openURL.ts?raw';
 import requestReviewSnippet from '../snippets/navigation/requestReview.ts?raw';
 import setDeviceOrientationSnippet from '../snippets/navigation/setDeviceOrientation.ts?raw';
@@ -48,6 +50,24 @@ export function NavigationPage() {
             openURL(p.url);
           }}
           snippet={openURLSnippet}
+        />
+        <ApiCard
+          name="openPDFViewer"
+          description={t('pages.navigation.openPDFViewer.description')}
+          params={[
+            {
+              name: 'data',
+              label: 'Base64 PDF data',
+              defaultValue: 'JVBERi0xLjQK',
+            },
+            {
+              name: 'filename',
+              label: 'Filename (optional)',
+              defaultValue: 'document.pdf',
+            },
+          ]}
+          execute={(p) => openPDFViewer({ data: p.data, filename: p.filename || undefined })}
+          snippet={openPDFViewerSnippet}
         />
         <ApiCard
           name="share"
