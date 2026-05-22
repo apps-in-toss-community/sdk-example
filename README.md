@@ -17,12 +17,12 @@
 | 경로 | 도메인 | 설명 | API 수 |
 |---|---|---|---|
 | `/auth` | Auth | appLogin, getAnonymousKey 등 | 5 |
-| `/navigation` | Navigation | closeView, openURL, share 등 | 9 |
+| `/navigation` | Navigation | closeView, openURL, share 등 | 10 |
 | `/environment` | Environment | getPlatformOS, getNetworkStatus 등 | 14 |
 | `/permissions` | Permissions | getPermission, openPermissionDialog 등 | 3 |
 | `/storage` | Storage | setItem, getItem, removeItem, saveBase64Data 등 | 5 |
 | `/location` | Location | getCurrentLocation, startUpdateLocation | 2 |
-| `/camera` | Camera & Photos | openCamera, fetchAlbumPhotos | 2 |
+| `/camera` | Camera & Photos | openCamera, fetchAlbumPhotos, fetchAlbumItems | 3 |
 | `/contacts` | Contacts | fetchContacts | 1 |
 | `/clipboard` | Clipboard | getClipboardText, setClipboardText | 2 |
 | `/haptic` | Haptic | generateHapticFeedback | 1 |

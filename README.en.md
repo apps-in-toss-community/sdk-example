@@ -17,12 +17,12 @@ A reference app for interactively testing all public APIs of the [`@apps-in-toss
 | Path | Domain | Description | APIs |
 |---|---|---|---|
 | `/auth` | Auth | appLogin, getAnonymousKey, etc. | 5 |
-| `/navigation` | Navigation | closeView, openURL, share, etc. | 9 |
+| `/navigation` | Navigation | closeView, openURL, share, etc. | 10 |
 | `/environment` | Environment | getPlatformOS, getNetworkStatus, etc. | 14 |
 | `/permissions` | Permissions | getPermission, openPermissionDialog, etc. | 3 |
 | `/storage` | Storage | setItem, getItem, removeItem, saveBase64Data, etc. | 5 |
 | `/location` | Location | getCurrentLocation, startUpdateLocation | 2 |
-| `/camera` | Camera & Photos | openCamera, fetchAlbumPhotos | 2 |
+| `/camera` | Camera & Photos | openCamera, fetchAlbumPhotos, fetchAlbumItems | 3 |
 | `/contacts` | Contacts | fetchContacts | 1 |
 | `/clipboard` | Clipboard | getClipboardText, setClipboardText | 2 |
 | `/haptic` | Haptic | generateHapticFeedback | 1 |

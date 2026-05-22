@@ -18,6 +18,7 @@ import {
   closeView,
   env,
   eventLog,
+  fetchAlbumItems,
   fetchAlbumPhotos,
   fetchContacts,
   GoogleAdMob,
@@ -42,6 +43,7 @@ import {
   isMinVersionSupported,
   loadFullScreenAd,
   openCamera,
+  openPDFViewer,
   openPermissionDialog,
   openURL,
   partner,
@@ -71,6 +73,7 @@ export type _checkoutPayment = typeof checkoutPayment;
 export type _closeView = typeof closeView;
 export type _env = typeof env;
 export type _eventLog = typeof eventLog;
+export type _fetchAlbumItems = typeof fetchAlbumItems;
 export type _fetchAlbumPhotos = typeof fetchAlbumPhotos;
 export type _fetchContacts = typeof fetchContacts;
 export type _generateHapticFeedback = typeof generateHapticFeedback;
@@ -95,6 +98,7 @@ export type _IAP = typeof IAP;
 export type _isMinVersionSupported = typeof isMinVersionSupported;
 export type _loadFullScreenAd = typeof loadFullScreenAd;
 export type _openCamera = typeof openCamera;
+export type _openPDFViewer = typeof openPDFViewer;
 export type _openPermissionDialog = typeof openPermissionDialog;
 export type _openURL = typeof openURL;
 export type _partner = typeof partner;

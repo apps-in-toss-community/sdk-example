@@ -181,6 +181,7 @@ export const ko = {
   // NavigationPage
   'pages.navigation.closeView.description': 'SDK — 현재 뷰 닫기',
   'pages.navigation.openURL.description': 'SDK — URL 열기',
+  'pages.navigation.openPDFViewer.description': 'PDF 뷰어 열기',
   'pages.navigation.share.description': 'SDK — 메시지 공유',
   'pages.navigation.getTossShareLink.description': '토스 공유 링크 생성',
   'pages.navigation.setIosSwipeGestureEnabled.description': 'iOS 스와이프 제스처 활성화',
@@ -214,6 +215,7 @@ export const ko = {
   // CameraPage
   'pages.camera.openCamera.description': '카메라 열기',
   'pages.camera.fetchAlbumPhotos.description': '앨범 사진 가져오기',
+  'pages.camera.fetchAlbumItems.description': '앨범에서 사진·동영상 가져오기',
 
   // ContactsPage
   'pages.contacts.fetchContacts.description': '연락처 가져오기',
