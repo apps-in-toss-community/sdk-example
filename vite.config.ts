@@ -19,7 +19,11 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
-    aitDevtools.vite({ panel: true, tunnel: !!process.env.AIT_TUNNEL }),
+    // mcp: true exposes GET/POST /api/ait-devtools/state on the dev server so
+    // `devtools-mcp --mode=dev` can read the live browser mock state (the
+    // phone-independent half of station 3 debug). The panel POSTs a snapshot
+    // on every state change; the MCP stdio server GETs it for the agent.
+    aitDevtools.vite({ panel: true, mcp: true, tunnel: !!process.env.AIT_TUNNEL }),
   ],
   // Keep the polyfill and the SDK (plus its transitive bridge/analytics
   // entry points) out of Vite's dep pre-bundle. Otherwise Vite ships the
