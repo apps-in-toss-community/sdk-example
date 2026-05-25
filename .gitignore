@@ -15,6 +15,7 @@ playwright/.cache/
 .claude/*.lock
 .claude.lock
 .claude/worktrees/
+.mcp.json
 
 # aitcc dog-food per-run artifacts (not fixtures)
 aitcc/submit-*.json
