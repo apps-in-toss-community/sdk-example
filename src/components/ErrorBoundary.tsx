@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
     return (
       <div className="bg-gray-100 dark:bg-gray-950">
-        <div className="mx-auto max-w-[430px] min-h-screen bg-white shadow-sm flex items-center justify-center p-4 dark:bg-gray-900 dark:shadow-none">
+        <div className="mx-auto max-w-5xl min-h-screen bg-white shadow-sm flex items-center justify-center p-4 dark:bg-gray-900 dark:shadow-none">
           <div className="w-full rounded-xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-gray-900">
             <h1 className="text-base font-semibold text-gray-900 dark:text-gray-100">
               {t('errorBoundary.title')}

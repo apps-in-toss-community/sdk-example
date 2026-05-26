@@ -10,7 +10,7 @@ export function CameraPage() {
   return (
     <div>
       <PageHeader title="Camera & Photos" />
-      <div className="p-4 space-y-3">
+      <div className="p-4 grid grid-cols-1 gap-3 sm:grid-cols-2 items-start">
         <ApiCard
           name="openCamera"
           description={t('pages.camera.openCamera.description')}

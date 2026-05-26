@@ -24,7 +24,7 @@ export function PermissionsPage() {
   return (
     <div>
       <PageHeader title="Permissions" />
-      <div className="p-4 space-y-3">
+      <div className="p-4 grid grid-cols-1 gap-3 sm:grid-cols-2 items-start">
         <ApiCard
           name="getPermission"
           description={t('pages.permissions.getPermission.description')}
