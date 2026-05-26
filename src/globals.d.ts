@@ -29,9 +29,12 @@ interface Navigator {
 declare const __DEBUG_BUILD__: boolean;
 
 interface Window {
-  // Dogfood-only SDK bridge (see src/debug/sdkBridge.ts). Present only in a
-  // `RELEASE_CHANNEL=dogfood` build; lets an AI agent drive any SDK API over a
-  // CDP relay. Both are `undefined` in release/dev builds (DCE'd).
+  // SDK bridge (see src/debug/sdkBridge.ts). Installed in two scenarios:
+  //   1. `RELEASE_CHANNEL=dogfood` builds — real SDK calls over on-device CDP relay.
+  //   2. `pnpm dev` (plain browser) — mock SDK via the devtools unplugin alias,
+  //      so the devtools MCP `call_sdk` tool can drive env-1 local debugging.
+  // DCE'd from release/production bundles via `__DEBUG_BUILD__` and
+  // `import.meta.env.DEV` guards respectively.
   __sdk?: Record<string, unknown>;
   __sdkCall?: (
     name: string,
