@@ -13,7 +13,7 @@ export function StoragePage() {
   return (
     <div>
       <PageHeader title="Storage" />
-      <div className="p-4 space-y-3">
+      <div className="p-4 grid grid-cols-1 gap-3 sm:grid-cols-2 items-start">
         <ApiCard
           name="Storage.setItem"
           description={t('pages.storage.setItem.description')}

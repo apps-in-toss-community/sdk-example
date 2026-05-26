@@ -133,7 +133,7 @@ src/
 
 - SDK 타입 캐스팅은 `ParamDef.parse`로 이동 — 페이지 `execute` 콜백은 type assertion 없이 깔끔하게.
 - 이벤트 기반 API(IAP purchase, AdMob load/show처럼 `onEvent`가 여러 번 발화): `HistoryLog`에 축적, `ResultView`는 최신 이벤트만.
-- 모바일 퍼스트: `max-w-[430px]` 고정, 데스크톱 브라우저에서도 모바일 뷰 유지.
+- 반응형: 셸은 `max-w-5xl`, 좁은 화면(portrait)은 1컬럼, 넓은 화면(landscape/데스크톱)은 ApiCard를 `sm:grid-cols-2`로 최대 2컬럼. 미니앱 orientation은 portrait/landscape 2값(OS 4방향 아님)이라 landscape에서 화면 폭을 활용해야 한다. 워크플로우/로그 페이지(Ads/IAP/Events)는 시퀀스·로그 흐름 보존 위해 단일 컬럼 유지.
 - 페이지별 중복 로직은 `ApiCard` / `HistoryLog` / `WorkflowStepper`로 추출.
 
 ## SDK 업데이트 대응

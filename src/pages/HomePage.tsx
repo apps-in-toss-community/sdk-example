@@ -216,7 +216,7 @@ export function HomePage() {
         </div>
       </div>
 
-      <div className="mt-2 space-y-2">
+      <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {filtered.map((d) => (
           <Link
             key={d.path}
@@ -233,7 +233,7 @@ export function HomePage() {
           </Link>
         ))}
         {filtered.length === 0 && (
-          <p className="py-8 text-center text-sm text-gray-400 dark:text-gray-500">
+          <p className="col-span-full py-8 text-center text-sm text-gray-400 dark:text-gray-500">
             {t('homePage.noResults')}
           </p>
         )}

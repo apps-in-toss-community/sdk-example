@@ -9,7 +9,7 @@ export function PartnerPage() {
   return (
     <div>
       <PageHeader title="Partner" />
-      <div className="p-4 space-y-3">
+      <div className="p-4 grid grid-cols-1 gap-3 sm:grid-cols-2 items-start">
         <ApiCard
           name="partner.addAccessoryButton"
           description={t('pages.partner.addAccessoryButton.description')}

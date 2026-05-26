@@ -8,7 +8,7 @@ export function ContactsPage() {
   return (
     <div>
       <PageHeader title="Contacts" />
-      <div className="p-4 space-y-3">
+      <div className="p-4 grid grid-cols-1 gap-3 sm:grid-cols-2 items-start">
         <ApiCard
           name="fetchContacts"
           description={t('pages.contacts.fetchContacts.description')}

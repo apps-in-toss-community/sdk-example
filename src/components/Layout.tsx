@@ -38,7 +38,7 @@ export function Layout() {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950">
       <div
-        className="mx-auto max-w-[430px] min-h-screen bg-white shadow-sm dark:bg-gray-900 dark:shadow-none"
+        className="mx-auto max-w-5xl min-h-screen bg-white shadow-sm dark:bg-gray-900 dark:shadow-none"
         style={style}
       >
         <BrandMark />
