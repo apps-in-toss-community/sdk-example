@@ -41,6 +41,14 @@ if (__DEBUG_BUILD__) {
  *    attach UI.
  */
 async function mountDebugSurfaces(): Promise<void> {
+  // Expose the full SDK namespace on `window.__sdk` so an AI agent can drive
+  // any SDK API over the CDP relay (`Runtime.evaluate`) — no human UI tap
+  // needed to exercise e.g. `setDeviceOrientation`. Dogfood-only (DCE'd from
+  // release). Installed before the gate check so it's available even when the
+  // attach overlay doesn't mount.
+  const { installSdkBridge } = await import('./debug/sdkBridge');
+  await installSdkBridge();
+
   const { checkDebugGate, maybeAttach } = await import('@ait-co/devtools/in-app');
   const gate = checkDebugGate();
   const locationSearch = window.location.search;
