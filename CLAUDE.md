@@ -89,7 +89,22 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 운영 중인 Deploy Key: workspace 3095 / scope `aitc-sdk-example` only / id 6905 / name `aitcc-sdk-ex-ci` / expire 2027-05-18. 평소 deploy 흐름은 `pnpm bundle:ait` → `pnpm exec ait deploy --api-key "$AITCC_API_KEY" --scheme-only -m "<memo>"` (stdout 마지막 줄이 `intoss-private://...` URL). GitHub Actions의 tag-gated workflow가 이 흐름을 자동화한다 — `.github/workflows/deploy-ait.yml` 참고.
 
-**Dog-food는 PREPARE 단계에선 `test-push`로**: 31146의 `serviceStatus`가 `PREPARE`(출시 review 통과 전)인 동안은 intoss-private URL을 폰에서 열어도 토스 앱이 actual bundle을 load하지 않는다 (`aitcc app bundles deployed`가 `null` 반환). 그 동안은 `aitcc app bundles test-push --workspace 3095 --app 31146 --deployment-id <id>`로 uploader 디바이스에 push를 보내고, 그 알림을 통해 bundle을 load해야 한다. v0.1.1에서 처음 확인됨 — 자세한 배경은 umbrella `CLAUDE.md` "Dog-food 흐름" 단락 참조.
+**Dog-food 진입은 QR/deep-link query-param 단일 경로** (2026-05-26 정책 확정): `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>` deep link를 ASCII QR로 렌더해 폰 카메라로 스캔하면 `PREPARE` 상태에서도 cold-load·relay attach된다(2026-05-25 실 iPhone 검증). 이전 `test-push` 경로는 **폐기** — 별도 알림 채널이라 `debug=1&relay` 쿼리를 못 실어 in-app gate Layer C가 막는다. `devicectl`/`adb` device-control 발사도 폐기(USB·페어링·bundle id 의존이라 brittle하고 실유저 플로우가 아님 — QR 스캔만 사용). 자세한 배경은 umbrella `CLAUDE.md` §3.2 "Dog-food 흐름" 단락 참조.
+
+## On-device 디버깅 (`window.__sdk` 브리지 + CDP relay)
+
+실기기 토스 앱 WebView에 띄운 dogfood 번들을 에이전트가 사람 폰 관찰 없이 디버깅하는 station 3(debug) 경로. 핵심 인프라 세 가지:
+
+**1. `window.__sdk` / `window.__sdkCall` 브리지** (`src/debug/sdkBridge.ts`). dogfood 번들에 한해 `@apps-in-toss/web-framework`의 전체 export namespace를 `window.__sdk`로 노출하고, `window.__sdkCall(name, ...args)`로 임의 SDK API를 호출해 `{ ok, value | error }`를 받는다. 에이전트가 CDP relay의 `Runtime.evaluate`로 직접 구동한다 — 예: `window.__sdkCall('setDeviceOrientation', { type: 'landscape' })`. namespace import라 새 SDK API가 추가되면 자동 노출된다.
+
+- **왜 필요한가**: SDK는 호출을 Granite/ReactNative 브리지(`window.ReactNativeWebView.postMessage` + 독자 envelope)로 라우팅하고, SDK 함수들은 모듈 내부(tree-shaken, global에 안 붙음)다. envelope을 CDP eval로 hand-synthesize할 수 없고 함수를 global에서 못 찾으므로, 이 브리지 없이는 `setDeviceOrientation` 같은 API를 실기기에서 구동하려면 사람이 UI를 탭해야 한다.
+- **빌드 격리**: `main.tsx`의 `if (__DEBUG_BUILD__)` 가드 블록(`mountDebugSurfaces`)에서만 `installSdkBridge`를 dynamic import한다. release/dev 번들은 DCE로 제거 → `window.__sdk`는 dogfood 빌드 밖에선 존재하지 않는다. `__DEBUG_BUILD__`는 `vite.config.ts`의 `define` 상수(`process.env.RELEASE_CHANNEL === 'dogfood'`).
+
+**2. `ait build`는 real SDK 번들** (mock 아님). `pnpm bundle:ait`(= `ait build`)는 devtools mock alias를 **적용하지 않는다** — 그 alias는 Vite dev 전용 rewrite다. 따라서 on-device dogfood 번들의 `window.__sdk.*`는 mock이 아니라 진짜 브리지 호출이다. (`pnpm dev` 브라우저에선 같은 import가 mock으로 resolve되지만, dev에선 `__DEBUG_BUILD__`가 false라 이 경로 자체가 안 돈다.) `window.__sdk`를 실기기에서 검증하려면 새 dogfood 번들을 deploy해야 한다 — 브리지 추가 전 번들에는 없다.
+
+**3. QR 스캔 단일 진입** (위 "Deploy Key" 단락 참조). `devicectl`/`adb` 발사 금지. `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>` deep link를 ASCII QR로 렌더해 폰 카메라로 스캔.
+
+**devtools-debug MCP**는 umbrella·sdk-example **양쪽** `.mcp.json`에 등록돼 있다(둘 다 같은 launcher `~/.local/share/aitc/devtools-mcp-debug.mjs`를 가리킴) → 어느 cwd에서 Claude Code를 띄워도 로드된다. `.mcp.json`은 머신 절대경로가 박혀 있어 **gitignore**(커밋 금지). MCP 도구(`build_attach_url`/`list_pages`/`list_console_messages` 등)로 relay attach·관측한다. MCP 서버가 특정 도구(`measure_safe_area`/`take_screenshot`)를 미구현이면 Chii relay client WS에 직접 붙어 `Runtime.evaluate`로 우회한다(`Page.captureScreenshot`은 chobitsu 미구현이라 스크린샷은 DOM 측정으로 대체).
 
 ## OIDC bridge URL
 
@@ -115,7 +130,10 @@ src/
 ├── App.tsx                # React Router 설정, 19개 라우트 (홈 + 18개 도메인)
 ├── __typecheck.ts         # SDK export 커버리지 컴파일 타임 검증
 ├── components/            # Layout, PageHeader, ApiCard, ParamInput,
-│                          # ResultView, HistoryLog, WorkflowStepper
+│                          # ResultView, HistoryLog, WorkflowStepper,
+│                          # DebugDiagnosticPanel, DebugAttachOverlay
+├── debug/                 # dogfood 전용 — sdkBridge.ts (window.__sdk),
+│                          # main.tsx의 __DEBUG_BUILD__ 블록에서만 import
 └── pages/                 # 18개 도메인 페이지 (Home, Auth, Navigation,
                            # Environment, Permissions, Storage, Location,
                            # Camera, Contacts, Clipboard, Haptic, IAP,
