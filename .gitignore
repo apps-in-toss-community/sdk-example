@@ -10,6 +10,11 @@ playwright/.cache/
 .tmp/
 *.local
 
+# Local secrets (relay debug TOTP, etc.)
+.env
+.env.*
+!.env.example
+
 # Claude Code
 .claude/settings.local.json
 .claude/*.lock
