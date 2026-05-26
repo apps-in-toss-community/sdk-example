@@ -25,6 +25,19 @@ if (__DEBUG_BUILD__) {
   void mountDebugSurfaces();
 }
 
+// Dev-only: expose the SDK bridge so the devtools MCP `call_sdk` tool can
+// drive the mock SDK over a local-browser CDP attach (env 1, plain `pnpm dev`).
+// In a dev build `@apps-in-toss/web-framework` resolves to the devtools mock
+// via the unplugin alias — exactly the SDK surface env-1 debugging wants to
+// exercise. Release builds DCE this via `import.meta.env.DEV === false`.
+//
+// Dogfood builds use `ait build` (a Vite production build), so
+// `import.meta.env.DEV` is `false` there — no double-install with the
+// `__DEBUG_BUILD__` path above.
+if (import.meta.env.DEV) {
+  void import('./debug/sdkBridge').then((m) => m.installSdkBridge());
+}
+
 /**
  * Mounts the dogfood-only debug surfaces.
  *
