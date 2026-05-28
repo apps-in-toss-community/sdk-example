@@ -32,13 +32,23 @@ function safeGet(): Insets {
   }
 }
 
+/** Writes --ait-safe-{top,bottom,left,right} onto :root for global access. */
+function applyRootVars(i: Insets): void {
+  const root = document.documentElement;
+  root.style.setProperty('--ait-safe-top', `${i.top}px`);
+  root.style.setProperty('--ait-safe-bottom', `${i.bottom}px`);
+  root.style.setProperty('--ait-safe-left', `${i.left}px`);
+  root.style.setProperty('--ait-safe-right', `${i.right}px`);
+}
+
 /**
  * Returns SDK safe-area insets plus an `isTossEnv` flag so Layout can decide
  * whether to trust SDK values exclusively (mini-app) or fall back to CSS
  * `env(safe-area-inset-*)` (regular web browser).
  *
- * Per the framework guide, `env()` is unreliable in the Toss WebView, so we
- * never combine the two sources in-app — that double-counted padding before.
+ * Also writes --ait-safe-{top,bottom,left,right} on :root so any descendant
+ * can reference them without prop-drilling. The Toss WebView does not surface
+ * env(safe-area-inset-*), so we never depend on that CSS function here.
  */
 export function useSafeAreaInsets(): SafeAreaInsetsState {
   const [insets, setInsets] = useState<Insets>(safeGet);
@@ -46,11 +56,19 @@ export function useSafeAreaInsets(): SafeAreaInsetsState {
 
   useEffect(() => {
     setIsTossEnv(detectTossEnv());
-    setInsets(safeGet());
+
+    const current = safeGet();
+    setInsets(current);
+    applyRootVars(current);
 
     let cleanup: (() => void) | undefined;
     try {
-      cleanup = SafeAreaInsets.subscribe({ onEvent: setInsets });
+      cleanup = SafeAreaInsets.subscribe({
+        onEvent: (updated) => {
+          setInsets(updated);
+          applyRootVars(updated);
+        },
+      });
     } catch {
       // subscribe unavailable — static snapshot from safeGet() stands
     }

@@ -27,12 +27,18 @@ export function Layout() {
   // --safe-top is read by sticky descendants (PageHeader, HomePage search
   // header) — plain `sticky top-0` would anchor to the viewport and let
   // content slide under the notch on scroll.
+  // --ait-safe-* mirror the :root vars written by useSafeAreaInsets for any
+  // descendant that targets the shell container rather than :root directly.
   const style = {
     paddingTop: top,
     paddingBottom: bottom,
     paddingLeft: left,
     paddingRight: right,
     '--safe-top': top,
+    '--ait-safe-top': top,
+    '--ait-safe-bottom': bottom,
+    '--ait-safe-left': left,
+    '--ait-safe-right': right,
   } as CSSProperties;
 
   return (
