@@ -139,6 +139,10 @@ export function EnvironmentPage() {
         <ApiCard
           name="SafeAreaInsets.get"
           description={t('pages.environment.safeAreaInsetsGet.description')}
+          notes={[
+            t('pages.environment.safeAreaInsetsGet.notes.partnerTop'),
+            t('pages.environment.safeAreaInsetsGet.notes.subscribeStale'),
+          ]}
           params={[]}
           execute={async () => SafeAreaInsets.get()}
           snippet={safeAreaInsetsGetSnippet}

@@ -64,9 +64,14 @@ export function useSafeAreaInsets(): SafeAreaInsetsState {
     let cleanup: (() => void) | undefined;
     try {
       cleanup = SafeAreaInsets.subscribe({
-        onEvent: (updated) => {
-          setInsets(updated);
-          applyRootVars(updated);
+        onEvent: () => {
+          // SDK subscribe payload has a confirmed stale-leak on L→P rotation
+          // (top arrives as the previous landscape left/right value). The
+          // safest read is to ignore the payload and re-call get() — which is
+          // always consistent with the current orientation.
+          const fresh = safeGet();
+          setInsets(fresh);
+          applyRootVars(fresh);
         },
       });
     } catch {

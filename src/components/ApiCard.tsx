@@ -84,6 +84,11 @@ type ParamsRecord<Params extends AnyParamDef[]> =
 interface ApiCardProps<Params extends AnyParamDef[]> {
   name: string;
   description?: string;
+  /**
+   * 카드 본문에 노출할 주의·관찰 사항. description 보다 강조해 표시.
+   * 줄바꿈은 \n 으로 구분. 여러 줄을 주면 각 줄이 개별 항목으로 렌더된다.
+   */
+  notes?: string[];
   params: readonly [...Params];
   execute: (params: ParamsRecord<Params>) => Promise<unknown>;
   /**
@@ -110,6 +115,7 @@ interface ApiCardProps<Params extends AnyParamDef[]> {
 export function ApiCard<const Params extends AnyParamDef[]>({
   name,
   description,
+  notes,
   params,
   execute,
   snippet,
@@ -163,6 +169,16 @@ export function ApiCard<const Params extends AnyParamDef[]>({
       </div>
       {description && (
         <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{description}</p>
+      )}
+
+      {notes && notes.length > 0 && (
+        <ul className="mt-2 space-y-1 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-900/40 dark:bg-amber-900/15 dark:text-amber-200">
+          {notes.map((note) => (
+            <li key={note} className="leading-snug">
+              {note}
+            </li>
+          ))}
+        </ul>
       )}
 
       {params.length > 0 && (
