@@ -174,6 +174,10 @@ export const en: Record<StringKey, string> = {
   'pages.environment.envGetDeploymentId.description': 'Deployment ID',
   'pages.environment.getAppsInTossGlobals.description': 'Apps in Toss global settings',
   'pages.environment.safeAreaInsetsGet.description': 'Safe Area Insets',
+  'pages.environment.safeAreaInsetsGet.notes.partnerTop':
+    'In a partner WebView the Toss native top bar is drawn outside the viewport, so applying the SDK top inset as padding creates a duplicate gap. Treat top as informational only in partner apps. game/external WebViews must apply it as padding.',
+  'pages.environment.safeAreaInsetsGet.notes.subscribeStale':
+    'SafeAreaInsets.subscribe delivers a stale top channel on landscape→portrait rotation — the value matches the previous landscape left/right (deterministic). Use subscribe as a signal only and call get() each time to read consistent insets.',
   'pages.environment.getSafeAreaInsets.description': 'Safe Area Insets (legacy)',
   'pages.environment.navigatorOnline.description': 'Standard Web API (via @ait-co/polyfill)',
   'pages.environment.navigatorConnection.description':

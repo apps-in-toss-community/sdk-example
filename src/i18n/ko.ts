@@ -173,6 +173,10 @@ export const ko = {
   'pages.environment.envGetDeploymentId.description': '배포 ID',
   'pages.environment.getAppsInTossGlobals.description': '앱인토스 글로벌 설정',
   'pages.environment.safeAreaInsetsGet.description': 'Safe Area Insets',
+  'pages.environment.safeAreaInsetsGet.notes.partnerTop':
+    'partner WebView 에선 토스 native 상단바가 viewport 밖이라 SDK 가 보고하는 top inset 을 padding 으로 적용하면 콘텐츠 위에 중복 빈 공간이 생깁니다. partner 미니앱은 top inset 을 정보용으로만 쓰세요. game/external 은 padding 으로 그대로 적용합니다.',
+  'pages.environment.safeAreaInsetsGet.notes.subscribeStale':
+    'SafeAreaInsets.subscribe 의 payload 가 landscape→portrait 회전 시 top 채널을 직전 landscape 의 left/right 값으로 stale 전달합니다 (deterministic). subscribe 는 signal 로만 쓰고 매번 get() 을 다시 호출해 정합한 값을 읽으세요.',
   'pages.environment.getSafeAreaInsets.description': 'Safe Area Insets (legacy)',
   'pages.environment.navigatorOnline.description': '표준 Web API (via @ait-co/polyfill)',
   'pages.environment.navigatorConnection.description':
