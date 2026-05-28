@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { Outlet } from 'react-router-dom';
+import { useHashScroll } from '../hooks/useHashScroll';
 import { useSafeAreaInsets } from '../hooks/useSafeAreaInsets';
 import { BrandMark } from './BrandMark';
 import { DemoBanner } from './DemoBanner';
@@ -18,6 +19,7 @@ function resolveInset(
 
 export function Layout() {
   const { insets, isTossEnv } = useSafeAreaInsets();
+  useHashScroll();
 
   const top = resolveInset(insets.top, 'top', isTossEnv);
   const bottom = resolveInset(insets.bottom, 'bottom', isTossEnv);

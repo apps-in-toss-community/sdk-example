@@ -147,7 +147,10 @@ export function ApiCard<const Params extends AnyParamDef[]>({
   }
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
+    <div
+      id={`api-${name}`}
+      className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900 scroll-mt-24"
+    >
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold text-gray-900 font-mono dark:text-gray-100">{name}</h3>
         {docsUrl && (
