@@ -82,48 +82,10 @@ export const en: Record<StringKey, string> = {
   'shimComposition.row.no': 'no',
   'shimComposition.row.pending': '…',
 
-  // DebugAttachOverlay (in-app Debugging MCP attach surface)
-  'debugAttach.fabAriaLabel': 'Open debug attach panel',
-  'debugAttach.fabLabel': 'Debug',
-  'debugAttach.title': 'Debugging MCP attach',
-  'debugAttach.closeAriaLabel': 'Close debug panel',
-  'debugAttach.deploymentId': 'Deployment ID',
-  'debugAttach.relayUrl': 'Relay (wss://)',
-  'debugAttach.relayPlaceholder': 'wss://<id>.trycloudflare.com',
-  'debugAttach.token': 'Secret token',
-  'debugAttach.tokenPlaceholder': 'token printed by devtools-mcp',
-  'debugAttach.attach': 'Attach',
-  'debugAttach.attaching': 'Attaching…',
-  'debugAttach.statusReady':
-    'relay and token arrived via query params. Press Attach to start the session.',
-  'debugAttach.statusNeedsToken':
-    'relay detected but no token. Paste the secret token printed by devtools-mcp.',
-  'debugAttach.statusAttaching': 'Connecting to the relay…',
-  'debugAttach.statusAttached':
-    'Attach request sent — check the devtools-mcp console for the session.',
-  'debugAttach.hint':
-    'Read-only attach to this dogfood bundle using the wss:// relay URL and secret token printed by the AI agent’s devtools-mcp.',
-
-  // DebugDiagnosticPanel (dogfood-build URL/gate diagnostic — always mounted)
-  'debugDiag.title': 'Debug diagnostic (dogfood)',
-  'debugDiag.fabLabel': 'Diag',
-  'debugDiag.fabAriaLabel': 'Open debug diagnostic panel',
-  'debugDiag.closeAriaLabel': 'Close diagnostic panel',
-  'debugDiag.locationSearch': 'location.search',
-  'debugDiag.locationSearchEmpty': '(empty string — no query params)',
-  'debugDiag.gateResult': 'Gate result',
-  'debugDiag.gateAttach': 'attach',
-  'debugDiag.gateReason': 'reason',
-  'debugDiag.params': 'Detected params',
-  'debugDiag.schemeUri': 'getSchemeUri()',
-  'debugDiag.schemeUriEmpty': '(empty string — no entry scheme URI)',
-  'debugDiag.schemeUriQuery': 'schemeUri query',
-  'debugDiag.hint':
-    'Always shown in a dogfood build. This diagnostic confirms whether an intoss-private deep link propagates query params (debug=1, relay, …) into the WebView.',
-  'debugDiag.copy': 'Copy log',
-  'debugDiag.copying': 'Copying...',
-  'debugDiag.copied': 'Copied',
-  'debugDiag.copyFailed': 'Copy failed',
+  // AttachStatusIcon (relay attach state indicator)
+  'attachStatus.connecting': 'Connecting to relay',
+  'attachStatus.connected': 'Relay connected',
+  'attachStatus.failed': 'Relay connection failed',
 
   // PolyfillToggleCard
   'polyfillToggle.tablistAriaLabel': '{title} call path',
