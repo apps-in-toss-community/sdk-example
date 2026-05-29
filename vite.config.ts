@@ -19,13 +19,7 @@ export default defineConfig({
   // Set BASE_PATH at build time (e.g. BASE_PATH=/sdk-example/) for Pages;
   // defaults to '/' for local dev and 앱인토스 배포.
   base: process.env.BASE_PATH ?? '/',
-  // Build-time channel flag for the in-app debug surface (Layer A of the
-  // 3-layer gate). Only a `RELEASE_CHANNEL=dogfood` build inlines `true`,
-  // which lets the bundler keep the `@ait-co/devtools/in-app` dynamic import
-  // and the floating attach UI. Every other build (dev, preview, release,
-  // tests) inlines `false`, so the whole debug path is dead-code-eliminated.
   define: {
-    __DEBUG_BUILD__: JSON.stringify(process.env.RELEASE_CHANNEL === 'dogfood'),
     __WEB_VIEW_TYPE__: JSON.stringify(webViewType),
   },
   plugins: [
