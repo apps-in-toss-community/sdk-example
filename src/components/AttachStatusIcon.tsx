@@ -75,11 +75,7 @@ export function AttachStatusIcon() {
   if (!visible) return null;
 
   const colorClass =
-    state === 'connected'
-      ? 'bg-green-500'
-      : state === 'failed'
-        ? 'bg-red-500'
-        : 'bg-yellow-400';
+    state === 'connected' ? 'bg-green-500' : state === 'failed' ? 'bg-red-500' : 'bg-yellow-400';
 
   const ariaLabel = t(`attachStatus.${state}`);
 
