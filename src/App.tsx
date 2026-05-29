@@ -31,14 +31,25 @@ import { StoragePage } from './pages/StoragePage';
 // setIosSwipeGestureEnabled exactly for apps that own their own navigation,
 // so disable the native gesture and rely on PageHeader's back button.
 // NavigationPage's demo card can still toggle it back on for inspection.
+//
+// Detection strategy — two layers:
+//   1. getOperationalEnvironment() === 'toss'  (SDK constant bridge, primary)
+//   2. 'ReactNativeWebView' in window           (RN bridge marker, fallback)
+// Layer 1 reads __CONSTANT_HANDLER_MAP synchronously; if that map is not yet
+// injected when the effect fires (rare WebView init race), layer 2 catches the
+// gap. Both checks are synchronous and safe from useEffect.
 function useDisableIosSwipeGestureInToss(): void {
   useEffect(() => {
+    let isToss = false;
     try {
-      if (getOperationalEnvironment() !== 'toss') return;
+      isToss = getOperationalEnvironment() === 'toss';
     } catch {
-      return;
+      // __CONSTANT_HANDLER_MAP not yet populated — fall back to the RN bridge
+      // presence marker that the Toss WebView always injects before JS runs.
+      isToss = typeof window !== 'undefined' && 'ReactNativeWebView' in window;
     }
-    Promise.resolve(setIosSwipeGestureEnabled({ isEnabled: false })).catch(() => {});
+    if (!isToss) return;
+    setIosSwipeGestureEnabled({ isEnabled: false }).catch(() => {});
   }, []);
 }
 
