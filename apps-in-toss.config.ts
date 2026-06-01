@@ -3,18 +3,9 @@ import { defineConfig } from '@apps-in-toss/web-framework/config';
 export default defineConfig({
   appName: 'aitc-sdk-example',
   brand: {
-    displayName: 'AITC SDK 예제',
     primaryColor: '#3182F6',
-    icon: 'https://sdk-example.aitc.dev/og/og-image.png',
   },
-  web: {
-    host: 'localhost',
-    port: 5173,
-    commands: {
-      dev: 'vite',
-      build: 'vite build',
-    },
-  },
+  webBundleDir: 'dist',
   permissions: [
     { name: 'camera', access: 'access' },
     { name: 'clipboard', access: 'read' },
@@ -24,5 +15,4 @@ export default defineConfig({
     { name: 'microphone', access: 'access' },
     { name: 'photos', access: 'read' },
   ],
-  outdir: 'dist',
 });
