@@ -84,7 +84,7 @@ jobs:
             pnpm bundle:ait
           fi
 
-      - name: Deploy to aitc-sdk-example
+      - name: Upload bundle via aitcc (web-framework 3.0 — ait deploy removed)
         id: deploy
         env:
           AITCC_API_KEY: ${{ secrets.AITCC_API_KEY }}
@@ -92,29 +92,34 @@ jobs:
           CHANNEL: ${{ steps.ref.outputs.channel }}
         run: |
           set -euo pipefail
-          # Capture the full `ait deploy` output to a file so a failure (or a
-          # run that emits no intoss-private:// URL) is visible in the log
-          # instead of being swallowed by command substitution.
+          # web-framework 3.0: `ait deploy` is gone; `ait build` only builds.
+          # Upload is now done with `aitcc app deploy`. The intoss-private:// URL
+          # is constructed from appName (aitc-sdk-example) + deploymentId embedded
+          # in the .ait bundle (extracted via aitcc --json --dry-run).
+          deployment_id=$(pnpm exec aitcc app deploy --json --dry-run \
+            --workspace 3095 --app 31146 \
+            "$BUNDLE_PATH" | jq -r '.deploymentId')
+
+          echo "Uploading bundle (deploymentId: $deployment_id) …"
           set +e
-          pnpm exec ait deploy \
-            --api-key "$AITCC_API_KEY" \
-            --scheme-only \
-            -m "Release $TAG ($CHANNEL)" \
+          pnpm exec aitcc app deploy \
+            --workspace 3095 --app 31146 \
+            --memo "Release $TAG ($CHANNEL)" \
+            "$BUNDLE_PATH" \
             > deploy-output.txt 2>&1
           deploy_exit=$?
           set -e
-          echo "----- ait deploy output -----"
+          echo "----- aitcc app deploy output -----"
           cat deploy-output.txt
-          echo "----- ait deploy exit: $deploy_exit -----"
+          echo "----- aitcc app deploy exit: $deploy_exit -----"
           if [ "$deploy_exit" -ne 0 ]; then
-            echo "::error::ait deploy exited $deploy_exit — see output above"
+            echo "::error::aitcc app deploy exited $deploy_exit — see output above"
             exit 1
           fi
-          url=$(tr -d '\r' < deploy-output.txt | grep -m1 '^intoss-private://' || true)
-          if [ -z "$url" ]; then
-            echo "::error::ait deploy succeeded but emitted no intoss-private:// URL"
-            exit 1
-          fi
+
+          # Construct the intoss-private:// deep-link from appName + deploymentId.
+          # Format: intoss-private://<appName>?_deploymentId=<id>
+          url="intoss-private://aitc-sdk-example?_deploymentId=${deployment_id}"
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "::add-mask::$url"
 

@@ -31,7 +31,7 @@ A reference app for interactively testing all public APIs of the [`@apps-in-toss
 | `/game` | Game | game center, promotions, contactsViral | 6 |
 | `/analytics` | Analytics | screen, impression, click, eventLog | 4 |
 | `/partner` | Partner | addAccessoryButton, removeAccessoryButton | 2 |
-| `/events` | Events | graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb, appsInTossEvent | 4 |
+| `/events` | Events | graniteEvent, tdsEvent, appsInTossEvent | 3 |
 | `/payment` | Payment | TossPay recurring-billing sheet — user auth via `wrappedToken` (real charge runs server-side) | 1 |
 | `/notification` | Notification | Push-notification opt-in — 3-way result: `newAgreement` / `alreadyAgreed` / `agreementRejected` | 1 |
 

@@ -51,21 +51,20 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 이 repo는 두 산출물을 만든다:
 
 1. **웹 dist** (`pnpm build`) — `tsc -b && vite build && SSG + sitemap`. `sdk-example.aitc.dev` 정적 배포용.
-2. **`.ait` 번들** (`pnpm bundle:ait` → `ait build`) — 토스 앱이 로드하는 미니앱 패키지. `granite.config.ts`가 입력, `aitc-sdk-example.ait`가 산출.
+2. **`.ait` 번들** (`pnpm bundle:ait` → `ait build`) — 토스 앱이 로드하는 미니앱 패키지. `apps-in-toss.config.ts`가 입력, `aitc-sdk-example.ait`가 산출.
 
-번들러는 **`@apps-in-toss/cli@2.5.2`** (upstream CLI, dev dep). `ait build`는 `vite build`를 한 번 더 돌려 dist를 만들고 `AITBUNDL` magic + protobuf 헤더 + zip blob 포맷으로 wrap한다. 빌드 시 두 RN target(0.84.0 + 0.72.6)에 대해 산출.
+번들러는 **`@apps-in-toss/web-framework` (v3.0-beta)** 내장 `ait` bin. `@apps-in-toss/cli`는 v3에서 web-framework에 병합돼 별도 패키지 없음. `ait build`는 `vite build`를 한 번 더 돌려 dist를 만들고 `.ait` 포맷으로 wrap한다.
 
-**`granite.config.ts`** — 미니앱 brand metadata + web build wiring. 핵심 필드:
+**`apps-in-toss.config.ts`** (v3 이전 이름: `granite.config.ts`) — 미니앱 brand metadata. 핵심 필드:
 
 - `appName: 'aitc-sdk-example'` — 31146의 콘솔 등록명과 일치.
-- `brand.icon` — **`string` (URL) 필수**. `null` 주면 schema validation에서 fail (메시지는 `[Apps In Toss Plugin] 플러그인 옵션이 올바르지 않습니다.`로 추상적이라 발견 시간을 잡아먹는다).
-- `web.commands.build: 'vite build'` — sdk-example의 정식 `pnpm build`는 `tsc -b && vite build && SSG + sitemap`이지만, mini-app 번들에는 SSG/sitemap이 무의미하므로 vite build만 호출. 타입 체크가 따로 필요한 contributor는 `pnpm typecheck`를 별도 단계로 돌릴 것.
-- `permissions: []` — 처음 빌드 통과용 placeholder. SDK 호출에 권한 prompt가 필요한 도메인을 dog-food하려면 여기 추가.
+- `brand.primaryColor` — 브랜드 색상.
+- `webBundleDir: 'dist'` (v3 이전 이름: `outdir`) — 웹 번들 출력 디렉토리.
+- `permissions: []` — SDK 호출에 권한 prompt가 필요한 도메인을 여기 추가.
 
 **산출물 / artifacts**
 
-- `aitc-sdk-example.ait` (~4 MB) — gitignored.
-- `.granite/app.json` — 빌드 메타. gitignored.
+- `aitc-sdk-example.ait` — gitignored.
 
 **Deploy로 가는 prerequisite (2026-05-18 dry-run 캡처)**
 
@@ -85,9 +84,9 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 ## Deploy Key (= 콘솔 "API 키")
 
-앱인토스 콘솔이 "API 키"로 부르는 워크스페이스-scope 자격증명은 이 프로젝트 전반에서 **`Deploy Key`로 부른다** (사용자 노출 텍스트 통일 규칙, umbrella `CLAUDE.md` "용어: Deploy Key" 단락 참고). CLI flag(`ait deploy --api-key`)와 GitHub secret 이름(`AITCC_API_KEY`)은 외부 인터페이스라 그대로 유지.
+앱인토스 콘솔이 "API 키"로 부르는 워크스페이스-scope 자격증명은 이 프로젝트 전반에서 **`Deploy Key`로 부른다** (사용자 노출 텍스트 통일 규칙, umbrella `CLAUDE.md` "용어: Deploy Key" 단락 참고). GitHub secret 이름(`AITCC_API_KEY`)은 외부 인터페이스라 그대로 유지.
 
-운영 중인 Deploy Key: workspace 3095 / scope `aitc-sdk-example` only / id 6905 / name `aitcc-sdk-ex-ci` / expire 2027-05-18. 평소 deploy 흐름은 `pnpm bundle:ait` → `pnpm exec ait deploy --api-key "$AITCC_API_KEY" --scheme-only -m "<memo>"` (stdout 마지막 줄이 `intoss-private://...` URL). GitHub Actions의 tag-gated workflow가 이 흐름을 자동화한다 — `.github/workflows/deploy-ait.yml` 참고.
+운영 중인 Deploy Key: workspace 3095 / scope `aitc-sdk-example` only / id 6905 / name `aitcc-sdk-ex-ci` / expire 2027-05-18. 평소 deploy 흐름은 `pnpm bundle:ait` → `pnpm exec aitcc app deploy --workspace 3095 --app 31146 <bundle.ait>` (AITCC_API_KEY env로 인증). GitHub Actions의 tag-gated workflow가 이 흐름을 자동화한다 — `.github/workflows/deploy-ait.yml` 참고.
 
 **Dog-food 진입은 QR/deep-link query-param 단일 경로** (2026-05-26 정책 확정): `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>` deep link를 ASCII QR로 렌더해 폰 카메라로 스캔하면 `PREPARE` 상태에서도 cold-load·relay attach된다(2026-05-25 실 iPhone 검증). 이전 `test-push` 경로는 **폐기** — 별도 알림 채널이라 `debug=1&relay` 쿼리를 못 실어 in-app gate Layer C가 막는다. `devicectl`/`adb` device-control 발사도 폐기(USB·페어링·bundle id 의존이라 brittle하고 실유저 플로우가 아님 — QR 스캔만 사용). 자세한 배경은 umbrella `CLAUDE.md` §3.2 "Dog-food 흐름" 단락 참조.
 
