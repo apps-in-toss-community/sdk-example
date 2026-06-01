@@ -143,9 +143,9 @@ export type _TossAds = typeof TossAds;
 
 // Type-only imports — used in the _SdkTypes alias below
 import type {
-  // web-bridge named types
+  // webview-bridge named types
   AddAccessoryButtonOptions,
-  // @apps-in-toss/types (re-exported via web-bridge)
+  // @apps-in-toss/types (re-exported via webview-bridge)
   AdMobFullScreenEvent,
   AdMobHandlerParams,
   AdMobLoadResult,
