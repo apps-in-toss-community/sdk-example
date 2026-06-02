@@ -1,11 +1,17 @@
 name: Deploy .ait bundle
 
-# Tag-gated deploy: pushing a v* tag builds the .ait bundle, uploads it to
-# the aitc-sdk-example mini-app (workspace 3095, app 31146) via the Toss CLI,
-# captures the returned intoss-private:// URL, renders it as a QR PNG, and
-# publishes everything as a GitHub Release. The Deploy Key is provided as
-# the AITCC_API_KEY secret (the CLI flag itself is --api-key for upstream
-# compatibility; in our docs we call it "Deploy Key").
+# Tag-gated deploy: pushing a v* tag builds the .ait bundle, uploads it via
+# `aitcc app deploy`, captures the returned intoss-private:// URL, renders it
+# as a QR PNG, and publishes everything as a GitHub Release.
+#
+# NOTE: web-framework 3.0 removed `@apps-in-toss/cli` and with it `ait deploy`.
+# Upload now goes through `aitcc app deploy`, which authenticates by console
+# session cookie (KR-IP bound) — NOT a Deploy Key. There is no headless API-key
+# path in `aitcc app deploy`. As a result, this workflow currently FAILS on
+# GHA-hosted runners (no session cookie → exit 10 NotAuthenticated). Headless
+# CI deploy is blocked until `ait deploy` returns to web-framework (tracked in
+# sdk-example #146). The AITCC_API_KEY secret is retained in repo settings for
+# when that path is restored, but it is not consumed by any step in this file.
 #
 # The `channel` input selects the build channel. `release` (default, also
 # used for v* tag pushes) builds a normal bundle. `dogfood` sets
@@ -87,7 +93,6 @@ jobs:
       - name: Upload bundle via aitcc (web-framework 3.0 — ait deploy removed)
         id: deploy
         env:
-          AITCC_API_KEY: ${{ secrets.AITCC_API_KEY }}
           TAG: ${{ steps.ref.outputs.tag }}
           CHANNEL: ${{ steps.ref.outputs.channel }}
         run: |
