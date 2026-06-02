@@ -86,7 +86,9 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 앱인토스 콘솔이 "API 키"로 부르는 워크스페이스-scope 자격증명은 이 프로젝트 전반에서 **`Deploy Key`로 부른다** (사용자 노출 텍스트 통일 규칙, umbrella `CLAUDE.md` "용어: Deploy Key" 단락 참고). GitHub secret 이름(`AITCC_API_KEY`)은 외부 인터페이스라 그대로 유지.
 
-운영 중인 Deploy Key: workspace 3095 / scope `aitc-sdk-example` only / id 6905 / name `aitcc-sdk-ex-ci` / expire 2027-05-18. 평소 deploy 흐름은 `pnpm bundle:ait` → `pnpm exec aitcc app deploy --workspace 3095 --app 31146 <bundle.ait>` (AITCC_API_KEY env로 인증). GitHub Actions의 tag-gated workflow가 이 흐름을 자동화한다 — `.github/workflows/deploy-ait.yml` 참고.
+운영 중인 Deploy Key: workspace 3095 / scope `aitc-sdk-example` only / id 6905 / name `aitcc-sdk-ex-ci` / expire 2027-05-18.
+
+`aitcc app deploy`는 **콘솔 세션 쿠키(KR-IP 한정)로 인증**하며 Deploy Key(API 키)를 소비하지 않는다. web-framework 3.0이 `@apps-in-toss/cli`를 제거하면서 `ait deploy --api-key`(Deploy Key를 소비하는 headless 경로)도 함께 사라졌다. 따라서 `.github/workflows/deploy-ait.yml`의 tag-gated deploy는 GHA 호스티드 러너에서 **현재 실패**(세션 없음 → exit 10 `NotAuthenticated`)하며, headless CI 배포는 `ait deploy`가 web-framework에 복귀할 때까지 차단된다(#146 추적 중). `AITCC_API_KEY` GitHub secret은 그 경로가 복원될 때를 위해 repo 설정에 보존하지만 현재 workflow에서 소비하는 스텝은 없다.
 
 **Dog-food 진입은 QR/deep-link query-param 단일 경로** (2026-05-26 정책 확정): `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>` deep link를 ASCII QR로 렌더해 폰 카메라로 스캔하면 `PREPARE` 상태에서도 cold-load·relay attach된다(2026-05-25 실 iPhone 검증). 이전 `test-push` 경로는 **폐기** — 별도 알림 채널이라 `debug=1&relay` 쿼리를 못 실어 in-app gate Layer C가 막는다. `devicectl`/`adb` device-control 발사도 폐기(USB·페어링·bundle id 의존이라 brittle하고 실유저 플로우가 아님 — QR 스캔만 사용). 자세한 배경은 umbrella `CLAUDE.md` §3.2 "Dog-food 흐름" 단락 참조.
 
