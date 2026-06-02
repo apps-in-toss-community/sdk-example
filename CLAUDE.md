@@ -53,7 +53,7 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 1. **웹 dist** (`pnpm build`) — `tsc -b && vite build && SSG + sitemap`. `sdk-example.aitc.dev` 정적 배포용.
 2. **`.ait` 번들** (`pnpm bundle:ait` → `ait build`) — 토스 앱이 로드하는 미니앱 패키지. `apps-in-toss.config.ts`가 입력, `aitc-sdk-example.ait`가 산출.
 
-번들러는 **`@apps-in-toss/web-framework` (v3.0-beta)** 내장 `ait` bin. `@apps-in-toss/cli`는 v3에서 web-framework에 병합돼 별도 패키지 없음. `ait build`는 `vite build`를 한 번 더 돌려 dist를 만들고 `.ait` 포맷으로 wrap한다.
+번들러는 **`@apps-in-toss/web-framework` (v3.0-beta)** 내장 `ait` bin. `@apps-in-toss/cli`는 v3에서 web-framework에 병합돼 별도 패키지 없음. v3의 `ait build`는 기존 `dist/`를 읽어(`webBundleDir: 'dist'`) `.ait` 포맷으로 패키징만 한다 — 웹 빌드를 직접 실행하지 않는다. 그래서 `bundle:ait`는 `tsc -b && vite build && ait build` 순서로 웹 빌드를 먼저 실행한다.
 
 **`apps-in-toss.config.ts`** (v3 이전 이름: `granite.config.ts`) — 미니앱 brand metadata. 핵심 필드:
 
@@ -92,14 +92,14 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 ## On-device 디버깅 (`window.__sdk` 브리지 + CDP relay)
 
-실기기 토스 앱 WebView에 띄운 dogfood 번들을 에이전트가 사람 폰 관찰 없이 디버깅하는 station 3(debug) 경로. 핵심 인프라 세 가지:
+실기기 토스 앱 WebView에 띄운 번들을 에이전트가 사람 폰 관찰 없이 디버깅하는 station 3(debug) 경로. 핵심 인프라 세 가지:
 
-**1. `window.__sdk` / `window.__sdkCall` 브리지** (`src/debug/sdkBridge.ts`). dogfood 번들에 한해 `@apps-in-toss/web-framework`의 전체 export namespace를 `window.__sdk`로 노출하고, `window.__sdkCall(name, ...args)`로 임의 SDK API를 호출해 `{ ok, value | error }`를 받는다. 에이전트가 CDP relay의 `Runtime.evaluate`로 직접 구동한다 — 예: `window.__sdkCall('setDeviceOrientation', { type: 'landscape' })`. namespace import라 새 SDK API가 추가되면 자동 노출된다.
+**1. `window.__sdk` / `window.__sdkCall` 브리지** (`src/debug/sdkBridge.ts`). `@apps-in-toss/web-framework`의 전체 export namespace를 `window.__sdk`로 노출하고, `window.__sdkCall(name, ...args)`로 임의 SDK API를 호출해 `{ ok, value | error }`를 받는다. 에이전트가 CDP relay의 `Runtime.evaluate`로 직접 구동한다 — 예: `window.__sdkCall('setDeviceOrientation', { type: 'landscape' })`. namespace import라 새 SDK API가 추가되면 자동 노출된다.
 
 - **왜 필요한가**: SDK는 호출을 Granite/ReactNative 브리지(`window.ReactNativeWebView.postMessage` + 독자 envelope)로 라우팅하고, SDK 함수들은 모듈 내부(tree-shaken, global에 안 붙음)다. envelope을 CDP eval로 hand-synthesize할 수 없고 함수를 global에서 못 찾으므로, 이 브리지 없이는 `setDeviceOrientation` 같은 API를 실기기에서 구동하려면 사람이 UI를 탭해야 한다.
-- **빌드 격리**: `main.tsx`의 `if (__DEBUG_BUILD__)` 가드 블록(`mountDebugSurfaces`)에서만 `installSdkBridge`를 dynamic import한다. release/dev 번들은 DCE로 제거 → `window.__sdk`는 dogfood 빌드 밖에선 존재하지 않는다. `__DEBUG_BUILD__`는 `vite.config.ts`의 `define` 상수(`process.env.RELEASE_CHANNEL === 'dogfood'`).
+- **설치 게이트**: `main.tsx`가 `installSdkBridge`를 dynamic import하는 조건은 둘 중 하나다 — (1) `import.meta.env.DEV`(환경 1, `pnpm dev` 브라우저, mock SDK), (2) URL에 `?debug=1` 또는 `?relay=`(환경 3/4, on-device `.ait` 번들이 debug deep-link로 열릴 때, real SDK). production 번들은 `import.meta.env.DEV`가 false라 (1)만으론 DCE되므로 — `__DEBUG_BUILD__` 설치 경로가 #139에서 제거됐을 때 on-device 디버그가 조용히 깨졌었다(#143 복구) — URL 파라미터 게이트가 debug 진입 시에만 브리지를 살린다. debug 파라미터 없는 일반 production load는 어느 조건도 안 맞아 브리지 chunk가 dormant.
 
-**2. `ait build`는 real SDK 번들** (mock 아님). `pnpm bundle:ait`(= `ait build`)는 devtools mock alias를 **적용하지 않는다** — 그 alias는 Vite dev 전용 rewrite다. 따라서 on-device dogfood 번들의 `window.__sdk.*`는 mock이 아니라 진짜 브리지 호출이다. (`pnpm dev` 브라우저에선 같은 import가 mock으로 resolve되지만, dev에선 `__DEBUG_BUILD__`가 false라 이 경로 자체가 안 돈다.) `window.__sdk`를 실기기에서 검증하려면 새 dogfood 번들을 deploy해야 한다 — 브리지 추가 전 번들에는 없다.
+**2. `ait build`는 real SDK 번들** (mock 아님). `pnpm bundle:ait`(= `tsc -b && vite build && ait build`)는 devtools mock alias를 **적용하지 않는다** — 그 alias는 Vite dev 전용 rewrite다. 따라서 on-device 번들의 SDK 호출은 mock이 아니라 진짜 브리지 호출이다. (`pnpm dev` 브라우저에선 같은 import가 mock으로 resolve되지만, dev 서버는 `.ait` 배포와 무관하다.)
 
 **3. QR 스캔 단일 진입** (위 "Deploy Key" 단락 참조). `devicectl`/`adb` 발사 금지. `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>` deep link를 ASCII QR로 렌더해 폰 카메라로 스캔.
 
@@ -131,8 +131,8 @@ src/
 ├── components/            # Layout, PageHeader, ApiCard, ParamInput,
 │                          # ResultView, HistoryLog, WorkflowStepper,
 │                          # DebugDiagnosticPanel, DebugAttachOverlay
-├── debug/                 # dogfood 전용 — sdkBridge.ts (window.__sdk),
-│                          # main.tsx의 __DEBUG_BUILD__ 블록에서만 import
+├── debug/                 # sdkBridge.ts (window.__sdk),
+│                          # main.tsx가 DEV 또는 ?debug=1/?relay= 시 import
 └── pages/                 # 18개 도메인 페이지 (Home, Auth, Navigation,
                            # Environment, Permissions, Storage, Location,
                            # Camera, Contacts, Clipboard, Haptic, IAP,

@@ -6,7 +6,7 @@ import { t } from '../i18n';
  *
  * - `connecting`: URL carries `?debug=1` or `?relay=` but `window.__sdkCall`
  *   is not yet present. Shows a yellow pulsing dot.
- * - `connected`: `window.__sdkCall` is present (dogfood bridge installed by
+ * - `connected`: `window.__sdkCall` is present (SDK bridge installed by
  *   `src/debug/sdkBridge.ts`). Shows a green dot.
  * - `failed`: polling timed out without detecting the bridge. Shows a red dot.
  */

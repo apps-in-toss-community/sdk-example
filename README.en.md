@@ -99,8 +99,8 @@ To point at a self-hosted instance, update the `OIDC_BRIDGE_BASE_URL` constant i
 
 Pushing a `v*` git tag triggers `.github/workflows/deploy-ait.yml`, which:
 
-1. builds the `.ait` bundle (`pnpm bundle:ait`)
-2. uploads it to `aitc-sdk-example` (miniAppId `31146`, workspace `3095`) via the Toss CLI (`ait deploy --scheme-only`) — the Deploy Key is provided through the `AITCC_API_KEY` GitHub secret
+1. builds the `.ait` bundle (`pnpm bundle:ait` = `tsc -b && vite build && ait build`)
+2. uploads it to `aitc-sdk-example` (miniAppId `31146`, workspace `3095`) via `aitcc app deploy` — the Deploy Key is provided through the `AITCC_API_KEY` GitHub secret
 3. renders the returned `intoss-private://` URL as a QR PNG
 4. attaches the URL, QR, and `.ait` bundle to a GitHub Release
 
@@ -111,29 +111,23 @@ git push origin v0.1.5
 
 To re-run for an existing tag, dispatch the "Deploy .ait bundle" workflow manually from the Actions tab and pass the tag as input.
 
-Once the mini-app's `serviceStatus` clears the release review and flips to `OPENED` (or similar), opening the `intoss-private://` URL on a phone that has the Toss app installed (or scanning the QR with the camera) launches the mini-app full-screen. While it is still `PREPARE` (pre-review), opening that URL does not load the bundle, so push it to the uploader device with `aitcc app bundles test-push --workspace 3095 --app 31146 --deployment-id <id>` and load the bundle from that notification.
+Once the mini-app's `serviceStatus` clears the release review and flips to `OPENED` (or similar), opening the `intoss-private://` URL on a phone that has the Toss app installed (or scanning the QR with the camera) launches the mini-app full-screen. While it is still `PREPARE` (pre-review), opening that URL does not load the bundle; render a deep-link carrying `_deploymentId` + `debug=1` + `relay=<wss>` as a QR and scan it with the phone camera — the bundle cold-loads even in PREPARE state.
 
 The Deploy Key is issued from the Apps in Toss console ("API key" in the console UI). This project standardises on the term `Deploy Key` in user-facing copy, but the CLI flag (`--api-key`) and the GitHub secret name (`AITCC_API_KEY`) are kept as-is for upstream compatibility. When the key expires, just rotate the secret value.
 
 ## Debug mode
 
-An AI agent can read-only attach to a dogfood bundle running on a phone via `devtools-mcp`, so regressions can be diagnosed without a human watching the screen. Activation follows the 3-layer gate in [`@ait-co/devtools`](https://github.com/apps-in-toss-community/devtools).
+An AI agent can read-only attach to a bundle running on a phone via `devtools-mcp`, so regressions can be diagnosed without a human watching the screen. No separate dogfood build is needed — the in-app debug attach surface (`AttachStatusIcon`) is present in every build and activates only when the URL carries `?debug=1` and a valid `wss:` relay (`?relay=<wss>`).
 
-1. **Build a dogfood bundle** — only when `RELEASE_CHANNEL=dogfood` does the `__DEBUG_BUILD__` build constant inline to `true`, keeping the debug path in the bundle (Layer A). Other builds fold it to `false` and dead-code-eliminate it, so neither the debug code nor the `@ait-co/devtools/in-app` import ever reaches a release bundle.
+1. **Start the agent's `devtools-mcp`** — the `devtools-mcp` registered in the AI host (`~/.mcp.json`) spins up a Chii server + Cloudflare quick tunnel and prints a `wss://` relay URL and a secret token.
 
-   ```bash
-   RELEASE_CHANNEL=dogfood pnpm bundle:ait
-   ```
-
-2. **Start the agent's `devtools-mcp`** — the `devtools-mcp` registered in the AI host (`~/.mcp.json`) spins up a Chii server + Cloudflare quick tunnel and prints a `wss://` relay URL and a secret token.
-
-3. **Enter through the gate** — open the dogfood bundle through an entry that carries `_deploymentId` (Layer B), then add `?debug=1` and a valid `wss:` relay to the URL (Layer C). Attach only activates when all three layers line up.
+2. **Enter via QR/deep-link** — render a deep-link carrying `_deploymentId` + `debug=1` + `relay=<wss>` + `token=<secret>` as a QR and scan it with the phone camera. This single path also cold-loads bundles in PREPARE state.
 
    ```
-   intoss-private://...&debug=1&relay=wss://<id>.trycloudflare.com&token=<secret>
+   intoss-private://aitc-sdk-example?_deploymentId=<id>&debug=1&relay=wss://<id>.trycloudflare.com&token=<secret>
    ```
 
-4. **Floating attach UI** — once the gate passes, a floating "Debug" button appears at the bottom-right on any page. Tap it to review / paste the relay URL and secret token, then start the attach. If `relay`/`token` already arrived as query params, the fields are pre-filled. On a normal load (gate not passed) the button does not render.
+3. **Attach status icon** — when the URL parameters are valid, an attach-status dot appears in the top-right corner; it turns green once the CDP relay connects. The agent uses `devtools-mcp` tools (`list_pages`, `list_console_messages`, `call_sdk`, etc.) to inspect mini-app state and drive SDK APIs.
 
 Without a `token`, attach is rejected even if the quick tunnel URL leaks. The relay is stateless with no server-side persistence.
 
