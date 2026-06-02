@@ -14,7 +14,6 @@
  *   DEPLOY_URL    intoss-private:// URL (required)
  *   TAG           release tag, e.g. v0.1.5 (optional — falls back to "(unknown)")
  *   COMMIT_SHA    full commit SHA (optional)
- *   CHANNEL       build channel: "release" (default) or "dogfood"
  *   RELEASE_DIR   output directory (default .tmp/release)
  *   BUNDLE_PATH   path to the .ait bundle for size reporting (default aitc-sdk-example.ait)
  */
@@ -30,7 +29,6 @@ const ROOT = resolve(SCRIPT_DIR, '..');
 const DEPLOY_URL = process.env.DEPLOY_URL ?? '';
 const TAG = process.env.TAG ?? '(unknown)';
 const COMMIT_SHA = process.env.COMMIT_SHA ?? '(unknown)';
-const CHANNEL = process.env.CHANNEL === 'dogfood' ? 'dogfood' : 'release';
 const RELEASE_DIR = resolve(ROOT, process.env.RELEASE_DIR ?? '.tmp/release');
 const BUNDLE_PATH = resolve(ROOT, process.env.BUNDLE_PATH ?? 'aitc-sdk-example.ait');
 
@@ -65,22 +63,6 @@ async function main(): Promise<void> {
   const shortSha = COMMIT_SHA === '(unknown)' ? COMMIT_SHA : COMMIT_SHA.slice(0, 12);
   const deploymentId = new URL(DEPLOY_URL).searchParams.get('_deploymentId') ?? '(unknown)';
 
-  const isDogfood = CHANNEL === 'dogfood';
-
-  const dogfoodNote = [
-    '## dogfood 빌드 — on-device relay attach 가능',
-    '',
-    '이 번들은 `RELEASE_CHANNEL=dogfood`로 빌드되었습니다. `?debug=1&relay=<wss>` query param을 URL에 포함해 미니앱을 열면 우상단에 attach 상태 아이콘(dot)이 표시되고, CDP relay가 연결되면 초록색으로 전환됩니다.',
-    '',
-    '연결 절차:',
-    '',
-    '1. 노트북에서 `pnpm exec devtools-mcp` 실행 → cloudflared quick tunnel URL 출력',
-    '2. `?_deploymentId=<id>&debug=1&relay=<wss_url>` deep-link를 QR로 생성해 폰 카메라로 스캔',
-    '3. 미니앱 우상단 dot이 초록색이 되면 relay 연결 성공',
-    '',
-    '',
-  ];
-
   const body = [
     '## 토스 앱에서 미니앱 열기',
     '',
@@ -92,10 +74,8 @@ async function main(): Promise<void> {
     '',
     '> **미니앱이 안 뜬다면** — 31146이 아직 출시 review 통과 전(`serviceStatus: PREPARE`)이라 cold-load가 필요합니다. `?_deploymentId=<id>&debug=1&relay=<wss>` 형식의 deep-link를 QR로 렌더해 폰 카메라로 스캔하면 PREPARE 상태에서도 bundle이 load됩니다(umbrella `CLAUDE.md` §3.2 "Dog-food 흐름" 참고). `test-push` 경로는 폐기됐습니다.',
     '',
-    ...(isDogfood ? dogfoodNote : []),
     '## 빌드 정보',
     '',
-    `- Channel: \`${CHANNEL}\``,
     `- Tag: \`${TAG}\``,
     `- Commit: \`${shortSha}\``,
     `- Bundle: \`aitc-sdk-example.ait\` (${size})`,
