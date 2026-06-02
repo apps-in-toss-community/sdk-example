@@ -94,10 +94,10 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 실기기 토스 앱 WebView에 띄운 번들을 에이전트가 사람 폰 관찰 없이 디버깅하는 station 3(debug) 경로. 핵심 인프라 세 가지:
 
-**1. `window.__sdk` / `window.__sdkCall` 브리지** (`src/debug/sdkBridge.ts`). dev 빌드에서만 (`import.meta.env.DEV`) `@apps-in-toss/web-framework`의 전체 export namespace를 `window.__sdk`로 노출하고, `window.__sdkCall(name, ...args)`로 임의 SDK API를 호출해 `{ ok, value | error }`를 받는다. 에이전트가 CDP relay의 `Runtime.evaluate`로 직접 구동한다 — 예: `window.__sdkCall('setDeviceOrientation', { type: 'landscape' })`. namespace import라 새 SDK API가 추가되면 자동 노출된다.
+**1. `window.__sdk` / `window.__sdkCall` 브리지** (`src/debug/sdkBridge.ts`). `@apps-in-toss/web-framework`의 전체 export namespace를 `window.__sdk`로 노출하고, `window.__sdkCall(name, ...args)`로 임의 SDK API를 호출해 `{ ok, value | error }`를 받는다. 에이전트가 CDP relay의 `Runtime.evaluate`로 직접 구동한다 — 예: `window.__sdkCall('setDeviceOrientation', { type: 'landscape' })`. namespace import라 새 SDK API가 추가되면 자동 노출된다.
 
 - **왜 필요한가**: SDK는 호출을 Granite/ReactNative 브리지(`window.ReactNativeWebView.postMessage` + 독자 envelope)로 라우팅하고, SDK 함수들은 모듈 내부(tree-shaken, global에 안 붙음)다. envelope을 CDP eval로 hand-synthesize할 수 없고 함수를 global에서 못 찾으므로, 이 브리지 없이는 `setDeviceOrientation` 같은 API를 실기기에서 구동하려면 사람이 UI를 탭해야 한다.
-- **빌드 격리**: `main.tsx`의 `if (import.meta.env.DEV)` 가드 블록에서만 `installSdkBridge`를 dynamic import한다. production 번들은 Vite DCE로 제거 → `window.__sdk`는 production `.ait` 번들에 존재하지 않는다.
+- **설치 게이트**: `main.tsx`가 `installSdkBridge`를 dynamic import하는 조건은 둘 중 하나다 — (1) `import.meta.env.DEV`(환경 1, `pnpm dev` 브라우저, mock SDK), (2) URL에 `?debug=1` 또는 `?relay=`(환경 3/4, on-device `.ait` 번들이 debug deep-link로 열릴 때, real SDK). production 번들은 `import.meta.env.DEV`가 false라 (1)만으론 DCE되므로 — `__DEBUG_BUILD__` 설치 경로가 #139에서 제거됐을 때 on-device 디버그가 조용히 깨졌었다(#143 복구) — URL 파라미터 게이트가 debug 진입 시에만 브리지를 살린다. debug 파라미터 없는 일반 production load는 어느 조건도 안 맞아 브리지 chunk가 dormant.
 
 **2. `ait build`는 real SDK 번들** (mock 아님). `pnpm bundle:ait`(= `tsc -b && vite build && ait build`)는 devtools mock alias를 **적용하지 않는다** — 그 alias는 Vite dev 전용 rewrite다. 따라서 on-device 번들의 SDK 호출은 mock이 아니라 진짜 브리지 호출이다. (`pnpm dev` 브라우저에선 같은 import가 mock으로 resolve되지만, dev 서버는 `.ait` 배포와 무관하다.)
 
@@ -132,7 +132,7 @@ src/
 │                          # ResultView, HistoryLog, WorkflowStepper,
 │                          # DebugDiagnosticPanel, DebugAttachOverlay
 ├── debug/                 # sdkBridge.ts (window.__sdk),
-│                          # main.tsx의 import.meta.env.DEV 블록에서만 import
+│                          # main.tsx가 DEV 또는 ?debug=1/?relay= 시 import
 └── pages/                 # 18개 도메인 페이지 (Home, Auth, Navigation,
                            # Environment, Permissions, Storage, Location,
                            # Camera, Contacts, Clipboard, Haptic, IAP,

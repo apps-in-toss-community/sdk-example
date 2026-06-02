@@ -1,7 +1,7 @@
 /**
- * Dev-only SDK bridge — exposes the entire `@apps-in-toss/web-framework`
- * export namespace on `window.__sdk` so an AI agent can drive any SDK API
- * directly over a CDP relay (`Runtime.evaluate`) during on-device debugging.
+ * SDK bridge — exposes the entire `@apps-in-toss/web-framework` export
+ * namespace on `window.__sdk` so an AI agent can drive any SDK API directly
+ * over a CDP relay (`Runtime.evaluate`) during debugging.
  *
  * Why this exists: the SDK routes calls through the Granite/ReactNative
  * bridge (`window.ReactNativeWebView.postMessage` with a proprietary
@@ -11,9 +11,11 @@
  * device requires a human to tap it in the UI. With it, the agent can call
  * `window.__sdk.setDeviceOrientation({ type: 'landscape' })` over the relay.
  *
- * Build isolation: this module is only imported from the `import.meta.env.DEV`
- * guarded block in `main.tsx`, so a production `.ait` bundle dead-code-eliminates
- * it — `window.__sdk` never exists in a production build.
+ * Install gating (see `main.tsx`): this module is imported only when an agent
+ * is actually attaching — `import.meta.env.DEV` (env 1, plain `pnpm dev`) or a
+ * `?debug=1` / `?relay=` URL param (env 3/4, on-device debug deep-link). A
+ * normal production load matches neither, so the bridge chunk stays dormant
+ * and `window.__sdk` is never installed.
  *
  * In a `pnpm dev` browser session the SDK import resolves to the devtools mock
  * (the unplugin alias is a Vite-dev-only rewrite), so `window.__sdk.*` calls

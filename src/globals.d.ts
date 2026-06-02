@@ -35,7 +35,8 @@ interface Window {
   //      so the devtools MCP `call_sdk` tool can drive env-1 local debugging.
   //   2. On-device (`.ait` bundle) — real SDK calls over on-device CDP relay
   //      when the bundle is loaded via a ?debug=1&relay=<wss> deep-link.
-  // Gated behind `import.meta.env.DEV` in main.tsx (dev build only).
+  // Install is gated in main.tsx on `import.meta.env.DEV` OR a ?debug=1/?relay=
+  // URL param, so a normal production load never installs the bridge.
   __sdk?: Record<string, unknown>;
   __sdkCall?: (
     name: string,
