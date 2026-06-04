@@ -10,13 +10,13 @@ importers:
     dependencies:
       '@ait-co/devtools':
         specifier: ^0.1.54
-        version: 0.1.54(@apps-in-toss/web-framework@3.0.0-beta.9d42c0b(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3))(zod@4.3.6)
+        version: 0.1.54(@apps-in-toss/web-framework@3.0.0-beta.3051978(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3))(zod@4.3.6)
       '@ait-co/polyfill':
         specifier: ^0.1.8
-        version: 0.1.8(@apps-in-toss/web-framework@3.0.0-beta.9d42c0b(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3))
+        version: 0.1.8(@apps-in-toss/web-framework@3.0.0-beta.3051978(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3))
       '@apps-in-toss/web-framework':
-        specifier: 3.0.0-beta.9d42c0b
-        version: 3.0.0-beta.9d42c0b(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3)
+        specifier: 3.0.0-beta.3051978
+        version: 3.0.0-beta.3051978(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3)
       qrcode:
         specifier: ^1.5.4
         version: 1.5.4
@@ -127,8 +127,8 @@ packages:
     resolution: {integrity: sha512-1no0CXOhPEeSCrGduT37KMmCqA6irhowXa0S7AaPHb4RQSHGioR3wvvD7HHBCaUriMYs0EvtqRJfOgYd0ycKlQ==}
     engines: {node: '>=24'}
 
-  '@apps-in-toss/web-framework@3.0.0-beta.9d42c0b':
-    resolution: {integrity: sha512-lsh57fAXgcs5aa7237rCVbD56Z/VYCosLfLrxmvxqwlIKY/8JFpXluU6iy/Ur/Myrdcp6rmL9nRkDsjwjTK31g==}
+  '@apps-in-toss/web-framework@3.0.0-beta.3051978':
+    resolution: {integrity: sha512-gczIHBK1LF1TlWK7S53zb3EDa7Vlob2wnacq5alSN70o5bFlWTDvDbHRtTaKza6rSKeXEl7vUhN0CFZ2fIcqeQ==}
     hasBin: true
 
   '@apps-in-toss/webview-bridge@3.0.0-beta.9d42c0b':
@@ -3465,7 +3465,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/node'
 
-  '@ait-co/devtools@0.1.54(@apps-in-toss/web-framework@3.0.0-beta.9d42c0b(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3))(zod@4.3.6)':
+  '@ait-co/devtools@0.1.54(@apps-in-toss/web-framework@3.0.0-beta.3051978(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3))(zod@4.3.6)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.29.0(zod@4.3.6)
       ajv: 8.20.0
@@ -3476,7 +3476,7 @@ snapshots:
       unplugin: 3.0.0
       ws: 8.21.0
     optionalDependencies:
-      '@apps-in-toss/web-framework': 3.0.0-beta.9d42c0b(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3)
+      '@apps-in-toss/web-framework': 3.0.0-beta.3051978(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3)
     transitivePeerDependencies:
       - '@cfworker/json-schema'
       - bufferutil
@@ -3484,9 +3484,9 @@ snapshots:
       - utf-8-validate
       - zod
 
-  '@ait-co/polyfill@0.1.8(@apps-in-toss/web-framework@3.0.0-beta.9d42c0b(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3))':
+  '@ait-co/polyfill@0.1.8(@apps-in-toss/web-framework@3.0.0-beta.3051978(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3))':
     optionalDependencies:
-      '@apps-in-toss/web-framework': 3.0.0-beta.9d42c0b(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3)
+      '@apps-in-toss/web-framework': 3.0.0-beta.3051978(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3)
 
   '@apps-in-toss/ait-format-proto@1.0.0':
     dependencies:
@@ -3498,7 +3498,7 @@ snapshots:
       '@apps-in-toss/ait-format-proto': 1.0.0
       fflate: 0.8.2
 
-  '@apps-in-toss/web-framework@3.0.0-beta.9d42c0b(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3)':
+  '@apps-in-toss/web-framework@3.0.0-beta.3051978(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@25.9.1)(typanion@3.14.0)(typescript@6.0.3)':
     dependencies:
       '@apps-in-toss/ait-format': 1.0.0
       '@apps-in-toss/webview-bridge': 3.0.0-beta.9d42c0b
