@@ -38,8 +38,6 @@ export function AdsPage() {
   const [loadStatus, setLoadStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [loadResult, setLoadResult] = useState<unknown>(undefined);
   const [loadError, setLoadError] = useState('');
-  // adGroupId required by loadAppsInTossAdMob / showAppsInTossAdMob (3.0 API change)
-  const [admobAdGroupId, setAdmobAdGroupId] = useState('demo-ad-group');
 
   const addLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
     setEventLog((prev) => appendHistory(prev, createHistoryEntry({ status, data, error })));
@@ -48,7 +46,6 @@ export function AdsPage() {
   const handleLoad = useCallback(() => {
     setLoadStatus('loading');
     GoogleAdMob.loadAppsInTossAdMob({
-      options: { adGroupId: admobAdGroupId },
       onEvent: (e) => {
         setLoadStatus('success');
         setLoadResult(e);
@@ -62,15 +59,14 @@ export function AdsPage() {
         addLog('error', undefined, String(e));
       },
     });
-  }, [addLog, admobAdGroupId]);
+  }, [addLog]);
 
   const handleShow = useCallback(() => {
     GoogleAdMob.showAppsInTossAdMob({
-      options: { adGroupId: admobAdGroupId },
       onEvent: (e) => addLog('success', e),
       onError: (e) => addLog('error', undefined, String(e)),
     });
-  }, [addLog, admobAdGroupId]);
+  }, [addLog]);
 
   const handleReset = useCallback(() => {
     setActiveStep(0);
@@ -79,7 +75,6 @@ export function AdsPage() {
     setLoadStatus('idle');
     setLoadResult(undefined);
     setLoadError('');
-    setAdmobAdGroupId('demo-ad-group');
   }, []);
 
   const steps = [
@@ -95,13 +90,6 @@ export function AdsPage() {
             </span>
             <DocsLink namespace="ads" method="loadAppsInTossAdMob" />
           </div>
-          <input
-            type="text"
-            value={admobAdGroupId}
-            onChange={(e) => setAdmobAdGroupId(e.target.value)}
-            placeholder="adGroupId"
-            className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-          />
           <button
             type="button"
             onClick={handleLoad}
@@ -160,8 +148,6 @@ export function AdsPage() {
   );
   const [fsShowResult, setFsShowResult] = useState<unknown>(undefined);
   const [fsShowError, setFsShowError] = useState('');
-  // adGroupId required by loadFullScreenAd / showFullScreenAd (3.0 API change)
-  const [fsAdGroupId, setFsAdGroupId] = useState('demo-fs-ad-group');
 
   const addFsLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
     setFsEventLog((prev) => appendHistory(prev, createHistoryEntry({ status, data, error })));
@@ -173,7 +159,6 @@ export function AdsPage() {
   const handleFsLoad = useCallback(() => {
     setFsLoadStatus('loading');
     loadFullScreenAd({
-      options: { adGroupId: fsAdGroupId },
       onEvent: (e) => {
         setFsLoadStatus('success');
         setFsLoadResult(e);
@@ -185,13 +170,12 @@ export function AdsPage() {
         addFsLog('error', undefined, String(e));
       },
     });
-  }, [addFsLog, fsAdGroupId]);
+  }, [addFsLog]);
 
   // NOTE: same as handleFsLoad — `status` reflects only the latest event.
   const handleFsShow = useCallback(() => {
     setFsShowStatus('loading');
     showFullScreenAd({
-      options: { adGroupId: fsAdGroupId },
       onEvent: (e) => {
         setFsShowStatus('success');
         setFsShowResult(e);
@@ -203,7 +187,7 @@ export function AdsPage() {
         addFsLog('error', undefined, String(e));
       },
     });
-  }, [addFsLog, fsAdGroupId]);
+  }, [addFsLog]);
 
   // --- TossAds attach / attachBanner slot targets ---
   // We need DOM elements as `attach` / `attachBanner` targets. Refs keep them
@@ -273,13 +257,6 @@ export function AdsPage() {
               <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                 {t('pages.ads.loadFullScreenAd.description')}
               </p>
-              <input
-                type="text"
-                value={fsAdGroupId}
-                onChange={(e) => setFsAdGroupId(e.target.value)}
-                placeholder="adGroupId"
-                className="mt-2 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100"
-              />
               <button
                 type="button"
                 onClick={handleFsLoad}

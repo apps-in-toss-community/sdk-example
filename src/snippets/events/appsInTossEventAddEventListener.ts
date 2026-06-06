@@ -1,6 +1,6 @@
 import { appsInTossEvent } from '@apps-in-toss/web-framework';
 
-// `AppsInTossEvent` is currently `{}` in @apps-in-toss/web-framework@3.0.0-beta.9d42c0b,
+// `AppsInTossEvent` is currently `{}` in @apps-in-toss/web-framework@2.5.0,
 // so there are no event keys to subscribe to yet — this namespace is reserved
 // for future platform events. When keys land, usage will look like:
 //

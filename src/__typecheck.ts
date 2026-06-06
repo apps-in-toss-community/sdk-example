@@ -14,22 +14,15 @@ import {
   Analytics,
   appLogin,
   appsInTossEvent,
-  appsInTossSignTossCert,
   checkoutPayment,
   closeView,
-  contactsViral,
   env,
   eventLog,
-  FetchAlbumPhotosPermissionError,
-  FetchContactsPermissionError,
   fetchAlbumItems,
   fetchAlbumPhotos,
   fetchContacts,
-  GetClipboardTextPermissionError,
-  GetCurrentLocationPermissionError,
   GoogleAdMob,
   generateHapticFeedback,
-  getAnonymousKey,
   getAppsInTossGlobals,
   getClipboardText,
   getCurrentLocation,
@@ -49,20 +42,16 @@ import {
   IAP,
   isMinVersionSupported,
   loadFullScreenAd,
-  OpenCameraPermissionError,
   openCamera,
   openPDFViewer,
   openPermissionDialog,
   openURL,
-  PermissionError,
   partner,
   requestNotificationAgreement,
   requestPermission,
   requestReview,
   requestTossPayPaysBilling,
   SafeAreaInsets,
-  SetClipboardTextPermissionError,
-  StartUpdateLocationPermissionError,
   Storage,
   setClipboardText,
   setDeviceOrientation,
@@ -80,24 +69,17 @@ export type _Accuracy = typeof Accuracy;
 export type _Analytics = typeof Analytics;
 export type _appLogin = typeof appLogin;
 export type _appsInTossEvent = typeof appsInTossEvent;
-export type _appsInTossSignTossCert = typeof appsInTossSignTossCert;
 export type _checkoutPayment = typeof checkoutPayment;
 export type _closeView = typeof closeView;
-export type _contactsViral = typeof contactsViral;
 export type _env = typeof env;
 export type _eventLog = typeof eventLog;
 export type _fetchAlbumItems = typeof fetchAlbumItems;
 export type _fetchAlbumPhotos = typeof fetchAlbumPhotos;
 export type _fetchContacts = typeof fetchContacts;
-export type _FetchAlbumPhotosPermissionError = typeof FetchAlbumPhotosPermissionError;
-export type _FetchContactsPermissionError = typeof FetchContactsPermissionError;
 export type _generateHapticFeedback = typeof generateHapticFeedback;
-export type _getAnonymousKey = typeof getAnonymousKey;
 export type _getAppsInTossGlobals = typeof getAppsInTossGlobals;
 export type _getClipboardText = typeof getClipboardText;
-export type _GetClipboardTextPermissionError = typeof GetClipboardTextPermissionError;
 export type _getCurrentLocation = typeof getCurrentLocation;
-export type _GetCurrentLocationPermissionError = typeof GetCurrentLocationPermissionError;
 export type _getDeviceId = typeof getDeviceId;
 export type _getGroupId = typeof getGroupId;
 export type _getLocale = typeof getLocale;
@@ -116,11 +98,9 @@ export type _IAP = typeof IAP;
 export type _isMinVersionSupported = typeof isMinVersionSupported;
 export type _loadFullScreenAd = typeof loadFullScreenAd;
 export type _openCamera = typeof openCamera;
-export type _OpenCameraPermissionError = typeof OpenCameraPermissionError;
 export type _openPDFViewer = typeof openPDFViewer;
 export type _openPermissionDialog = typeof openPermissionDialog;
 export type _openURL = typeof openURL;
-export type _PermissionError = typeof PermissionError;
 export type _partner = typeof partner;
 export type _requestNotificationAgreement = typeof requestNotificationAgreement;
 export type _requestPermission = typeof requestPermission;
@@ -128,7 +108,6 @@ export type _requestReview = typeof requestReview;
 export type _requestTossPayPaysBilling = typeof requestTossPayPaysBilling;
 export type _SafeAreaInsets = typeof SafeAreaInsets;
 export type _setClipboardText = typeof setClipboardText;
-export type _SetClipboardTextPermissionError = typeof SetClipboardTextPermissionError;
 export type _setDeviceOrientation = typeof setDeviceOrientation;
 export type _setIosSwipeGestureEnabled = typeof setIosSwipeGestureEnabled;
 export type _setScreenAwakeMode = typeof setScreenAwakeMode;
@@ -136,16 +115,15 @@ export type _setSecureScreen = typeof setSecureScreen;
 export type _share = typeof share;
 export type _showFullScreenAd = typeof showFullScreenAd;
 export type _startUpdateLocation = typeof startUpdateLocation;
-export type _StartUpdateLocationPermissionError = typeof StartUpdateLocationPermissionError;
 export type _Storage = typeof Storage;
 export type _tdsEvent = typeof tdsEvent;
 export type _TossAds = typeof TossAds;
 
 // Type-only imports — used in the _SdkTypes alias below
 import type {
-  // webview-bridge named types
+  // web-bridge named types
   AddAccessoryButtonOptions,
-  // @apps-in-toss/types (re-exported via webview-bridge)
+  // @apps-in-toss/types (re-exported via web-bridge)
   AdMobFullScreenEvent,
   AdMobHandlerParams,
   AdMobLoadResult,
@@ -153,18 +131,15 @@ import type {
   AdUserEarnedReward,
   AppsInTossEvent,
   AppsInTossGlobals,
-  AppsInTossSignTossCertParams,
   CompletedOrRefundedOrdersResult,
   ConsumableProductListItem,
   ContactEntity,
   ContactResult,
-  ContactsViralOption,
   CreateSubscriptionPurchaseOrderOptions,
   FetchAlbumPhotos,
   FetchAlbumPhotosOptions,
   FetchContacts,
   FetchContactsOptions,
-  GetAnonymousKeyResponse,
   GetClipboardText,
   GetCurrentLocation,
   GetCurrentLocationOptions,
@@ -196,6 +171,7 @@ import type {
   PermissionName,
   PermissionStatus,
   RequestNotificationAgreementOptions,
+  RequestPermissionFunction,
   ResponseInfo,
   RewardedAd,
   SetClipboardText,
@@ -227,12 +203,9 @@ export type _SdkTypes = [
   AddAccessoryButtonOptions,
   AppsInTossEvent,
   AppsInTossGlobals,
-  AppsInTossSignTossCertParams,
   CompletedOrRefundedOrdersResult,
   ConsumableProductListItem,
-  ContactsViralOption,
   CreateSubscriptionPurchaseOrderOptions,
-  GetAnonymousKeyResponse,
   GraniteEvent,
   HapticFeedbackType,
   IapCreateOneTimePurchaseOrderOptions,
@@ -284,6 +257,7 @@ export type _SdkTypes = [
   PermissionFunctionWithDialog<never>,
   PermissionName,
   PermissionStatus,
+  RequestPermissionFunction,
   ResponseInfo,
   RewardedAd,
   SetClipboardText,

@@ -51,15 +51,15 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 이 repo는 두 산출물을 만든다:
 
 1. **웹 dist** (`pnpm build`) — `tsc -b && vite build && SSG + sitemap`. `sdk-example.aitc.dev` 정적 배포용.
-2. **`.ait` 번들** (`pnpm bundle:ait` → `ait build`) — 토스 앱이 로드하는 미니앱 패키지. `apps-in-toss.config.ts`가 입력, `aitc-sdk-example.ait`가 산출.
+2. **`.ait` 번들** (`pnpm bundle:ait` → `ait build`) — 토스 앱이 로드하는 미니앱 패키지. `granite.config.ts`가 입력, `aitc-sdk-example.ait`가 산출.
 
-번들러는 **`@apps-in-toss/web-framework` (v3.0-beta)** 내장 `ait` bin. `@apps-in-toss/cli`는 v3에서 web-framework에 병합돼 별도 패키지 없음. v3의 `ait build`는 기존 `dist/`를 읽어(`webBundleDir: 'dist'`) `.ait` 포맷으로 패키징만 한다 — 웹 빌드를 직접 실행하지 않는다. 그래서 `bundle:ait`는 `tsc -b && vite build && ait build` 순서로 웹 빌드를 먼저 실행한다.
+번들러는 **`@apps-in-toss/cli`** 패키지의 `ait` bin. `pnpm bundle:ait`는 `ait build`를 실행하고, `bundle:ait:dogfood`는 `RELEASE_CHANNEL=dogfood ait build`를 실행한다.
 
-**`apps-in-toss.config.ts`** (v3 이전 이름: `granite.config.ts`) — 미니앱 brand metadata. 핵심 필드:
+**`granite.config.ts`** — 미니앱 brand metadata. 핵심 필드:
 
 - `appName: 'aitc-sdk-example'` — 31146의 콘솔 등록명과 일치.
 - `brand.primaryColor` — 브랜드 색상.
-- `webBundleDir: 'dist'` (v3 이전 이름: `outdir`) — 웹 번들 출력 디렉토리.
+- `outdir: 'dist'` — 웹 번들 출력 디렉토리.
 - `permissions: []` — SDK 호출에 권한 prompt가 필요한 도메인을 여기 추가.
 
 **산출물 / artifacts**
@@ -88,9 +88,9 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 운영 중인 Deploy Key: workspace 3095 / scope `aitc-sdk-example` only / id 6905 / name `aitcc-sdk-ex-ci` / expire 2027-05-18.
 
-`aitcc app deploy`는 **콘솔 세션 쿠키(KR-IP 한정)로 인증**하며 Deploy Key(API 키)를 소비하지 않는다. web-framework 3.0이 `@apps-in-toss/cli`를 제거하면서 `ait deploy --api-key`(Deploy Key를 소비하는 headless 경로)도 함께 사라졌다. 따라서 `.github/workflows/deploy-ait.yml`의 tag-gated deploy는 GHA 호스티드 러너에서 **현재 실패**(세션 없음 → exit 10 `NotAuthenticated`)하며, headless CI 배포는 `ait deploy`가 web-framework에 복귀할 때까지 차단된다(#146 추적 중). `AITCC_API_KEY` GitHub secret은 그 경로가 복원될 때를 위해 repo 설정에 보존하지만 현재 workflow에서 소비하는 스텝은 없다.
+`.github/workflows/deploy-ait.yml`의 tag-gated deploy는 `ait deploy --api-key "$AITCC_API_KEY" --scheme-only`로 bundle을 업로드하고 반환된 `intoss-private://` URL을 QR PNG + GitHub Release에 담는다. Deploy Key는 `AITCC_API_KEY` GitHub secret으로 주입한다.
 
-**Dog-food 진입은 QR/deep-link query-param 단일 경로** (2026-05-26 정책 확정): `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>` deep link를 ASCII QR로 렌더해 폰 카메라로 스캔하면 `PREPARE` 상태에서도 cold-load·relay attach된다(2026-05-25 실 iPhone 검증). 이전 `test-push` 경로는 **폐기** — 별도 알림 채널이라 `debug=1&relay` 쿼리를 못 실어 in-app gate Layer C가 막는다. `devicectl`/`adb` device-control 발사도 폐기(USB·페어링·bundle id 의존이라 brittle하고 실유저 플로우가 아님 — QR 스캔만 사용). 자세한 배경은 umbrella `CLAUDE.md` §3.2 "Dog-food 흐름" 단락 참조.
+**Dog-food 진입**: `ait deploy --scheme-only`가 출력하는 `intoss-private://…` URL을 QR로 스캔하거나, `aitcc app bundles test-push`로 폰에 push 알림을 보낸다. 자세한 배경은 umbrella `CLAUDE.md` §3.2 "Dog-food 흐름" 단락 참조.
 
 ## On-device 디버깅 (`window.__sdk` 브리지 + CDP relay)
 
@@ -101,7 +101,7 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 - **왜 필요한가**: SDK는 호출을 Granite/ReactNative 브리지(`window.ReactNativeWebView.postMessage` + 독자 envelope)로 라우팅하고, SDK 함수들은 모듈 내부(tree-shaken, global에 안 붙음)다. envelope을 CDP eval로 hand-synthesize할 수 없고 함수를 global에서 못 찾으므로, 이 브리지 없이는 `setDeviceOrientation` 같은 API를 실기기에서 구동하려면 사람이 UI를 탭해야 한다.
 - **설치 게이트**: `main.tsx`가 `installSdkBridge`를 dynamic import하는 조건은 둘 중 하나다 — (1) `import.meta.env.DEV`(환경 1, `pnpm dev` 브라우저, mock SDK), (2) URL에 `?debug=1` 또는 `?relay=`(환경 3/4, on-device `.ait` 번들이 debug deep-link로 열릴 때, real SDK). production 번들은 `import.meta.env.DEV`가 false라 (1)만으론 DCE되므로 — `__DEBUG_BUILD__` 설치 경로가 #139에서 제거됐을 때 on-device 디버그가 조용히 깨졌었다(#143 복구) — URL 파라미터 게이트가 debug 진입 시에만 브리지를 살린다. debug 파라미터 없는 일반 production load는 어느 조건도 안 맞아 브리지 chunk가 dormant.
 
-**2. `ait build`는 real SDK 번들** (mock 아님). `pnpm bundle:ait`(= `tsc -b && vite build && ait build`)는 devtools mock alias를 **적용하지 않는다** — 그 alias는 Vite dev 전용 rewrite다. 따라서 on-device 번들의 SDK 호출은 mock이 아니라 진짜 브리지 호출이다. (`pnpm dev` 브라우저에선 같은 import가 mock으로 resolve되지만, dev 서버는 `.ait` 배포와 무관하다.)
+**2. `ait build`는 real SDK 번들** (mock 아님). `pnpm bundle:ait`(= `ait build`)는 devtools mock alias를 **적용하지 않는다** — 그 alias는 Vite dev 전용 rewrite다. 따라서 on-device 번들의 SDK 호출은 mock이 아니라 진짜 브리지 호출이다. (`pnpm dev` 브라우저에선 같은 import가 mock으로 resolve되지만, dev 서버는 `.ait` 배포와 무관하다.)
 
 **3. QR 스캔 단일 진입** (위 "Deploy Key" 단락 참조). `devicectl`/`adb` 발사 금지. `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>` deep link를 ASCII QR로 렌더해 폰 카메라로 스캔.
 
