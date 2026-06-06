@@ -1,14 +1,10 @@
 /**
  * generate-deploy-release.ts
  *
- * Reads the intoss-private:// URL (constructed by the CI workflow from the
- * deploymentId embedded in the .ait bundle) and writes a QR PNG + GitHub
- * Release body to RELEASE_DIR (default .tmp/release).
- * Called from .github/workflows/deploy-ait.yml after the deploy step.
- *
- * web-framework 3.0: `ait deploy --scheme-only` is gone. The URL is now
- * constructed in the workflow as `intoss-private://aitc-sdk-example?_deploymentId=<id>`
- * and passed here via DEPLOY_URL.
+ * Reads the intoss-private:// URL emitted by `ait deploy --scheme-only`
+ * and writes a QR PNG + GitHub Release body to RELEASE_DIR (default
+ * .tmp/release). Called from .github/workflows/deploy-ait.yml after the
+ * deploy step.
  *
  * Inputs (env):
  *   DEPLOY_URL    intoss-private:// URL (required)
@@ -72,7 +68,13 @@ async function main(): Promise<void> {
     DEPLOY_URL,
     '```',
     '',
-    '> **미니앱이 안 뜬다면** — 31146이 아직 출시 review 통과 전(`serviceStatus: PREPARE`)이라 cold-load가 필요합니다. `?_deploymentId=<id>&debug=1&relay=<wss>` 형식의 deep-link를 QR로 렌더해 폰 카메라로 스캔하면 PREPARE 상태에서도 bundle이 load됩니다(umbrella `CLAUDE.md` §3.2 "Dog-food 흐름" 참고). `test-push` 경로는 폐기됐습니다.',
+    '> **미니앱이 안 뜬다면** — 31146이 아직 출시 review 통과 전(`serviceStatus: PREPARE`)이라 intoss-private URL만으론 bundle이 load되지 않을 수 있습니다. 그땐 운영자가 로컬에서 한 번 더 push를 보내야 합니다:',
+    '>',
+    '> ```sh',
+    `> aitcc app bundles test-push --workspace 3095 --app 31146 --deployment-id ${deploymentId}`,
+    '> ```',
+    '>',
+    '> 토스 앱에 push 알림이 오고, 그 알림을 통해 이 bundle이 load됩니다. 자세한 배경은 umbrella `CLAUDE.md` "Dog-food 흐름" 참고.',
     '',
     '## 빌드 정보',
     '',

@@ -1,22 +1,17 @@
 name: Deploy .ait bundle
 
-# Tag-gated deploy: pushing a v* tag builds the .ait bundle, uploads it via
-# `aitcc app deploy`, captures the returned intoss-private:// URL, renders it
-# as a QR PNG, and publishes everything as a GitHub Release.
+# Tag-gated deploy: pushing a v* tag builds the .ait bundle, uploads it to
+# the aitc-sdk-example mini-app (workspace 3095, app 31146) via the Toss CLI,
+# captures the returned intoss-private:// URL, renders it as a QR PNG, and
+# publishes everything as a GitHub Release. The Deploy Key is provided as
+# the AITCC_API_KEY secret (the CLI flag itself is --api-key for upstream
+# compatibility; in our docs we call it "Deploy Key").
 #
-# NOTE: web-framework 3.0 removed `@apps-in-toss/cli` and with it `ait deploy`.
-# Upload now goes through `aitcc app deploy`, which authenticates by console
-# session cookie (KR-IP bound) — NOT a Deploy Key. There is no headless API-key
-# path in `aitcc app deploy`. As a result, this workflow currently FAILS on
-# GHA-hosted runners (no session cookie → exit 10 NotAuthenticated). Headless
-# CI deploy is blocked until `ait deploy` returns to web-framework (tracked in
-# sdk-example #146). The AITCC_API_KEY secret is retained in repo settings for
-# when that path is restored, but it is not consumed by any step in this file.
-#
-# The in-app debug attach surface (AttachStatusIcon) is present in every
-# build and activates when the URL carries ?debug=1 plus a valid wss: relay
-# (?relay=<wss>). There is no longer a separate dogfood build — on-device
-# relay debugging works on plain release bundles.
+# The `channel` input selects the build channel. `release` (default, also
+# used for v* tag pushes) builds a normal bundle. `dogfood` sets
+# RELEASE_CHANNEL=dogfood so vite.config.ts inlines __DEBUG_BUILD__=true,
+# keeping the in-app debug attach surface for on-device CDP relay sessions
+# (devtools-mcp). dogfood builds are workflow_dispatch only.
 
 on:
   push:
@@ -28,6 +23,14 @@ on:
         description: 'Tag to deploy (must already exist on origin, e.g. v0.1.5)'
         required: true
         type: string
+      channel:
+        description: 'Build channel — dogfood keeps the in-app debug attach surface'
+        required: true
+        type: choice
+        default: release
+        options:
+          - release
+          - dogfood
 
 permissions:
   contents: write
@@ -48,8 +51,10 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "tag=${{ inputs.tag }}" >> "$GITHUB_OUTPUT"
+            echo "channel=${{ inputs.channel }}" >> "$GITHUB_OUTPUT"
           else
             echo "tag=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+            echo "channel=release" >> "$GITHUB_OUTPUT"
           fi
 
       - uses: actions/checkout@v4
@@ -68,42 +73,48 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build .ait bundle
-        run: pnpm bundle:ait
-
-      - name: Upload bundle via aitcc (web-framework 3.0 — ait deploy removed)
-        id: deploy
         env:
-          TAG: ${{ steps.ref.outputs.tag }}
+          CHANNEL: ${{ steps.ref.outputs.channel }}
         run: |
           set -euo pipefail
-          # web-framework 3.0: `ait deploy` is gone; `ait build` only builds.
-          # Upload is now done with `aitcc app deploy`. The intoss-private:// URL
-          # is constructed from appName (aitc-sdk-example) + deploymentId embedded
-          # in the .ait bundle (extracted via aitcc --json --dry-run).
-          deployment_id=$(pnpm exec aitcc app deploy --json --dry-run \
-            --workspace 3095 --app 31146 \
-            "$BUNDLE_PATH" | jq -r '.deploymentId')
+          if [ "$CHANNEL" = "dogfood" ]; then
+            echo "Building dogfood channel — __DEBUG_BUILD__=true (in-app debug attach surface kept)"
+            pnpm bundle:ait:dogfood
+          else
+            pnpm bundle:ait
+          fi
 
-          echo "Uploading bundle (deploymentId: $deployment_id) …"
+      - name: Deploy to aitc-sdk-example
+        id: deploy
+        env:
+          AITCC_API_KEY: ${{ secrets.AITCC_API_KEY }}
+          TAG: ${{ steps.ref.outputs.tag }}
+          CHANNEL: ${{ steps.ref.outputs.channel }}
+        run: |
+          set -euo pipefail
+          # Capture the full `ait deploy` output to a file so a failure (or a
+          # run that emits no intoss-private:// URL) is visible in the log
+          # instead of being swallowed by command substitution.
           set +e
-          pnpm exec aitcc app deploy \
-            --workspace 3095 --app 31146 \
-            --memo "Release $TAG" \
-            "$BUNDLE_PATH" \
+          pnpm exec ait deploy \
+            --api-key "$AITCC_API_KEY" \
+            --scheme-only \
+            -m "Release $TAG ($CHANNEL)" \
             > deploy-output.txt 2>&1
           deploy_exit=$?
           set -e
-          echo "----- aitcc app deploy output -----"
+          echo "----- ait deploy output -----"
           cat deploy-output.txt
-          echo "----- aitcc app deploy exit: $deploy_exit -----"
+          echo "----- ait deploy exit: $deploy_exit -----"
           if [ "$deploy_exit" -ne 0 ]; then
-            echo "::error::aitcc app deploy exited $deploy_exit — see output above"
+            echo "::error::ait deploy exited $deploy_exit — see output above"
             exit 1
           fi
-
-          # Construct the intoss-private:// deep-link from appName + deploymentId.
-          # Format: intoss-private://<appName>?_deploymentId=<id>
-          url="intoss-private://aitc-sdk-example?_deploymentId=${deployment_id}"
+          url=$(tr -d '\r' < deploy-output.txt | grep -m1 '^intoss-private://' || true)
+          if [ -z "$url" ]; then
+            echo "::error::ait deploy succeeded but emitted no intoss-private:// URL"
+            exit 1
+          fi
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "::add-mask::$url"
 
@@ -112,16 +123,33 @@ jobs:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
           TAG: ${{ steps.ref.outputs.tag }}
           COMMIT_SHA: ${{ github.sha }}
+          CHANNEL: ${{ steps.ref.outputs.channel }}
         run: pnpm exec tsx scripts/generate-deploy-release.ts
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ steps.ref.outputs.tag }}
+          CHANNEL: ${{ steps.ref.outputs.channel }}
         run: |
           set -euo pipefail
-          gh release create "$TAG" \
-            --title "$TAG" \
-            --notes-file "$RELEASE_DIR/release-body.md" \
-            "$BUNDLE_PATH" \
-            "$RELEASE_DIR/qr.png"
+          # A dogfood deploy reuses an existing release tag, so it publishes
+          # under a channel-suffixed pre-release tag (e.g. v0.1.5-dogfood)
+          # to avoid colliding with the release. The git tag stays the same;
+          # gh creates the release object on the suffixed name.
+          if [ "$CHANNEL" = "dogfood" ]; then
+            RELEASE_TAG="${TAG}-dogfood"
+            gh release create "$RELEASE_TAG" \
+              --title "$RELEASE_TAG" \
+              --notes-file "$RELEASE_DIR/release-body.md" \
+              --prerelease \
+              --target "${{ github.sha }}" \
+              "$BUNDLE_PATH" \
+              "$RELEASE_DIR/qr.png"
+          else
+            gh release create "$TAG" \
+              --title "$TAG" \
+              --notes-file "$RELEASE_DIR/release-body.md" \
+              "$BUNDLE_PATH" \
+              "$RELEASE_DIR/qr.png"
+          fi

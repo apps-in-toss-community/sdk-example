@@ -238,6 +238,8 @@ export const en: Record<StringKey, string> = {
   'pages.events.graniteHomeEvent.description': 'Subscribe to home button events',
   'pages.events.tdsNavigationAccessoryEvent.description':
     'Subscribe to top navigation accessory button events',
+  'pages.events.onVisibilityChangedByTransparentServiceWeb.description':
+    'Subscribe to transparent service web visibility change events',
   'pages.events.appsInTossEventAddEventListener.description':
     'Subscribe to Apps in Toss platform events — no event keys are defined in the current SDK version; reserved for future use',
 

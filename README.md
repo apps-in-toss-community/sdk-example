@@ -31,7 +31,7 @@
 | `/game` | Game | 게임센터, 프로모션, contactsViral | 6 |
 | `/analytics` | Analytics | screen, impression, click, eventLog | 4 |
 | `/partner` | Partner | addAccessoryButton, removeAccessoryButton | 2 |
-| `/events` | Events | graniteEvent, tdsEvent, appsInTossEvent | 3 |
+| `/events` | Events | graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb, appsInTossEvent | 4 |
 | `/payment` | Payment | 토스페이 정기결제창 — wrappedToken으로 사용자 인증 (실제 결제는 서버) | 1 |
 | `/notification` | Notification | 푸시 알림 동의 — newAgreement/alreadyAgreed/agreementRejected 3-way 결과 | 1 |
 

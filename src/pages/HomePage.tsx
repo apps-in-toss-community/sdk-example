@@ -151,10 +151,12 @@ const domains = [
   {
     path: '/events',
     name: 'Events',
-    description: 'graniteEvent, tdsEvent, appsInTossEvent',
+    description:
+      'graniteEvent, tdsEvent, onVisibilityChangedByTransparentServiceWeb, appsInTossEvent',
     apis: [
       'graniteEvent.addEventListener',
       'tdsEvent.addEventListener',
+      'onVisibilityChangedByTransparentServiceWeb',
       'appsInTossEvent.addEventListener',
     ],
   },
