@@ -29,7 +29,20 @@ export default defineConfig({
     // `devtools-mcp --mode=dev` can read the live browser mock state (the
     // phone-independent half of station 3 debug). The panel POSTs a snapshot
     // on every state change; the MCP stdio server GETs it for the agent.
-    aitDevtools.vite({ panel: true, mcp: true, tunnel: !!process.env.AIT_TUNNEL }),
+    //
+    // tunnel: AIT_TUNNEL=1 opens a Cloudflare quick-tunnel so a real phone can
+    // load the dev app (환경 2, 실기기 WebKit). Adding AIT_TUNNEL_CDP=1 turns on
+    // the on-device CDP relay (tunnel.cdp) — this is what lets the agent observe
+    // the live WebKit page (measure_safe_area / list_console_messages 등) AND is
+    // the only path that mints the project-local relay TOTP secret (.ait_relay,
+    // unplugin ensureRelaySecret). The MCP daemon reads that secret read-only for
+    // env-3 intoss relay too, so CDP opt-in is the prerequisite for both env 2's
+    // CDP observation and env 3's relay auth. Plain AIT_TUNNEL=1 stays HTTP-only.
+    aitDevtools.vite({
+      panel: true,
+      mcp: true,
+      tunnel: process.env.AIT_TUNNEL ? { cdp: !!process.env.AIT_TUNNEL_CDP } : false,
+    }),
   ],
   // Keep the polyfill and the SDK (plus its transitive bridge/analytics
   // entry points) out of Vite's dep pre-bundle. Otherwise Vite ships the
