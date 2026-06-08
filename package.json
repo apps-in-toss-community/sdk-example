@@ -13,6 +13,7 @@
   "scripts": {
     "dev": "vite",
     "dev:phone": "AIT_TUNNEL=1 vite",
+    "dev:phone:cdp": "AIT_TUNNEL=1 AIT_TUNNEL_CDP=1 vite",
     "prebuild": "tsx scripts/build-og-images.tsx",
     "build": "tsc -b && vite build && tsx scripts/build-route-html.ts && tsx scripts/build-sitemap.ts",
     "build:og": "tsx scripts/build-og-images.tsx",
