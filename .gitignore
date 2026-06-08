@@ -10,11 +10,12 @@ playwright/.cache/
 .tmp/
 *.local
 
-# Local secrets (relay debug TOTP, etc.)
+# Local secrets (relay debug TOTP, tunnel URLs, etc.)
 .env
 .env.*
 !.env.example
 .ait_relay
+.ait_urls
 
 # Claude Code
 .claude/settings.local.json
