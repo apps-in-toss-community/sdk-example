@@ -90,7 +90,7 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 `.github/workflows/deploy-ait.yml`의 tag-gated deploy는 `ait deploy --api-key "$AITCC_API_KEY" --scheme-only`로 bundle을 업로드하고 반환된 `intoss-private://` URL을 QR PNG + GitHub Release에 담는다. Deploy Key는 `AITCC_API_KEY` GitHub secret으로 주입한다.
 
-**Dog-food 진입**: `ait deploy --scheme-only`가 출력하는 `intoss-private://…` URL을 QR로 스캔하거나, `aitcc app bundles test-push`로 폰에 push 알림을 보낸다. 자세한 배경은 umbrella `CLAUDE.md` §3.2 "Dog-food 흐름" 단락 참조.
+**Dog-food 진입**: `ait deploy --scheme-only`가 출력하는 `intoss-private://…` URL을 QR로 스캔해 cold-load한다. 자세한 배경은 umbrella `CLAUDE.md` §3.2 "Dog-food 흐름" 단락 참조.
 
 ## On-device 디버깅 (`window.__sdk` 브리지 + CDP relay)
 
@@ -132,7 +132,8 @@ src/
 ├── __typecheck.ts         # SDK export 커버리지 컴파일 타임 검증
 ├── components/            # Layout, PageHeader, ApiCard, ParamInput,
 │                          # ResultView, HistoryLog, WorkflowStepper,
-│                          # DebugDiagnosticPanel, DebugAttachOverlay
+│                          # PolyfillToggleCard, ShimCompositionCard,
+│                          # DocsLink, AttachStatusIcon (전체: src/components/ 참조)
 ├── debug/                 # sdkBridge.ts (window.__sdk),
 │                          # main.tsx가 DEV 또는 ?debug=1/?relay= 시 import
 └── pages/                 # 18개 도메인 페이지 (Home, Auth, Navigation,
