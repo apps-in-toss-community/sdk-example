@@ -36,3 +36,17 @@ function shouldInstallSdkBridge(): boolean {
 if (shouldInstallSdkBridge()) {
   void import('./debug/sdkBridge').then((m) => m.installSdkBridge());
 }
+
+// Relay CDP attach (env 2/3/4 — real device behind a Chii relay). #139 removed
+// the old `__DEBUG_BUILD__` attach surface but never restored the attach call
+// itself, so the page stopped connecting to the relay as a CDP target — the
+// SDK bridge above is only useful once that connection exists. `maybeAttach`
+// re-runs the full in-app gate (debug=1 + wss relay + TOTP `at`), so this
+// outer check is just a cheap guard that keeps the chunk dormant on normal
+// loads, same pattern as the bridge install above.
+if (typeof window !== 'undefined') {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('debug') === '1' && params.has('relay')) {
+    void import('@ait-co/devtools/in-app').then((m) => m.maybeAttach());
+  }
+}
