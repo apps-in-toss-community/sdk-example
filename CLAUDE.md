@@ -44,7 +44,15 @@ React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`),
 
 `pnpm dev:phone` (= `AIT_TUNNEL=1 pnpm dev`)는 devtools unplugin의 `tunnel` 옵션을 켜서 dev 서버를 Cloudflare quick tunnel로 노출하고 공개 URL + ASCII QR을 출력한다 (`vite.config.ts`에서 `tunnel: !!process.env.AIT_TUNNEL`로 env-gate, `pnpm dev`는 그대로 터널 없음). 폰에서 `https://devtools.aitc.dev/launcher/`를 한 번 열어 홈 화면에 추가(Add to Home Screen)한 뒤 QR을 스캔하거나 URL을 붙여넣으면 미니앱이 풀스크린으로 뜬다. `cloudflared` 바이너리는 devtools 의존성이 첫 실행 시 한 번 다운로드해 캐시한다.
 
-dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `getAppsInTossGlobals()`가 truthy를 반환한다는 이유로 SDK를 "present"로 감지하고, `navigator.clipboard.*` 등의 표준 API 호출을 SDK(=devtools mock) 경유로 라우팅한다. 이 합성을 sdk-example에서 명시적으로 가시화/회귀 검증하기 위해 `EnvironmentPage` 상단에 `ShimCompositionCard`를 둔다 (writeText round-trip이 `window.__ait` mock state를 갱신하는지 확인). e2e는 `e2e/shim-composition.spec.ts`.
+dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `getAppsInTossGlobals()`가 truthy를 반환한다는 이유로 SDK를 "present"로 감지하고, `navigator.clipboard.*` 등의 표준 API 호출을 SDK(=devtools mock) 경유로 라우팅한다. 합성 회귀 검증은 devtools#515로 이관.
+
+## Boilerplate 청정성 원칙
+
+`src/`에는 devtools·디버그 환경(CDP relay/attach)·PWA(launcher) 등 메인테이너 인프라 전용 특수 기능을 넣지 않는다. 다른 개발자가 boilerplate/example로 복사해 쓸 수 있어야 하기 때문이다.
+
+**판정 기준**: 일반 미니앱 개발자가 복사해 그대로 가져갈 코드(SDK 사용 예제, 표준 dev 셋업, 공개 패키지의 정상 사용)는 OK — 메인테이너 디버깅·QA 인프라 전용 런타임 코드는 금지(devtools 쪽으로 productize). `vite.config.ts`의 devtools unplugin 옵션과 `dev:phone`(`dev:phone:cdp`) 스크립트는 공개 제품 기능의 표준 사용이라 허용.
+
+**과도기 잔여**: `src/debug/sdkBridge.ts`·`main.tsx` 게이트·`globals.d.ts`의 `__sdk`/`__sdkCall` 선언은 devtools#514 완료 후 #178에서 제거 예정.
 
 ## Mini-app 번들 빌드 (`.ait`)
 
@@ -132,8 +140,8 @@ src/
 ├── __typecheck.ts         # SDK export 커버리지 컴파일 타임 검증
 ├── components/            # Layout, PageHeader, ApiCard, ParamInput,
 │                          # ResultView, HistoryLog, WorkflowStepper,
-│                          # PolyfillToggleCard, ShimCompositionCard,
-│                          # DocsLink, AttachStatusIcon (전체: src/components/ 참조)
+│                          # PolyfillToggleCard, DocsLink
+│                          # (전체: src/components/ 참조)
 ├── debug/                 # sdkBridge.ts (window.__sdk),
 │                          # main.tsx가 DEV 또는 ?debug=1/?relay= 시 import
 └── pages/                 # 18개 도메인 페이지 (Home, Auth, Navigation,
