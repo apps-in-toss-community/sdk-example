@@ -53,40 +53,6 @@ export const en: Record<StringKey, string> = {
   'polyfillNotice.description':
     'Standard Web APIs ({webApis}) equivalent to the SDK calls on this page are also available. Both paths aim for feature parity: in the Apps in Toss environment the polyfill routes through the SDK, while in a browser it falls through to native APIs. (Some field mappings between the SDK and Web APIs may be lossy — e.g. accuracy grades, share message structure.)',
 
-  // ShimCompositionCard
-  'shimComposition.title': 'Shim composition (devtools × polyfill)',
-  'shimComposition.description':
-    'Diagnoses how @ait-co/devtools mock and @ait-co/polyfill shim compose at page load.',
-  'shimComposition.sdkPresent': 'SDK present',
-  'shimComposition.polyfillLoaded': 'Polyfill loaded',
-  'shimComposition.isTossEnvironment': 'isTossEnvironment()',
-  'shimComposition.mode': 'Composition mode',
-  'shimComposition.runRoundTrip': 'Run writeText round-trip',
-  'shimComposition.roundTripIdle':
-    'Verifies whether a navigator.clipboard.writeText call updates the mock state.',
-  'shimComposition.roundTripRunning': 'Running…',
-  'shimComposition.devOnlyNote':
-    'In prod builds / on a real device {windowAit} is absent, so mock-state verification is only meaningful in dev.',
-  'shimComposition.mode.mockViaPolyfill':
-    'Both devtools mock and polyfill detected. The polyfill sees the SDK as "present" and routes through the mock — this is the intended composition. Run the round-trip below to confirm actual routing.',
-  'shimComposition.mode.sdkDirect':
-    'SDK detected but polyfill is not active. The page calls the SDK directly.',
-  'shimComposition.mode.polyfillDirect':
-    'No SDK detected — polyfill falls through to native browser Web APIs.',
-  'shimComposition.mode.unknown': 'Detection not yet complete, or both paths are inactive.',
-  'shimComposition.roundTrip.mismatchUndefined':
-    'The devtools mock state (window.__ait) is not exposed. The polyfill likely fell through to the native browser clipboard.',
-  'shimComposition.roundTrip.mismatchOther':
-    'writeText succeeded but mock state was not updated. seen={seen}',
-  'shimComposition.row.yes': 'yes',
-  'shimComposition.row.no': 'no',
-  'shimComposition.row.pending': '…',
-
-  // AttachStatusIcon (relay attach state indicator)
-  'attachStatus.connecting': 'Connecting to relay',
-  'attachStatus.connected': 'Relay connected',
-  'attachStatus.failed': 'Relay connection failed',
-
   // PolyfillToggleCard
   'polyfillToggle.tablistAriaLabel': '{title} call path',
 

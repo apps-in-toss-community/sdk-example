@@ -55,40 +55,6 @@ export const ko = {
   'polyfillNotice.description':
     '이 페이지의 SDK 호출과 동등한 표준 Web API({webApis})도 함께 제공됩니다. 두 경로는 동등한 기능을 목표로 하며, 앱인토스 환경에서는 polyfill이 SDK로 라우팅하고 브라우저에서는 네이티브 API로 fall-through합니다. (SDK와 Web API의 매핑은 일부 필드(accuracy 등급, share 메시지 구조 등)에서 손실 변환이 있을 수 있습니다.)',
 
-  // ShimCompositionCard
-  'shimComposition.title': 'Shim composition (devtools × polyfill)',
-  'shimComposition.description':
-    '@ait-co/devtools mock과 @ait-co/polyfill shim이 어떻게 합성되는지 페이지 로드 기준으로 진단합니다.',
-  'shimComposition.sdkPresent': 'SDK present',
-  'shimComposition.polyfillLoaded': 'Polyfill loaded',
-  'shimComposition.isTossEnvironment': 'isTossEnvironment()',
-  'shimComposition.mode': 'Composition mode',
-  'shimComposition.runRoundTrip': 'writeText round-trip 실행',
-  'shimComposition.roundTripIdle':
-    'navigator.clipboard.writeText 호출이 mock state를 갱신하는지 확인합니다.',
-  'shimComposition.roundTripRunning': '실행 중…',
-  'shimComposition.devOnlyNote':
-    'prod 빌드/실 디바이스에선 {windowAit}가 없어 mock-state 검증은 dev에서만 의미 있습니다.',
-  'shimComposition.mode.mockViaPolyfill':
-    'devtools mock + polyfill 둘 다 감지됨. polyfill이 SDK를 "present"로 인식해 mock 경유로 라우팅하는 게 의도된 합성입니다. 실제 라우팅까지 확인하려면 아래 round-trip을 실행하세요.',
-  'shimComposition.mode.sdkDirect':
-    'SDK는 감지됐지만 polyfill이 활성화되지 않았습니다. 페이지가 SDK를 직접 호출합니다.',
-  'shimComposition.mode.polyfillDirect':
-    'SDK가 감지되지 않아 polyfill이 브라우저 네이티브 Web API로 fall-through합니다.',
-  'shimComposition.mode.unknown': '감지가 아직 끝나지 않았거나 두 경로 모두 비활성입니다.',
-  'shimComposition.roundTrip.mismatchUndefined':
-    'devtools mock state(window.__ait)가 노출되지 않았습니다. polyfill이 native browser clipboard로 fall-through했을 가능성이 큽니다.',
-  'shimComposition.roundTrip.mismatchOther':
-    'writeText 호출은 성공했지만 mock state가 갱신되지 않음. seen={seen}',
-  'shimComposition.row.yes': 'yes',
-  'shimComposition.row.no': 'no',
-  'shimComposition.row.pending': '…',
-
-  // AttachStatusIcon (relay attach state indicator)
-  'attachStatus.connecting': 'relay 연결 시도 중',
-  'attachStatus.connected': 'relay 연결됨',
-  'attachStatus.failed': 'relay 연결 실패',
-
   // PolyfillToggleCard
   'polyfillToggle.tablistAriaLabel': '{title} 호출 경로',
 

@@ -117,7 +117,7 @@ The Deploy Key is issued from the Apps in Toss console ("API key" in the console
 
 ## Debug mode
 
-An AI agent can read-only attach to a bundle running on a phone via `devtools-mcp`, so regressions can be diagnosed without a human watching the screen. No separate dogfood build is needed — the in-app debug attach surface (`AttachStatusIcon`) is present in every build and activates only when the URL carries `?debug=1` and a valid `wss:` relay (`?relay=<wss>`).
+An AI agent can read-only attach to a bundle running on a phone via `devtools-mcp`, so regressions can be diagnosed without a human watching the screen.
 
 1. **Start the agent's `devtools-mcp`** — the `devtools-mcp` registered in the AI host (`~/.mcp.json`) spins up a Chii server + Cloudflare quick tunnel and prints a `wss://` relay URL and a secret token.
 
@@ -127,7 +127,7 @@ An AI agent can read-only attach to a bundle running on a phone via `devtools-mc
    intoss-private://aitc-sdk-example?_deploymentId=<id>&debug=1&relay=wss://<id>.trycloudflare.com&token=<secret>
    ```
 
-3. **Attach status icon** — when the URL parameters are valid, an attach-status dot appears in the top-right corner; it turns green once the CDP relay connects. The agent uses `devtools-mcp` tools (`list_pages`, `list_console_messages`, `call_sdk`, etc.) to inspect mini-app state and drive SDK APIs.
+3. **Agent observation** — the agent uses `devtools-mcp` tools (`list_pages`, `list_console_messages`, `call_sdk`, etc.) to inspect mini-app state and drive SDK APIs.
 
 Without a `token`, attach is rejected even if the quick tunnel URL leaks. The relay is stateless with no server-side persistence.
 
@@ -182,10 +182,6 @@ Used to toggle between the standard Web API exposed by `@ait-co/polyfill` and th
 
 Represents multi-step flows that invoke multiple APIs in sequence using a step UI. Used for IAP "list products → purchase → manage orders" and Ads "load → show" flows.
 
-### `ShimCompositionCard`
-
-Diagnoses the intended composition that occurs at page load when both `@ait-co/devtools` mock and `@ait-co/polyfill` shim are installed (the sdk-example dev setup): polyfill detects the SDK as "present" via `getAppsInTossGlobals()` and routes `navigator.clipboard.*` calls through the SDK (i.e., through the devtools mock). Displays SDK present / Polyfill loaded / Composition mode (`mock-via-polyfill` / `sdk-direct` / `polyfill-direct` / `unknown`) and confirms that a `navigator.clipboard.writeText` round-trip updates `window.__ait` mock state. Mounted at the top of `EnvironmentPage`. E2E regression gate: `e2e/shim-composition.spec.ts`.
-
 ## OG images
 
 The app is an SPA, but each domain group page (e.g. `/iap`, `/permissions`) produces a distinct OG image when shared on social media via a static generation pipeline.
@@ -201,7 +197,7 @@ The UI copy primary locale is **`ko`** (Korean). All UI strings are looked up fr
 
 - No extra dependencies (no react-i18next / FormatJS). Simple record + `{name}` placeholder substitution.
 - `en.ts` is currently a re-export fallback for `ko`. Actual English translation is a follow-up.
-- Copy extraction is complete for shared components (`ApiCard`, `HistoryLog`, `ResultView`, `PageHeader`, `ErrorBoundary`, `DemoBanner`, `PolyfillNotice`, `PolyfillToggleCard`, `ShimCompositionCard`) and `HomePage`. Extracting `description` / `label` / `placeholder` props from domain pages is a follow-up.
+- Copy extraction is complete for shared components (`ApiCard`, `HistoryLog`, `ResultView`, `PageHeader`, `ErrorBoundary`, `DemoBanner`, `PolyfillNotice`, `PolyfillToggleCard`) and `HomePage`. Extracting `description` / `label` / `placeholder` props from domain pages is a follow-up.
 - The `name` and `description` fields in `HomePage.tsx`'s `domains` array are parsed as string literals by `scripts/sync-readme-domains.ts` — keep them as literals, not i18n lookups.
 - The `name` prop on `ApiCard` is the SDK method name (e.g. `appLogin`) and serves as a crosslink/README key, so it bypasses i18n.
 

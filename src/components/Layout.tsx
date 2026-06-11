@@ -2,7 +2,6 @@ import type { CSSProperties } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useHashScroll } from '../hooks/useHashScroll';
 import { useSafeAreaInsets } from '../hooks/useSafeAreaInsets';
-import { AttachStatusIcon } from './AttachStatusIcon';
 import { BrandMark } from './BrandMark';
 import { DemoBanner } from './DemoBanner';
 
@@ -63,7 +62,6 @@ export function Layout() {
         className="mx-auto max-w-5xl min-h-screen bg-white shadow-sm dark:bg-gray-900 dark:shadow-none"
         style={style}
       >
-        <AttachStatusIcon />
         <BrandMark />
         <DemoBanner />
         <Outlet />

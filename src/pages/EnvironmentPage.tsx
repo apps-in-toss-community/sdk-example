@@ -17,7 +17,6 @@ import {
 import { ApiCard } from '../components/ApiCard';
 import { PageHeader } from '../components/PageHeader';
 import { PolyfillNotice } from '../components/PolyfillNotice';
-import { ShimCompositionCard } from '../components/ShimCompositionCard';
 import { t } from '../i18n';
 import envGetDeploymentIdSnippet from '../snippets/environment/envGetDeploymentId.ts?raw';
 import getAppsInTossGlobalsSnippet from '../snippets/environment/getAppsInTossGlobals.ts?raw';
@@ -42,7 +41,6 @@ export function EnvironmentPage() {
       <PageHeader title="Environment" />
       <div className="p-4 grid grid-cols-1 gap-3 sm:grid-cols-2 items-start">
         <PolyfillNotice webApis="navigator.onLine / navigator.connection" />
-        <ShimCompositionCard />
 
         <ApiCard
           name="getPlatformOS"
