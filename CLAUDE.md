@@ -109,7 +109,7 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 **2. `ait build`는 real SDK 번들** (mock 아님). `pnpm bundle:ait`(= `ait build`)는 devtools mock alias를 **적용하지 않는다** — 그 alias는 Vite dev 전용 rewrite다. 따라서 on-device 번들의 SDK 호출은 mock이 아니라 진짜 브리지 호출이다. (`pnpm dev` 브라우저에선 같은 import가 mock으로 resolve되지만, dev 서버는 `.ait` 배포와 무관하다.)
 
-**3. QR 스캔 단일 진입** (위 "Deploy Key" 단락 참조). `devicectl`/`adb` 발사 금지. `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>` deep link를 ASCII QR로 렌더해 폰 카메라로 스캔.
+**3. QR 스캔 단일 진입** (위 "Deploy Key" 단락 참조). `devicectl`/`adb` 발사 금지. `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>` deep-link를 ASCII QR로 렌더해 폰 카메라로 스캔.
 
 **devtools-debug MCP**는 umbrella·sdk-example **양쪽** `.mcp.json`에 등록돼 있다(둘 다 같은 launcher `~/.local/share/aitc/devtools-mcp-debug.mjs`를 가리킴) → 어느 cwd에서 Claude Code를 띄워도 로드된다. `.mcp.json`은 머신 절대경로가 박혀 있어 **gitignore**(커밋 금지). MCP 도구(`build_attach_url`/`list_pages`/`list_console_messages` 등)로 relay attach·관측한다. MCP 서버가 특정 도구(`measure_safe_area`/`take_screenshot`)를 미구현이면 Chii relay client WS에 직접 붙어 `Runtime.evaluate`로 우회한다(`Page.captureScreenshot`은 chobitsu 미구현이라 스크린샷은 DOM 측정으로 대체).
 
