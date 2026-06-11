@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { type CSSProperties, useEffect, useState } from 'react';
 import { t } from '../i18n';
 
 /**
@@ -79,12 +79,26 @@ export function AttachStatusIcon() {
 
   const ariaLabel = t(`attachStatus.${state}`);
 
+  // Place the dot below the status bar / host chrome.
+  // --ait-safe-top / --ait-safe-right are written by useSafeAreaInsets onto
+  // :root (and onto the Layout container), so they reflect either the SDK
+  // SafeAreaInsets value (Toss WebView) or CSS env(safe-area-inset-*) (browser
+  // / PWA). Falling back to 0px keeps the dot at its original 12 px offset
+  // when no inset is reported. The right edge is also inset-aware for
+  // landscape orientations where the device has a rounded corner or notch on
+  // the right side.
+  const insetStyle: CSSProperties = {
+    top: 'calc(var(--ait-safe-top, env(safe-area-inset-top, 0px)) + 12px)',
+    right: 'calc(var(--ait-safe-right, env(safe-area-inset-right, 0px)) + 12px)',
+  };
+
   return (
     <div
       role="status"
       aria-label={ariaLabel}
       aria-live="polite"
-      className="fixed top-3 right-3 z-50"
+      className="fixed z-50"
+      style={insetStyle}
     >
       <span
         className={`block h-4 w-4 rounded-full ${colorClass} shadow-sm${state === 'connecting' ? ' animate-pulse' : ''}`}
