@@ -28,18 +28,3 @@ interface Navigator {
 // 중복 공간이 생기고, game/external 은 chrome 이 viewport 안 overlay 라
 // 그대로 적용해야 한다.
 declare const __WEB_VIEW_TYPE__: 'partner' | 'external' | 'game';
-
-interface Window {
-  // SDK bridge (see src/debug/sdkBridge.ts). Installed in two scenarios:
-  //   1. `pnpm dev` (plain browser) — mock SDK via the devtools unplugin alias,
-  //      so the devtools MCP `call_sdk` tool can drive env-1 local debugging.
-  //   2. On-device (`.ait` bundle) — real SDK calls over on-device CDP relay
-  //      when the bundle is loaded via a ?debug=1&relay=<wss> deep-link.
-  // Install is gated in main.tsx on `import.meta.env.DEV` OR a ?debug=1/?relay=
-  // URL param, so a normal production load never installs the bridge.
-  __sdk?: Record<string, unknown>;
-  __sdkCall?: (
-    name: string,
-    ...args: unknown[]
-  ) => Promise<{ ok: boolean; value?: unknown; error?: string }>;
-}

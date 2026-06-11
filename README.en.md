@@ -119,6 +119,8 @@ The Deploy Key is issued from the Apps in Toss console ("API key" in the console
 
 An AI agent can read-only attach to a bundle running on a phone via `devtools-mcp`, so regressions can be diagnosed without a human watching the screen.
 
+The single `import '@ait-co/devtools/in-app/auto';` line in `main.tsx` handles both the CDP relay attach and the `window.__sdk`/`__sdkCall` SDK bridge. It activates only when `?debug=1`/`?relay=` URL parameters are present or in DEV builds; on normal production loads it stays dormant.
+
 1. **Start the agent's `devtools-mcp`** — the `devtools-mcp` registered in the AI host (`~/.mcp.json`) spins up a Chii server + Cloudflare quick tunnel and prints a `wss://` relay URL and a secret token.
 
 2. **Enter via QR/deep-link** — render a deep-link carrying `_deploymentId` + `debug=1` + `relay=<wss>` + `token=<secret>` as a QR and scan it with the phone camera. This single path also cold-loads bundles in PREPARE state.
@@ -145,7 +147,7 @@ This is a developer convenience for fast feedback before push. CI runs the same 
 
 ```
 src/
-├── main.tsx               # Entry point
+├── main.tsx               # Entry point (@ait-co/polyfill/auto + @ait-co/devtools/in-app/auto)
 ├── App.tsx                # React Router setup
 ├── __typecheck.ts         # Compile-time SDK export coverage check
 ├── components/            # Shared components (Layout, PageHeader, ApiCard, ...)

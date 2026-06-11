@@ -52,8 +52,6 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 **판정 기준**: 일반 미니앱 개발자가 복사해 그대로 가져갈 코드(SDK 사용 예제, 표준 dev 셋업, 공개 패키지의 정상 사용)는 OK — 메인테이너 디버깅·QA 인프라 전용 런타임 코드는 금지(devtools 쪽으로 productize). `vite.config.ts`의 devtools unplugin 옵션과 `dev:phone`(`dev:phone:cdp`) 스크립트는 공개 제품 기능의 표준 사용이라 허용.
 
-**과도기 잔여**: `src/debug/sdkBridge.ts`·`main.tsx` 게이트·`globals.d.ts`의 `__sdk`/`__sdkCall` 선언은 devtools#514 완료 후 #178에서 제거 예정.
-
 ## Mini-app 번들 빌드 (`.ait`)
 
 이 repo는 두 산출물을 만든다:
@@ -100,14 +98,14 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 **Dog-food 진입**: `ait deploy --scheme-only`가 출력하는 `intoss-private://…` URL을 QR로 스캔해 cold-load한다. 자세한 배경은 umbrella `CLAUDE.md` §3.2 "Dog-food 흐름" 단락 참조.
 
-## On-device 디버깅 (`window.__sdk` 브리지 + CDP relay)
+## On-device 디버깅 (CDP relay + SDK 브리지)
 
 실기기 토스 앱 WebView에 띄운 번들을 에이전트가 사람 폰 관찰 없이 디버깅하는 station 3(debug) 경로. 핵심 인프라 세 가지:
 
-**1. `window.__sdk` / `window.__sdkCall` 브리지** (`src/debug/sdkBridge.ts`). `@apps-in-toss/web-framework`의 전체 export namespace를 `window.__sdk`로 노출하고, `window.__sdkCall(name, ...args)`로 임의 SDK API를 호출해 `{ ok, value | error }`를 받는다. 에이전트가 CDP relay의 `Runtime.evaluate`로 직접 구동한다 — 예: `window.__sdkCall('setDeviceOrientation', { type: 'landscape' })`. namespace import라 새 SDK API가 추가되면 자동 노출된다.
+**1. `window.__sdk` / `window.__sdkCall` 브리지** — `@ait-co/devtools/in-app/auto` (`main.tsx`의 single-line import)가 설치한다. `@apps-in-toss/web-framework`의 전체 export namespace를 `window.__sdk`로 노출하고, `window.__sdkCall(name, ...args)`로 임의 SDK API를 호출해 `{ ok, value | error }`를 받는다. 에이전트가 CDP relay의 `Runtime.evaluate`로 직접 구동한다 — 예: `window.__sdkCall('setDeviceOrientation', { type: 'landscape' })`. namespace mirror 패턴이라 새 SDK API가 추가되면 자동 노출되고 2.x·3.x 양쪽에서 동작한다.
 
-- **왜 필요한가**: SDK는 호출을 Granite/ReactNative 브리지(`window.ReactNativeWebView.postMessage` + 독자 envelope)로 라우팅하고, SDK 함수들은 모듈 내부(tree-shaken, global에 안 붙음)다. envelope을 CDP eval로 hand-synthesize할 수 없고 함수를 global에서 못 찾으므로, 이 브리지 없이는 `setDeviceOrientation` 같은 API를 실기기에서 구동하려면 사람이 UI를 탭해야 한다.
-- **설치 게이트**: `main.tsx`가 `installSdkBridge`를 dynamic import하는 조건은 둘 중 하나다 — (1) `import.meta.env.DEV`(환경 1, `pnpm dev` 브라우저, mock SDK), (2) URL에 `?debug=1` 또는 `?relay=`(환경 3/4, on-device `.ait` 번들이 debug deep-link로 열릴 때, real SDK). production 번들은 `import.meta.env.DEV`가 false라 (1)만으론 DCE되므로 — `__DEBUG_BUILD__` 설치 경로가 #139에서 제거됐을 때 on-device 디버그가 조용히 깨졌었다(#143 복구) — URL 파라미터 게이트가 debug 진입 시에만 브리지를 살린다. debug 파라미터 없는 일반 production load는 어느 조건도 안 맞아 브리지 chunk가 dormant.
+- **왜 필요한가**: SDK는 호출을 Granite/ReactNative 브리지(`window.ReactNativeWebView.postMessage` + 독자 envelope)로 라우팅하고, SDK 함수들은 모듈 내부(tree-shaken, global에 안 붙음)다. envelope을 CDP eval로 hand-synthesize할 수 없으므로, 이 브리지 없이는 `setDeviceOrientation` 같은 API를 실기기에서 구동하려면 사람이 UI를 탭해야 한다.
+- **self-gate**: `@ait-co/devtools/in-app/auto`는 소비자 번들러가 `import.meta.env.DEV`를 `true`로 치환하는 DEV 빌드이거나 URL에 `?debug=1`/`?relay=`가 있을 때만 활성화된다. 그 외 일반 production load에서는 dormant — `window.__sdk`/`__sdkCall`이 설치되지 않는다.
 
 **2. `ait build`는 real SDK 번들** (mock 아님). `pnpm bundle:ait`(= `ait build`)는 devtools mock alias를 **적용하지 않는다** — 그 alias는 Vite dev 전용 rewrite다. 따라서 on-device 번들의 SDK 호출은 mock이 아니라 진짜 브리지 호출이다. (`pnpm dev` 브라우저에선 같은 import가 mock으로 resolve되지만, dev 서버는 `.ait` 배포와 무관하다.)
 
@@ -142,8 +140,6 @@ src/
 │                          # ResultView, HistoryLog, WorkflowStepper,
 │                          # PolyfillToggleCard, DocsLink
 │                          # (전체: src/components/ 참조)
-├── debug/                 # sdkBridge.ts (window.__sdk),
-│                          # main.tsx가 DEV 또는 ?debug=1/?relay= 시 import
 └── pages/                 # 18개 도메인 페이지 (Home, Auth, Navigation,
                            # Environment, Permissions, Storage, Location,
                            # Camera, Contacts, Clipboard, Haptic, IAP,
