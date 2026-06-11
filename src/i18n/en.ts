@@ -38,7 +38,7 @@ export const en: Record<StringKey, string> = {
   // DemoBanner
   'demoBanner.ariaLabel': 'Demo notice',
   'demoBanner.badge': 'DEMO',
-  'demoBanner.summary': 'Web demo powered by @ait-co/devtools mock',
+  'demoBanner.summary': 'Web demo running on @ait-co/devtools mock',
   'demoBanner.collapse': 'Collapse',
   'demoBanner.expand': 'Details',
   'demoBanner.description':

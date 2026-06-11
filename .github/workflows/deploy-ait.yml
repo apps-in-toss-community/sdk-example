@@ -11,7 +11,7 @@ name: Deploy .ait bundle
 # used for v* tag pushes) builds a normal bundle. `dogfood` sets
 # RELEASE_CHANNEL=dogfood so vite.config.ts inlines __DEBUG_BUILD__=true,
 # keeping the in-app debug attach surface for on-device CDP relay sessions
-# (devtools-mcp). dogfood builds are workflow_dispatch only.
+# (devtools-mcp). dog-food builds are workflow_dispatch only.
 
 on:
   push:
@@ -24,7 +24,7 @@ on:
         required: true
         type: string
       channel:
-        description: 'Build channel — dogfood keeps the in-app debug attach surface'
+        description: 'Build channel — dog-food keeps the in-app debug attach surface'
         required: true
         type: choice
         default: release
@@ -78,7 +78,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$CHANNEL" = "dogfood" ]; then
-            echo "Building dogfood channel — __DEBUG_BUILD__=true (in-app debug attach surface kept)"
+            echo "Building dog-food channel — __DEBUG_BUILD__=true (in-app debug attach surface kept)"
             pnpm bundle:ait:dogfood
           else
             pnpm bundle:ait
@@ -133,7 +133,7 @@ jobs:
           CHANNEL: ${{ steps.ref.outputs.channel }}
         run: |
           set -euo pipefail
-          # A dogfood deploy reuses an existing release tag, so it publishes
+          # A dog-food deploy reuses an existing release tag, so it publishes
           # under a channel-suffixed pre-release tag (e.g. v0.1.5-dogfood)
           # to avoid colliding with the release. The git tag stays the same;
           # gh creates the release object on the suffixed name.
