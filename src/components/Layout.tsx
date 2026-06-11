@@ -35,21 +35,26 @@ export function Layout() {
   const left = resolveInset(insets.left, 'left', isTossEnv);
   const right = resolveInset(insets.right, 'right', isTossEnv);
 
-  // --safe-top is read by sticky descendants (PageHeader, HomePage search
-  // header) — plain `sticky top-0` would anchor to the viewport and let
-  // content slide under the notch on scroll.
-  // --ait-safe-* mirror the :root vars written by useSafeAreaInsets for any
-  // descendant that targets the shell container rather than :root directly.
+  // --ait-safe-* are written onto :root by useSafeAreaInsets — Layout must NOT
+  // re-define them here or it would shadow the bridge-corrected root values
+  // (the cross-origin iframe phantom-inset bug, #170).
+  //
+  // Padding consumes the :root variables directly so that environment 2 (devtools
+  // launcher PWA) receives the bridge-corrected 0 px values instead of the
+  // phantom env(safe-area-inset-*) the WebKit cross-origin iframe exposes.
+  // resolveInset() still produces a concrete px string for the Toss WebView
+  // path (isTossEnv=true) and a positive-guard for regular browsers — the var()
+  // wrapper with env() fallback covers the remaining non-Toss browser path.
+  //
+  // --safe-top is re-exported here (consuming the :root var, not raw env()) so
+  // sticky descendants (PageHeader, HomePage search header) get the same
+  // corrected value without reaching up to :root themselves.
   const style = {
-    paddingTop: top,
-    paddingBottom: bottom,
-    paddingLeft: left,
-    paddingRight: right,
-    '--safe-top': top,
-    '--ait-safe-top': top,
-    '--ait-safe-bottom': bottom,
-    '--ait-safe-left': left,
-    '--ait-safe-right': right,
+    paddingTop: `var(--ait-safe-top, ${top})`,
+    paddingBottom: `var(--ait-safe-bottom, ${bottom})`,
+    paddingLeft: `var(--ait-safe-left, ${left})`,
+    paddingRight: `var(--ait-safe-right, ${right})`,
+    '--safe-top': `var(--ait-safe-top, ${top})`,
   } as CSSProperties;
 
   return (
