@@ -24,9 +24,17 @@ export default defineConfig({
     // unplugin ensureRelaySecret). The MCP daemon reads that secret read-only for
     // env-3 intoss relay too, so CDP opt-in is the prerequisite for both env 2's
     // CDP observation and env 3's relay auth. Plain AIT_TUNNEL=1 stays HTTP-only.
+    // forceEnable: dog-food 번들(RELEASE_CHANNEL=dogfood, = bundle:ait:dogfood)에서만
+    // panel을 production 빌드에 주입해 실기기 토스 앱 WebView(환경 3)에서도 floating
+    // button을 띄운다. dev에서는 isDev로 이미 켜지므로 무영향. mock은 끈 채(false 기본,
+    // forceEnable+production)라 실 SDK(window.__sdk)가 그대로 동작 — panel은 Storage/
+    // Viewport 탭 위주로 의미가 있고, Analytics/상태 탭은 실 SDK↔aitState 브리지가 없어
+    // 비어 보이는 게 정상이다. 일반 `bundle:ait`(채널 없음)는 forceEnable이 false라
+    // boilerplate 복사자에게 빈 panel을 강요하지 않는다(§Boilerplate 청정성).
     aitDevtools.vite({
       panel: true,
       mcp: true,
+      forceEnable: process.env.RELEASE_CHANNEL === 'dogfood',
       tunnel: process.env.AIT_TUNNEL ? { cdp: !!process.env.AIT_TUNNEL_CDP } : false,
     }),
   ],
