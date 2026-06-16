@@ -2,16 +2,6 @@ import aitDevtools from '@ait-co/devtools/unplugin';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
-import graniteConfig from './granite.config';
-
-// granite.config.ts 의 webViewProps.type 을 unplugin 옵션으로 전달해
-// build-time 상수 __WEB_VIEW_TYPE__ 를 주입한다.
-// partner WebView 는 토스 native chrome 이 viewport 밖에 그려져 SDK 가
-// 보고하는 top inset 을 padding 으로 적용하면 중복 공간이 생기고,
-// game 은 chrome 이 WebView 안 overlay 라 그대로 적용해야 한다.
-// granite.config 의 'external' 은 'partner' 의 구형 별칭 — unplugin 에는 없으므로 매핑.
-const _rawType = graniteConfig.webViewProps?.type;
-const webViewType: 'partner' | 'game' = _rawType === 'game' ? 'game' : 'partner';
 
 export default defineConfig({
   // GitHub Pages project site serves from /<repo-name>/ path.
@@ -34,14 +24,10 @@ export default defineConfig({
     // unplugin ensureRelaySecret). The MCP daemon reads that secret read-only for
     // env-3 intoss relay too, so CDP opt-in is the prerequisite for both env 2's
     // CDP observation and env 3's relay auth. Plain AIT_TUNNEL=1 stays HTTP-only.
-    //
-    // webViewType: granite.config.ts 의 webViewProps.type 을 단일 소스로 유지하고
-    // unplugin 에 위임해 __WEB_VIEW_TYPE__ 빌드 상수를 주입한다.
     aitDevtools.vite({
       panel: true,
       mcp: true,
       tunnel: process.env.AIT_TUNNEL ? { cdp: !!process.env.AIT_TUNNEL_CDP } : false,
-      webViewType,
     }),
   ],
   // Keep the polyfill and the SDK (plus its transitive bridge/analytics

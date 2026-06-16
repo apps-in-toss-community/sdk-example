@@ -222,7 +222,7 @@ export function HomePage() {
     <div className="px-4 pb-8">
       <div
         className="sticky z-10 bg-white pt-4 pb-3 border-b border-gray-100 dark:bg-gray-900 dark:border-gray-800"
-        style={{ top: 'var(--safe-top, 0px)' }}
+        style={{ top: 'env(safe-area-inset-top)' }}
       >
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">
           {t('homePage.title')}
