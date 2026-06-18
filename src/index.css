@@ -5,9 +5,41 @@
    (carousel, slider) must opt back in with `touch-action: pan-x` on itself. */
 html,
 body {
+  /* 기저 배경 = 콘텐츠 배경(white / dark gray-900). React 마운트 전·over-scroll
+     순간에도 노치 뒤 기저색이 콘텐츠와 동일해 회색이 새지 않는다(belt-and-suspenders).
+     safe-area inset의 단일 출처는 CSS env()뿐 — env 3(partner/game) WebView의 SDK
+     SafeAreaInsets.top(= 호스트 nav-bar 높이, WebView 바깥, informational)을 layout
+     padding 에 절대 더하지 말 것(가산 불가, #187/#131 잉여 band 재발). SDK 값은
+     EnvironmentPage 데모 전용이고 useSafeAreaInsets/__WEB_VIEW_TYPE__ 는 #187 에서
+     삭제됐다(복원 금지). */
+  background-color: #ffffff;
   overflow-x: hidden;
   overscroll-behavior: none;
   touch-action: pan-y;
+}
+
+@media (prefers-color-scheme: dark) {
+  html,
+  body {
+    background-color: #111827; /* gray-900 = dark 콘텐츠/셸 배경 */
+  }
+}
+
+/* 데스크톱(뷰포트 > max-w-5xl = 64rem) 좌우 거터를 회색으로 되살린다 — 이 거터는
+   노치가 아니라 max-w-5xl 중앙정렬 여백이라 env() 와 무관하고, 모바일(노치 있는
+   실기기)에선 화면 폭 < 64rem 이라 안 보인다. Layout 외부 셸 배경을 white 로 통일한
+   변경이 일으킬 수 있는 env 1 데스크톱 회귀(거터 소실)를 정확히 상쇄해 env 1 픽셀을
+   변경 전과 동일하게 유지한다. */
+@media (min-width: 64rem) {
+  body {
+    background-color: #f3f4f6; /* gray-100 = 기존 데스크톱 거터색 */
+  }
+}
+
+@media (min-width: 64rem) and (prefers-color-scheme: dark) {
+  body {
+    background-color: #030712; /* gray-950 = 기존 데스크톱 dark 거터색 */
+  }
 }
 
 /* Wrap long lines in code blocks so a single ApiCard snippet can't widen
