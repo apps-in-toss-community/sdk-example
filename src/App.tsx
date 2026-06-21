@@ -56,14 +56,24 @@ import { StoragePage } from './pages/StoragePage';
 //   2. 'ReactNativeWebView' in window           (RN bridge marker, fallback)
 
 /**
- * Returns true when a popstate event should be absorbed (i.e. the pop went
- * below react-router's first real entry and must be re-pushed to avoid closing
- * the mini-app).
+ * Returns true when a popstate event landed on (or below) react-router's first
+ * real entry — i.e. the history floor — and the pop must be absorbed to keep
+ * the native iOS swipe-back from closing the mini-app.
  *
- * react-router v7 BrowserRouter stamps every history entry with
- * `{ idx: number, key: string }`. A sentinel entry that we push manually has
- * no such state, so `state?.idx` is undefined. We treat idx < 0 or absent as
- * "below the app floor".
+ * Why `idx <= 0` and not `idx < 0`:
+ *   `window.history.pushState` can only create an entry *forward* of the
+ *   current one, but the native edge-swipe always navigates *backward*. So a
+ *   sentinel pushed at mount can never sit below the router root — it only
+ *   delays the exit by one swipe. The real floor we can detect is the router's
+ *   own root entry (`idx === 0`): a popstate that lands there means there is
+ *   nothing left to go back to in-app, so the *next* backward swipe would pop
+ *   past it and exit. We absorb at `idx === 0` (re-pinning a sentinel above the
+ *   root each time) so the cursor never reaches a position from which a swipe
+ *   can fall through to the native shell.
+ *
+ *   react-router v7 BrowserRouter stamps every entry with `{ idx, key }`. A
+ *   manually pushed sentinel has `null`/no state, so `idx` is absent — also a
+ *   floor signal. We treat null/non-object/idx-absent/idx<=0 all as "floor".
  *
  * Exported as a pure function so it can be unit-tested without a DOM.
  */
@@ -72,7 +82,7 @@ export function shouldAbsorbPop(state: unknown): boolean {
   if (typeof state !== 'object') return true;
   const idx = (state as Record<string, unknown>).idx;
   if (idx === undefined || idx === null) return true;
-  return typeof idx === 'number' && idx < 0;
+  return typeof idx === 'number' && idx <= 0;
 }
 
 function useEnableIosSwipeBackWithRootGuard(): void {
@@ -90,16 +100,12 @@ function useEnableIosSwipeBackWithRootGuard(): void {
     // Re-enable the native iOS swipe-back gesture (was disabled before).
     setIosSwipeGestureEnabled({ isEnabled: true }).catch(() => {});
 
-    // Pin a sentinel entry below the current root so that the first native
-    // swipe-back always has something to land on. We push with a null state
-    // so that shouldAbsorbPop() can distinguish it from real router entries.
-    //
-    // We do this *before* registering the popstate listener to avoid a
-    // race where a very fast swipe fires before the listener is attached.
-    window.history.pushState(null, '');
-    // Restore the original entry on top so the router sees no change.
-    window.history.go(1);
-
+    // Pin a sentinel entry above the router root at mount so the cursor starts
+    // one step above the floor. Combined with the popstate guard below, this
+    // means the first backward swipe lands on the router root (idx 0) — which
+    // the guard immediately re-pins — instead of the native shell. We register
+    // the listener *first* so a very fast swipe right after pushState is still
+    // caught.
     const noGuard =
       typeof window !== 'undefined' &&
       new URLSearchParams(window.location.search).get('noSwipeGuard') === '1';
@@ -107,12 +113,16 @@ function useEnableIosSwipeBackWithRootGuard(): void {
     const handlePopState = (event: PopStateEvent) => {
       if (noGuard) return;
       if (shouldAbsorbPop(event.state)) {
-        // We've hit the sentinel floor. Re-push the root to absorb the pop.
-        window.history.pushState(event.state, '');
+        // Cursor reached the history floor (router root or our sentinel).
+        // Re-pin a sentinel above it so the next backward swipe has somewhere
+        // to land in-WebView instead of popping through to the native shell.
+        window.history.pushState(null, '');
       }
     };
 
     window.addEventListener('popstate', handlePopState);
+    window.history.pushState(null, '');
+
     return () => {
       window.removeEventListener('popstate', handlePopState);
     };

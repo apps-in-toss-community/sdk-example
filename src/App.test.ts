@@ -37,11 +37,16 @@ describe('shouldAbsorbPop — popstate root-guard 판정 함수', () => {
     expect(shouldAbsorbPop({ idx: -1, key: 'abc' })).toBe(true);
   });
 
-  // 정상 react-router 엔트리 — 통과 (흡수 안 함)
-  it('state.idx === 0 → 통과 (root 엔트리, react-router 가 처리)', () => {
-    expect(shouldAbsorbPop({ idx: 0, key: 'abc' })).toBe(false);
+  // idx === 0 = react-router root = history floor → 흡수.
+  // pushState 는 root *위(forward)* 에만 sentinel 을 만들 수 있고 네이티브
+  // edge-swipe 는 항상 *뒤(back)* 로 가므로, "root 밑 sentinel" geometry 는
+  // 구조적으로 불가능하다. 따라서 root(idx 0) 에 떨어진 popstate 자체를 floor 로
+  // 보고 흡수해야 다음 backward swipe 가 네이티브 셸로 빠지지 않는다.
+  it('state.idx === 0 → 흡수 (root = floor, 다음 스와이프 종료 방지)', () => {
+    expect(shouldAbsorbPop({ idx: 0, key: 'abc' })).toBe(true);
   });
 
+  // 정상 react-router 엔트리 (idx >= 1) — 통과 (in-app back 을 라우터가 처리)
   it('state.idx === 1 → 통과 (1단계 깊이, /location 등)', () => {
     expect(shouldAbsorbPop({ idx: 1, key: 'def' })).toBe(false);
   });
@@ -50,9 +55,9 @@ describe('shouldAbsorbPop — popstate root-guard 판정 함수', () => {
     expect(shouldAbsorbPop({ idx: 5, key: 'xyz' })).toBe(false);
   });
 
-  // 실기기 측정값 재현 — 홈(idx=0)·/location(idx=1) 도달 시 guard 미개입
-  it('홈 실기기 측정값 { idx: 0 } → 통과 (미종료)', () => {
-    expect(shouldAbsorbPop({ idx: 0, key: 'home-key' })).toBe(false);
+  // 실기기 측정값 재현 — 홈(idx=0)은 floor 라 흡수, /location(idx=1)은 in-app back
+  it('홈 실기기 측정값 { idx: 0 } → 흡수 (root floor, 미종료 보장)', () => {
+    expect(shouldAbsorbPop({ idx: 0, key: 'home-key' })).toBe(true);
   });
 
   it('/location 실기기 측정값 { idx: 1 } → 통과 (in-app back)', () => {
