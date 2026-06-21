@@ -1,8 +1,7 @@
-import { getOperationalEnvironment, setIosSwipeGestureEnabled } from '@apps-in-toss/web-framework';
-import { useEffect } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { BrowserRouter, Route, Routes, useNavigate } from 'react-router-dom';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { Layout } from './components/Layout';
+import { useIosSwipeBackGuard } from './hooks/useIosSwipeBackGuard';
 // SCAFFOLD_DOMAIN_IMPORTS_BEGIN
 import { AdsPage } from './pages/AdsPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
@@ -26,116 +25,23 @@ import { StoragePage } from './pages/StoragePage';
 
 // SCAFFOLD_DOMAIN_IMPORTS_END
 
-// iOS swipe-back guard — mechanism-agnostic root sentinel approach.
-//
-// Root cause: BrowserRouter shares window.history with the native edge-swipe.
-// When the user swipes back past the first react-router entry (idx 0), the
-// native layer pops the WebView history to a phantom floor and closes the
-// mini-app. Disabling the gesture entirely (previous approach) fixed the crash
-// but broke the expected UX (swipe → in-app back navigation).
-//
-// Fix: re-enable the native gesture and guard the history floor instead.
-//   1. On mount, pin a sentinel entry below the real root so that one native
-//      swipe-back always hits the sentinel rather than closing the app.
-//   2. Listen for popstate. When the event lands on the sentinel (detected by
-//      event.state?.idx being absent / < 0, i.e. not a valid react-router
-//      entry), re-push the root entry to absorb the pop without navigating.
-//   3. All other popstate events (idx >= 0) pass through untouched so that
-//      react-router handles normal in-app back navigation.
-//
-// Opt-out: append ?noSwipeGuard=1 to the URL to skip the guard (sentinel is
-// still pinned but popstate re-push is suppressed). Useful for debugging the
-// guard itself in a browser where history inspection is easy.
-//
-// Environment gate: the guard is active only in the Toss WebView (detected
-// via the same two-layer strategy as the previous approach). In the local
-// browser (env-1) the gate is false → no sentinel, no listener, zero diff.
-//
-// Detection strategy — two layers:
-//   1. getOperationalEnvironment() === 'toss'  (SDK constant bridge, primary)
-//   2. 'ReactNativeWebView' in window           (RN bridge marker, fallback)
-
 /**
- * Returns true when a popstate event landed on (or below) react-router's first
- * real entry — i.e. the history floor — and the pop must be absorbed to keep
- * the native iOS swipe-back from closing the mini-app.
- *
- * Why `idx <= 0` and not `idx < 0`:
- *   `window.history.pushState` can only create an entry *forward* of the
- *   current one, but the native edge-swipe always navigates *backward*. So a
- *   sentinel pushed at mount can never sit below the router root — it only
- *   delays the exit by one swipe. The real floor we can detect is the router's
- *   own root entry (`idx === 0`): a popstate that lands there means there is
- *   nothing left to go back to in-app, so the *next* backward swipe would pop
- *   past it and exit. We absorb at `idx === 0` (re-pinning a sentinel above the
- *   root each time) so the cursor never reaches a position from which a swipe
- *   can fall through to the native shell.
- *
- *   react-router v7 BrowserRouter stamps every entry with `{ idx, key }`. A
- *   manually pushed sentinel has `null`/no state, so `idx` is absent — also a
- *   floor signal. We treat null/non-object/idx-absent/idx<=0 all as "floor".
- *
- * Exported as a pure function so it can be unit-tested without a DOM.
+ * iOS swipe-back 가드를 Router context 안에서 마운트하기 위한 지점. UI 렌더 없음.
+ * useNavigate는 BrowserRouter 자식에서만 호출 가능하므로 가드를 이 컴포넌트로 감싼다.
  */
-export function shouldAbsorbPop(state: unknown): boolean {
-  if (state === null || state === undefined) return true;
-  if (typeof state !== 'object') return true;
-  const idx = (state as Record<string, unknown>).idx;
-  if (idx === undefined || idx === null) return true;
-  return typeof idx === 'number' && idx <= 0;
-}
-
-function useEnableIosSwipeBackWithRootGuard(): void {
-  useEffect(() => {
-    let isToss = false;
-    try {
-      isToss = getOperationalEnvironment() === 'toss';
-    } catch {
-      // __CONSTANT_HANDLER_MAP not yet populated — fall back to the RN bridge
-      // presence marker that the Toss WebView always injects before JS runs.
-      isToss = typeof window !== 'undefined' && 'ReactNativeWebView' in window;
-    }
-    if (!isToss) return;
-
-    // Re-enable the native iOS swipe-back gesture (was disabled before).
-    setIosSwipeGestureEnabled({ isEnabled: true }).catch(() => {});
-
-    // Pin a sentinel entry above the router root at mount so the cursor starts
-    // one step above the floor. Combined with the popstate guard below, this
-    // means the first backward swipe lands on the router root (idx 0) — which
-    // the guard immediately re-pins — instead of the native shell. We register
-    // the listener *first* so a very fast swipe right after pushState is still
-    // caught.
-    const noGuard =
-      typeof window !== 'undefined' &&
-      new URLSearchParams(window.location.search).get('noSwipeGuard') === '1';
-
-    const handlePopState = (event: PopStateEvent) => {
-      if (noGuard) return;
-      if (shouldAbsorbPop(event.state)) {
-        // Cursor reached the history floor (router root or our sentinel).
-        // Re-pin a sentinel above it so the next backward swipe has somewhere
-        // to land in-WebView instead of popping through to the native shell.
-        window.history.pushState(null, '');
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    window.history.pushState(null, '');
-
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
+function SwipeBackGuard(): null {
+  const navigate = useNavigate();
+  useIosSwipeBackGuard(navigate);
+  return null;
 }
 
 export function App() {
-  useEnableIosSwipeBackWithRootGuard();
   // Honors Vite's BASE_URL so Pages (e.g. /sdk-example/) and 앱인토스 배포 (/) both work.
   const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
   return (
     <ErrorBoundary>
       <BrowserRouter basename={basename}>
+        <SwipeBackGuard />
         <Routes>
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
