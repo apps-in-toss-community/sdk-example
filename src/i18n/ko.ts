@@ -133,6 +133,9 @@ export const ko = {
 
   // LocationPage
   'pages.location.getCurrentLocation.description': 'SDK — 현재 위치 조회',
+  'pages.location.getCurrentLocation.permissionHelp':
+    '위치 정보를 가져오지 못했어요. 이미 권한을 허용했더라도 iOS 설정 > 개인정보 보호 및 보안 > 위치 서비스에서 토스의 위치 접근이 켜져 있는지 확인해 주세요.',
+  'pages.location.checkLocationPermission.description': 'SDK — 위치 권한 상태 확인 (getPermission)',
   'pages.location.startUpdateLocation.description': 'SDK — 위치 업데이트 시작',
   'pages.location.navigatorGetCurrentPosition.description': '표준 Web API (via @ait-co/polyfill)',
   'pages.location.navigatorWatchPosition.description':

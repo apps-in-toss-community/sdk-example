@@ -11,6 +11,20 @@ import getCurrentPositionSnippet from '../snippets/location/getCurrentPosition.t
 import startUpdateLocationSnippet from '../snippets/location/startUpdateLocation.ts?raw';
 import watchPositionSnippet from '../snippets/location/watchPosition.ts?raw';
 
+/**
+ * Returns true when `err` looks like an OS-level location failure.
+ *
+ * SDK surfaces iOS CoreLocation errors as untyped native strings containing
+ * "LocationError" or "오류" (e.g. "MiniApp.LocationError 오류 1"), which is
+ * distinct from the typed `GetCurrentLocationPermissionError` thrown when the
+ * mini-app-level grant is "denied". Exported for unit testing.
+ */
+export function isLocationNativeError(err: unknown): boolean {
+  return (
+    err instanceof Error && (err.message.includes('LocationError') || err.message.includes('오류'))
+  );
+}
+
 function pickStandardCoords(pos: GeolocationPosition) {
   return {
     coords: {
@@ -48,8 +62,32 @@ export function LocationPage() {
           name="getCurrentLocation"
           description={t('pages.location.getCurrentLocation.description')}
           params={[]}
-          execute={() => getCurrentLocation({ accuracy: Accuracy.Highest })}
+          execute={async () => {
+            try {
+              return await getCurrentLocation({ accuracy: Accuracy.Highest });
+            } catch (err) {
+              // OS-level permission failure (e.g. iOS CoreLocation denied while
+              // mini-app-level grant is "allowed") surfaces as an untyped native
+              // string like "MiniApp.LocationError 오류 1". Catch it here,
+              // fire openPermissionDialog() as a best-effort recovery path, and
+              // rethrow with a user-friendly message.
+              if (isLocationNativeError(err)) {
+                // Fire-and-forget — dialog may not appear in all cases, but
+                // calling it prompts OS re-authorization when available.
+                getCurrentLocation.openPermissionDialog().catch(() => {});
+                throw new Error(t('pages.location.getCurrentLocation.permissionHelp'));
+              }
+              throw err;
+            }
+          }}
           snippet={getCurrentLocationSnippet}
+          docsUrl={docsLink('location', 'getCurrentLocation')}
+        />
+        <ApiCard
+          name="getCurrentLocation.getPermission"
+          description={t('pages.location.checkLocationPermission.description')}
+          params={[]}
+          execute={() => getCurrentLocation.getPermission()}
           docsUrl={docsLink('location', 'getCurrentLocation')}
         />
         <ApiCard
