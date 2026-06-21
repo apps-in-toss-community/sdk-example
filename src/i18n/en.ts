@@ -134,6 +134,10 @@ export const en: Record<StringKey, string> = {
 
   // LocationPage
   'pages.location.getCurrentLocation.description': 'SDK — get current location',
+  'pages.location.getCurrentLocation.permissionHelp':
+    "Couldn't get your location. Even if you've already granted permission, check that Location Services is enabled for Toss in iOS Settings > Privacy & Security > Location Services.",
+  'pages.location.checkLocationPermission.description':
+    'SDK — check location permission status (getPermission)',
   'pages.location.startUpdateLocation.description': 'SDK — start location updates',
   'pages.location.navigatorGetCurrentPosition.description':
     'Standard Web API (via @ait-co/polyfill)',
