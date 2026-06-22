@@ -91,7 +91,7 @@ export function OidcBridgeSection() {
       <p className="rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-xs text-gray-600 dark:border-gray-800 dark:bg-gray-800 dark:text-gray-300">
         Flow: <code className="font-mono">appLogin()</code> → your backend (
         <code className="font-mono">{EXCHANGE_ENDPOINT}</code>) → bridge{' '}
-        <code className="font-mono">{OIDC_BRIDGE_BASE_URL}/oidc/token</code> →{' '}
+        <code className="font-mono">{OIDC_BRIDGE_BASE_URL}/t/&lt;tenantId&gt;/oidc/token</code> →{' '}
         <code className="font-mono">id_token</code>. The public bridge instance gates token issuance
         until its cloud rollout completes, so this card surfaces the bridge response rather than a
         finished session.

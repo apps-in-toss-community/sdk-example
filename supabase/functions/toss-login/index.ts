@@ -16,6 +16,8 @@
 //   OIDC_BRIDGE_BASE_URL   e.g. https://oidc-bridge.aitc.dev
 //   OIDC_BRIDGE_CLIENT_ID  the app's registered client_id at the bridge
 //   OIDC_BRIDGE_CLIENT_SECRET (optional) only for confidential clients
+//   OIDC_BRIDGE_TENANT_ID  (public instance only) — the dispatcher tenant id;
+//                          leave unset for a self-hosted bridge mounted at the root.
 //
 // Deploy: `supabase functions deploy toss-login --no-verify-jwt`
 // (the caller is an unauthenticated mini-app, so the platform JWT check is off;
@@ -64,6 +66,9 @@ Deno.serve(async (req: Request) => {
   const baseUrl = Deno.env.get('OIDC_BRIDGE_BASE_URL');
   const clientId = Deno.env.get('OIDC_BRIDGE_CLIENT_ID');
   const clientSecret = Deno.env.get('OIDC_BRIDGE_CLIENT_SECRET');
+  // Public instance is a tenant-scoped dispatcher → /t/<tenantId>/oidc/token.
+  // Self-host mounts at the root → /oidc/token (leave OIDC_BRIDGE_TENANT_ID unset).
+  const tenantId = Deno.env.get('OIDC_BRIDGE_TENANT_ID');
   if (!baseUrl || !clientId) {
     return json({ error: 'server_misconfigured' }, 500);
   }
@@ -88,9 +93,13 @@ Deno.serve(async (req: Request) => {
     tokenRequest.client_secret = clientSecret;
   }
 
+  const tokenUrl = tenantId
+    ? `${baseUrl}/t/${tenantId}/oidc/token`
+    : `${baseUrl}/oidc/token`;
+
   let bridgeResponse: Response;
   try {
-    bridgeResponse = await fetch(`${baseUrl}/oidc/token`, {
+    bridgeResponse = await fetch(tokenUrl, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(tokenRequest),
