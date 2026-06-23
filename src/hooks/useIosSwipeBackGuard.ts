@@ -16,14 +16,18 @@ export function readRouterIdx(state: unknown): number | null {
  * WKWebView 통합 세션 히스토리를 키우므로(엔트리가 1개뿐인 건 아님) — granite의
  * canGoBack(네이티브 스택 깊이)을 history.state.idx로 대체한다.
  *
- * deep(idx≥1)에서 제스처를 끄는 이유: pushState 스택 바닥에는 cold-load 문서와
- * 라우트별 실 HTML(scripts/build-route-html.ts)이 실-document 엔트리로 존재한다.
- * edge-swipe가 그 document 경계를 넘어 pop하면 WKWebView가 full document 로드
- * (= 페이지 새로고침)를 수행하고, 바닥에서 한 번 더 pop하면 미니앱 종료(#136 회귀).
- * 제스처를 끄면 swipe가 document 경계에 도달하지 못해 reload·종료 둘 다 차단된다.
+ * deep(idx≥1)에서 제스처를 끄는 이유: 배포 .ait 번들(ait build → dist/web/)에는
+ * 실-document 엔트리가 cold-load 문서 단 1개뿐이다 — 라우트별 실 HTML
+ * (scripts/build-route-html.ts)은 GitHub Pages SSG 전용이고 .ait 번들엔 없다(ait
+ * build는 그 스크립트를 돌리지 않음). 그 아래로는 전부 pushState 엔트리다. 따라서
+ * 깊은 화면에서 edge-swipe가 pushState 스택 안을 pop하는 동안은 same-document
+ * popstate라 react-router가 처리하고 reload가 없다. 위험은 단 하나 — 커서가 floor
+ * (idx 0, cold-load 문서)에 있을 때 한 번 더 backward swipe하면 WKWebView 셸 밖으로
+ * pop돼 미니앱이 종료된다(#136). 제스처를 deep에서 끄면 swipe가 floor까지 걸어
+ * 내려가지 못해 그 종료를 원천 차단한다.
  *
  *   idx 0    → true  (root: 제스처 켬. swipe = 셸 밖 pop = 미니앱 정상 종료.)
- *   idx >= 1 → false (deep: 제스처 끔. document 경계 pop → reload/종료 방지(#136).
+ *   idx >= 1 → false (deep: 제스처 끔. floor pop = 셸 밖 종료를 차단(#136).
  *                     in-app 뒤로는 PageHeader 버튼.)
  *   idx null → true  (판독 불가 → root로 안전 취급. dog-food 진입 화면 HomePage(root)엔
  *                     PageHeader back 버튼이 없어 여기서 disabled면 탈출 경로 소실(갇힘).
@@ -54,10 +58,11 @@ function isNoSwipeGuard(): boolean {
 /**
  * iOS edge-swipe-back 가드. granite CanGoBackGuard 패턴을 plain react-router로 이식.
  * backEvent를 별도로 가로채지 않는다 — pushState 스택 내부 pop은 react-router가
- * popstate로 이미 처리하고, document 경계를 넘는 floor pop은 full document 로드라
- * JS로 가로챌 수 없기 때문이다. 대신 매 navigation마다 네이티브 제스처를 깊이별로
- * 재확정: deep screen에서 끄고(document 경계 pop → reload/종료 차단) root에서 켠다
- * (정상 종료). in-app 뒤로가기는 PageHeader의 navigate(-1) 버튼이 담당.
+ * popstate로 이미 처리하고, floor를 넘어 셸 밖으로 나가는 pop은 popstate가
+ * non-cancelable인 데다 cross-document 종료라 JS로 가로챌 수 없기 때문이다(SDK에도
+ * iOS swipe를 JS 콜백으로 주는 경로가 없음 — disasm 확인). 대신 매 navigation마다
+ * 네이티브 제스처를 깊이별로 재확정: deep screen에서 끄고(floor pop = 셸 밖 종료 차단)
+ * root에서 켠다(정상 종료). in-app 뒤로가기는 PageHeader의 navigate(-1) 버튼이 담당.
  */
 export function useIosSwipeBackGuard(): void {
   const location = useLocation();
