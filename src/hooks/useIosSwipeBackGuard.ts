@@ -12,12 +12,19 @@ export function readRouterIdx(state: unknown): number | null {
 /**
  * 깊이 → iOS edge-swipe 네이티브 제스처 on/off 결정.
  * granite 프레임워크 CanGoBackGuard 정본(prod.ios.rn84.js)을 plain react-router로
- * 이식: `!isInitialScreen || !canGoBack` → disabled. SPA(react-router pushState)는
- * WKWebView nav entry가 1개뿐 → granite의 canGoBack(네이티브 스택 깊이)을
- * history.state.idx로 대체한다.
+ * 이식: `!isInitialScreen || !canGoBack` → disabled. react-router pushState는
+ * WKWebView 통합 세션 히스토리를 키우므로(엔트리가 1개뿐인 건 아님) — granite의
+ * canGoBack(네이티브 스택 깊이)을 history.state.idx로 대체한다.
+ *
+ * deep(idx≥1)에서 제스처를 끄는 이유: pushState 스택 바닥에는 cold-load 문서와
+ * 라우트별 실 HTML(scripts/build-route-html.ts)이 실-document 엔트리로 존재한다.
+ * edge-swipe가 그 document 경계를 넘어 pop하면 WKWebView가 full document 로드
+ * (= 페이지 새로고침)를 수행하고, 바닥에서 한 번 더 pop하면 미니앱 종료(#136 회귀).
+ * 제스처를 끄면 swipe가 document 경계에 도달하지 못해 reload·종료 둘 다 차단된다.
+ *
  *   idx 0    → true  (root: 제스처 켬. swipe = 셸 밖 pop = 미니앱 정상 종료.)
- *   idx >= 1 → false (deep: 제스처 끔. 켜두면 1-entry WKWebView에서 swipe가 셸 밖
- *                     pop = 미니앱 종료(#136 회귀). in-app 뒤로는 PageHeader 버튼.)
+ *   idx >= 1 → false (deep: 제스처 끔. document 경계 pop → reload/종료 방지(#136).
+ *                     in-app 뒤로는 PageHeader 버튼.)
  *   idx null → true  (판독 불가 → root로 안전 취급. dog-food 진입 화면 HomePage(root)엔
  *                     PageHeader back 버튼이 없어 여기서 disabled면 탈출 경로 소실(갇힘).
  *                     worst case가 "deep 잘못 종료"가 아니라 "root 정상 종료 허용"이라 안전.)
@@ -46,9 +53,11 @@ function isNoSwipeGuard(): boolean {
 
 /**
  * iOS edge-swipe-back 가드. granite CanGoBackGuard 패턴을 plain react-router로 이식.
- * backEvent를 가로채지 않는다(edge-swipe는 backEvent 경로를 안 거침). 대신 매
- * navigation마다 네이티브 제스처를 깊이별로 재확정: deep screen에서 끄고(종료 방지)
- * root에서 켠다(정상 종료). in-app 뒤로가기는 PageHeader의 navigate(-1) 버튼이 담당.
+ * backEvent를 별도로 가로채지 않는다 — pushState 스택 내부 pop은 react-router가
+ * popstate로 이미 처리하고, document 경계를 넘는 floor pop은 full document 로드라
+ * JS로 가로챌 수 없기 때문이다. 대신 매 navigation마다 네이티브 제스처를 깊이별로
+ * 재확정: deep screen에서 끄고(document 경계 pop → reload/종료 차단) root에서 켠다
+ * (정상 종료). in-app 뒤로가기는 PageHeader의 navigate(-1) 버튼이 담당.
  */
 export function useIosSwipeBackGuard(): void {
   const location = useLocation();

@@ -27,14 +27,24 @@ import { StoragePage } from './pages/StoragePage';
 
 // iOS edge-swipe-back 가드 — granite CanGoBackGuard 이식 (깊이별 네이티브 제스처 토글).
 //
-// 근본 원인 (#136): BrowserRouter SPA는 WKWebView history entry가 1개뿐이어서
-// edge-swipe가 WKWebView 밖(셸)으로 pop → 미니앱 종료.
+// 근본 원인 (#136): WKWebView는 실-document 로드와 react-router pushState 엔트리를
+// 하나의 통합 세션 히스토리로 관리한다. pushState는 이 히스토리를 키우므로
+// (실측: /environment에서 window.history.length === 2) WKWebView history entry가
+// "1개뿐"이라는 건 사실이 아니다.
 //
-// 수정: backEvent/popstate를 가로채지 않는다 — edge-swipe는 JS 경로를 안 거친다
-// (prod.ios.rn84.js 디스어셈블 확인). 대신 매 navigation마다 setIosSwipeGestureEnabled로
-// 네이티브 제스처를 깊이별로 재확정한다:
+// edge-swipe가 pushState 스택 내부를 pop할 때는 popstate 이벤트가 발생하고
+// react-router가 same-document in-app 뒤로를 처리한다(reload 없음). 문제는
+// 스택 바닥의 document 경계(cold-load 문서 + scripts/build-route-html.ts가 생성하는
+// 라우트별 실 HTML)를 넘어 pop할 때 발생한다 — WKWebView가 full document 로드
+// (= 페이지 새로고침)를 수행하고, 바닥에서 한 번 더 pop하면 셸 밖 pop = 미니앱 종료.
+// 이게 사용자가 보는 "swipe 시 새로고침/앱 종료"의 실제 원인이다.
+//
+// 이 SPA에서 "모든 깊이 swipe = in-app 뒤로"는 구조적으로 불가하다 — floor pop은
+// 항상 document 로드이므로 JS로 가로챌 수 없다.
+//
+// 수정: 매 navigation마다 setIosSwipeGestureEnabled로 깊이별 제스처를 재확정한다:
 //   root(idx=0)  → enabled  (swipe = 미니앱 정상 종료)
-//   deep(idx≥1) → disabled (셸 밖 pop 방지, in-app 뒤로는 PageHeader 버튼)
+//   deep(idx≥1) → disabled (document 경계 도달 차단. in-app 뒤로는 PageHeader 버튼)
 // 자세한 설계는 useIosSwipeBackGuard.ts 참조.
 
 function SwipeBackGuard(): null {
