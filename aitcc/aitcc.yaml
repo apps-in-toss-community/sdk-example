@@ -37,7 +37,7 @@ titleEn: "Aitc Sdk Example"
 
 appName: aitc-sdk-example
 
-homePageUri: "https://apps-in-toss-community.github.io/sdk-example/"
+homePageUri: "https://sdk-example.aitc.dev/"
 csEmail: helloworld4625@gmail.com
 
 # Images — paths relative to this YAML. Console-cli image-validator
