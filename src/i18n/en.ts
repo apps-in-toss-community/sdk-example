@@ -117,7 +117,8 @@ export const en: Record<StringKey, string> = {
   'pages.navigation.openPDFViewer.description': 'Open PDF viewer',
   'pages.navigation.share.description': 'SDK — share a message',
   'pages.navigation.getTossShareLink.description': 'Generate a Toss share link',
-  'pages.navigation.setIosSwipeGestureEnabled.description': 'Enable iOS swipe gesture',
+  'pages.navigation.setIosSwipeGestureEnabled.description':
+    'Enable iOS swipe gesture. Turning this on may let an edge-swipe close the mini-app on deep screens (the guard restores on the next navigation).',
   'pages.navigation.setDeviceOrientation.description': 'Set screen orientation',
   'pages.navigation.setScreenAwakeMode.description': 'Keep screen awake',
   'pages.navigation.setSecureScreen.description': 'Configure secure screen',

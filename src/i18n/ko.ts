@@ -116,7 +116,8 @@ export const ko = {
   'pages.navigation.openPDFViewer.description': 'PDF 뷰어 열기',
   'pages.navigation.share.description': 'SDK — 메시지 공유',
   'pages.navigation.getTossShareLink.description': '토스 공유 링크 생성',
-  'pages.navigation.setIosSwipeGestureEnabled.description': 'iOS 스와이프 제스처 활성화',
+  'pages.navigation.setIosSwipeGestureEnabled.description':
+    'iOS 스와이프 제스처 활성화. 이 토글을 켜면 깊은 화면에서 edge-swipe로 미니앱이 종료될 수 있습니다(다음 화면 이동 시 가드가 자동 복원).',
   'pages.navigation.setDeviceOrientation.description': '화면 방향 설정',
   'pages.navigation.setScreenAwakeMode.description': '화면 꺼짐 방지',
   'pages.navigation.setSecureScreen.description': '보안 화면 설정',
