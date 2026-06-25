@@ -123,12 +123,17 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 ## 테스트 정책
 
-두 계층:
+세 계층:
 
 - **`pnpm test`** — Vitest + `@testing-library/react` + jsdom. 컴포넌트 render/interaction smoke level. 컴포넌트당 1-3 케이스, 빠른 CI 게이트(typecheck/lint 옆). 테스트 파일은 `*.test.{ts,tsx}` 패턴으로 src 옆에. setup은 `src/test/setup.ts` (jest-dom matcher + RTL cleanup).
 - **`pnpm test:e2e`** — Playwright. `e2e/`에 위치, 실제 dev 서버에서 브라우저로 실행. 시각적/네비게이션 회귀.
+- **`phone-tests/*.phone.test.ts`** — 실기기 토스 앱 WebView에서 SDK API를 실제로 호출하는 검증. `@ait-co/devtools`의 `run_tests` MCP 도구가 CDP relay로 attach된 실기기에서 실행한다(jsdom·`pnpm test` 아님 — `vitest.config.ts`의 `exclude`가 `phone-tests/`를 빼고, 자체 `phone-tests/tsconfig.json`으로 타입체크). `describe`/`it`/`expect`는 import하지 않고 런타임이 글로벌로 주입한다(타입 선언은 `phone-tests/globals.d.ts`). 진입은 `/ait debug`로 환경 3(intoss-private dogfood)에 attach 후 `run_tests({ files: ["phone-tests/**/*.phone.test.ts"] })`. 상세는 `phone-tests/README.md`.
+
+  안전 경계(`phone-tests/README.md` 정본): `read-only.phone.test.ts`는 조회 API만이라 무인 실행 안전. `interactive.phone.test.ts`의 부작용 API 중 가역 setter는 무인 OK, UI-opening은 사람이 폰 앞에 있어야 하고, **financial/irreversible(`checkoutPayment`·`requestTossPayPaysBilling`)은 기본 `it.skip` — un-skip한 채 커밋 금지**(자동 sweep이 실 결제를 실행하면 안 됨).
 
 새 컴포넌트 추가 시: render + 핵심 interaction 1개. SDK 자체 호출은 `vi.mock('@apps-in-toss/web-framework')` 또는 devtools mock에 의존. 깊은 단위 테스트는 지양 — sdk-example의 가치는 dog-food이지 라이브러리가 아니므로 테스트는 "렌더 깨짐" 가드 역할만.
+
+**Boilerplate 청정성 경계**: `phone-tests/`는 `src/` 밖에 둔다 — 일반 개발자가 boilerplate로 복사하는 건 `src/`이고, phone-tests는 옵트인 QA 도구이기 때문이다. 단 테스트 파일 자체는 `@ait-co/devtools`의 relay/CDP 인프라를 import하지 않고 SDK 함수만 호출하는 깨끗한 사용 예제다(relay 연결은 `run_tests` 데몬이 소유 — `RelayConnectionFactory`를 src/에 넣지 않는다).
 
 ## 프로젝트 구조
 
