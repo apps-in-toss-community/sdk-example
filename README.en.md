@@ -62,7 +62,7 @@ During development, the `@ait-co/devtools` unplugin automatically replaces `@app
 |---|---|
 | `pnpm dev` | Start the Vite dev server |
 | `pnpm dev:phone` | `AIT_TUNNEL=1 pnpm dev` — expose the dev server via Cloudflare quick tunnel + print QR (for phone testing) |
-| `pnpm build` | Generate OG images (prebuild) + type-check + production build + per-route HTML → `dist/` |
+| `pnpm build` | Generate OG images + type-check + production build + per-route HTML → `dist/` |
 | `pnpm build:og` | Regenerate OG images (`public/og/*.png`) only |
 | `pnpm preview` | Serve the build locally |
 | `pnpm typecheck` | `tsc --noEmit` (includes SDK export coverage check) |
@@ -189,7 +189,7 @@ Represents multi-step flows that invoke multiple APIs in sequence using a step U
 The app is an SPA, but each domain group page (e.g. `/iap`, `/permissions`) produces a distinct OG image when shared on social media via a static generation pipeline.
 
 - **Source**: `src/og/manifest.ts` (single source of truth for route ↔ OG metadata), `src/og/template.tsx` (satori JSX template).
-- **Image build**: `pnpm build:og` or the prebuild step of `pnpm build` runs `scripts/build-og-images.tsx` to generate 19 images (`public/og/<slug>.png`) — one for home and one per group. PNG files are committed.
+- **Image build**: `pnpm build:og` or the first step of `pnpm build` runs `scripts/build-og-images.tsx` to generate 19 images (`public/og/<slug>.png`) — one for home and one per group. PNG files are committed.
 - **Per-route HTML**: The final step of `pnpm build` runs `scripts/build-route-html.ts`, which reads `dist/index.html` and produces `dist/<slug>/index.html` with per-group `og:title` / `og:description` / `og:image` / `twitter:*` meta and `<title>` substituted. All HTML files share the same JS bundle so the SPA works normally; crawlers (no JS) see only the static meta.
 - **Update flow**: to change metadata or copy, edit `manifest.ts`; to change the design, edit `template.tsx`; then run `pnpm build` and review the PNG diff under `public/og/`. Adding a new domain group only requires one new entry in `manifest.ts`.
 
