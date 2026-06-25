@@ -21,3 +21,8 @@ interface NetworkInformationSnapshot {
 interface Navigator {
   connection?: NetworkInformationSnapshot;
 }
+
+// Consumer-build constant injected by vite.config.ts `define` (#210). Gates
+// the on-device debug surface in main.tsx; false in release builds so the
+// `@ait-co/devtools/in-app/auto` graph DCEs to 0 bytes.
+declare const __DEBUG_BUILD__: boolean;
