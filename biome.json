@@ -28,7 +28,15 @@
     "rules": {
       "recommended": true,
       "style": {
-        "noNonNullAssertion": "off"
+        "noNonNullAssertion": "off",
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "paths": {
+              "react-native": "미니앱은 토스 앱 WebView에서 도는 웹(React DOM) 앱이지 React Native 앱이 아닙니다. 화면은 웹(CSS·DOM)으로 작성하세요. SDK는 '@apps-in-toss/web-framework'로 import합니다 (react-native 직접 import 아님). 토스 WebView 런타임 감지는 import가 아니라 window.ReactNativeWebView로 합니다."
+            }
+          }
+        }
       },
       "suspicious": {
         "noExplicitAny": "error"
