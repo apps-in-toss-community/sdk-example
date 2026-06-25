@@ -92,9 +92,19 @@ export function OidcBridgeSection() {
         Flow: <code className="font-mono">appLogin()</code> → your backend (
         <code className="font-mono">{EXCHANGE_ENDPOINT}</code>) → bridge{' '}
         <code className="font-mono">{OIDC_BRIDGE_BASE_URL}/t/&lt;tenantId&gt;/oidc/token</code> →{' '}
-        <code className="font-mono">id_token</code>. The public bridge instance gates token issuance
-        until its cloud rollout completes, so this card surfaces the bridge response rather than a
-        finished session.
+        <code className="font-mono">id_token</code>. The consumer-backend endpoint (
+        <code className="font-mono">{EXCHANGE_ENDPOINT}</code>) is not deployed on the static
+        sdk-example site, so the card is demo-only — it surfaces the bridge/flow shape rather than a
+        live exchange. See{' '}
+        <a
+          href="https://docs.aitc.dev/guides/oidc-bridge"
+          target="_blank"
+          rel="noreferrer"
+          className="text-blue-600 hover:underline dark:text-blue-400"
+        >
+          the consumer-backend pattern guide
+        </a>{' '}
+        to wire up your own backend.
       </p>
       <ApiCard
         name="appLogin → /oidc/token"
