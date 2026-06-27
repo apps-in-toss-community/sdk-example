@@ -164,6 +164,7 @@ src/
 
 - **빌드 타임 검증**: `src/__typecheck.ts`가 `@apps-in-toss/web-framework`의 모든 public export를 import. 새 export 누락 시 `pnpm typecheck` 실패.
 - **CI 감지**: `.github/workflows/check-sdk-update.yml`이 매주 월요일에 `@apps-in-toss/web-framework`와 `@ait-co/devtools` 새 버전 확인 → typecheck 실패 시 이슈 자동 생성.
+- **`@apps-in-toss/web-framework`·`@apps-in-toss/cli`는 `2.10.0` exact pin (의도적 — `^` 금지)**: `2.10.1`은 upstream type regression이 있다. `@apps-in-toss/web-bridge@2.10.1`의 `dist/index.d.ts`가 `@apps-in-toss/native-modules/async-bridges`에서 타입을 import하는데, 그 subpath가 `exports` 맵에서 빌드된 `.d.ts`가 아니라 raw `./src/async-bridges.ts`를 가리킨다 → `tsc`가 native-modules 소스를 검사하다 `spec/MiniAppModule.brick.ts`의 `import { CodegenTypes } from 'react-native'`(RN 0.80+ export, 트랜지티브 RN은 0.72.6)에서 `TS2305`로 실패한다(`skipLibCheck`는 `.d.ts`만 건너뛰어 무효). `2.10.0`은 web-bridge가 그 subpath를 import하지 않아 clean. runtime·`ait build`·test는 영향 없고 `tsc`만 깨진다. upstream 수정 시 pin 해제. (같은 회귀를 devtools 2.x typecheck 라인도 별개로 겪는다.)
 
 ## 새 SDK API 페이지 추가 절차
 
