@@ -23,7 +23,7 @@
 
 ## 기술 스택
 
-React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`), Vite 6, Tailwind CSS v4 (CSS-only), react-router-dom v7.
+React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`), Vite 8, Tailwind CSS v4 (CSS-only), react-router-dom v7.
 
 ## 공통 스택 / 개발 환경
 
