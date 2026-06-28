@@ -7,7 +7,6 @@ import {
   getNetworkStatus,
   getOperationalEnvironment,
   getPlatformOS,
-  getSafeAreaInsets,
   getSchemeUri,
   getServerTime,
   getTossAppVersion,
@@ -149,7 +148,7 @@ export function EnvironmentPage() {
           name="getSafeAreaInsets"
           description={t('pages.environment.getSafeAreaInsets.description')}
           params={[]}
-          execute={async () => getSafeAreaInsets()}
+          execute={async () => SafeAreaInsets.get()}
           snippet={getSafeAreaInsetsSnippet}
         />
 
