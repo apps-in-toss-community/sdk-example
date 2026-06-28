@@ -15,18 +15,23 @@
  * mock으로, env3에선 alias 없이 real SDK로 resolve된다 — 같은 슈트, cell 축만 다름.
  * 기존 컴포넌트 smoke 테스트는 SDK를 직접 import하지 않아 alias 영향이 없다.
  *
+ * ─ 환경 적응 (env1 Node / env3 브라우저) ─────────────────────────────────────
+ * env1(vitest/Node): Node builtins(fs/path)로 `.ait-capture/<cat>.<sdk>.<platform>.json` 기록.
+ * env3(run_tests 브라우저 주입): 파일시스템 없음 → globalThis.__AIT_CAPTURE__ 배열 + console.log.
+ * 분기는 `isNode` 런타임 가드로. Node builtins는 동적 import로만 로드(top-level 금지 —
+ * esbuild iife 번들이 static import를 resolve할 수 없어 빌드 실패).
+ *
  * `aitCapture.ts`는 QA 인프라이지 일반 미니앱 개발자가 복사할 런타임 코드가
  * 아니므로 `src/test/`(이미 setup.ts가 있는 곳)에 둔다 — `src/` 런타임 표면을
  * 오염시키지 않는다.
  *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { createRequire } from 'node:module';
-import { resolve } from 'node:path';
-import { isLocationNativeError } from '../pages/LocationPage';
+import { isLocationNativeError } from './isNativeError';
 
-const nodeRequire = createRequire(import.meta.url);
+/** Node 환경 여부 — 브라우저(env3)에선 false. */
+const isNode =
+  typeof process !== 'undefined' && process.versions != null && process.versions.node != null;
 
 /** 4-cell 축의 SDK 라인 (런타임 web-framework major). */
 export type SdkLine = '2.x' | '3.x';
@@ -79,28 +84,49 @@ interface AitCellOverride {
   sdkLine?: SdkLine;
   platform?: Platform;
 }
+
+/**
+ * env3 브라우저 캡처 결과를 담는 global 배열. esbuild iife 번들에서 접근.
+ * `__AIT_CAPTURE__ <category> <json>` 형식의 console.log도 함께 출력한다.
+ */
+interface AitCaptureGlobal {
+  __AIT_CELL__: AitCellOverride | undefined;
+  __AIT_CAPTURE__: AitCaptureRecord[] | undefined;
+}
+
 declare global {
   // global 변수 augmentation은 `var`만 허용된다(let/const 불가).
   var __AIT_CELL__: AitCellOverride | undefined;
+  var __AIT_CAPTURE__: AitCaptureRecord[] | undefined;
 }
 
 /**
  * 설치된 `@apps-in-toss/web-framework`의 major로 sdkLine을 결정한다.
  * env1(vitest alias → mock)에서도 real 패키지의 version은 그대로 읽힌다.
+ * env3(브라우저)에서는 globalThis.__AIT_CELL__?.sdkLine 주입값 또는 '2.x' fallback.
  */
-function resolveSdkLine(): SdkLine {
+async function resolveSdkLine(): Promise<SdkLine> {
   const override = globalThis.__AIT_CELL__?.sdkLine;
   if (override === '2.x' || override === '3.x') {
     return override;
   }
-  try {
-    // 런타임 의존이 아니라 버전 probe — alias 영향 밖의 real 패키지 메타.
-    const pkg = nodeRequire('@apps-in-toss/web-framework/package.json') as { version?: string };
-    const major = pkg.version?.split('.')[0];
-    return major === '3' ? '3.x' : '2.x';
-  } catch {
-    return '2.x';
+  if (isNode) {
+    try {
+      // 런타임 의존이 아니라 버전 probe — alias 영향 밖의 real 패키지 메타.
+      // 동적 import: esbuild iife 번들이 static 'node:module' import를 resolve할 수 없다.
+      const { createRequire } = await import('node:module');
+      const nodeRequire = createRequire(import.meta.url);
+      const pkg = nodeRequire('@apps-in-toss/web-framework/package.json') as {
+        version?: string;
+      };
+      const major = pkg.version?.split('.')[0];
+      return major === '3' ? '3.x' : '2.x';
+    } catch {
+      return '2.x';
+    }
   }
+  // 브라우저(env3): __AIT_CELL__ 미주입이면 기본값.
+  return '2.x';
 }
 
 /**
@@ -111,15 +137,35 @@ function resolvePlatform(): Platform {
   if (override === 'mock' || override === 'ios' || override === 'android') {
     return override;
   }
-  const fromEnv = process.env.AIT_CELL_PLATFORM;
-  if (fromEnv === 'ios' || fromEnv === 'android') {
-    return fromEnv;
+  // process는 브라우저에 없다 — 가드 필수.
+  if (isNode) {
+    const fromEnv = process.env.AIT_CELL_PLATFORM;
+    if (fromEnv === 'ios' || fromEnv === 'android') {
+      return fromEnv;
+    }
   }
   return 'mock';
 }
 
-const CELL_SDK_LINE = resolveSdkLine();
+// cell 값은 동기 resolvePlatform()로 즉시 확정. sdkLine은 비동기 probe지만
+// top-level await는 vitest ESM 환경에선 지원되나 iife 번들에선 불가 →
+// 초기값은 override 우선(동기)으로 결정하고, probe가 필요하면 flushCapture 시 확정.
 const CELL_PLATFORM = resolvePlatform();
+
+// sdkLine: override가 있으면 동기로 확정, 없으면 flushCapture 첫 호출 때 probe.
+function resolveSdkLineSync(): SdkLine {
+  const override = globalThis.__AIT_CELL__?.sdkLine;
+  if (override === '2.x' || override === '3.x') {
+    return override;
+  }
+  // Node 동기 probe — `require`는 Node ESM에선 없으므로 createRequire 사용
+  // (동적 import는 async이라 여기선 불가 → probe는 flushCapture async로 위임).
+  return '2.x'; // flushCapture에서 교정될 수 있다.
+}
+
+// 모듈 로드 시 동기로 결정. Node이고 override가 없으면 '2.x' 임시값;
+// flushCapture 시 비동기 probe 결과로 교정한다.
+let CELL_SDK_LINE: SdkLine = resolveSdkLineSync();
 
 /** 현재 cell 축 — 테스트가 `skipIf(platform === 'mock')` 가드에 쓴다. */
 export const cell: { sdkLine: SdkLine; platform: Platform } = {
@@ -270,19 +316,55 @@ export function captureSync(
   }
 }
 
-const CAPTURE_DIR = resolve(process.cwd(), '.ait-capture');
-
 /**
- * 한 카테고리 파일이 모은 레코드를 `<cat>.<sdkLine>.<platform>.json`으로 쓴다.
+ * 한 카테고리 파일이 모은 레코드를 flush한다.
+ *
+ * env1(Node/vitest): `.ait-capture/<cat>.<sdkLine>.<platform>.json` 파일로 기록.
+ * env3(브라우저/run_tests): globalThis.__AIT_CAPTURE__ 배열에 push +
+ *   `__AIT_CAPTURE__ <category> <json>` 형식으로 console.log (에이전트가 relay
+ *   콘솔에서 수확할 수 있도록 안정적인 prefix 사용).
+ *
  * 각 `.ait.test.ts`의 `afterAll`에서 자기 카테고리 이름으로 호출한다.
  * 산출물은 gitignore(`.ait-capture/`) — `.ait` 번들처럼 per-run.
  */
-export function flushCapture(category: string): void {
+export async function flushCapture(category: string): Promise<void> {
+  // sdkLine을 비동기 probe로 교정 (override 없는 Node 환경에서 정확한 버전 확정).
+  const resolvedSdkLine = await resolveSdkLine();
+  if (resolvedSdkLine !== CELL_SDK_LINE) {
+    CELL_SDK_LINE = resolvedSdkLine;
+    cell.sdkLine = resolvedSdkLine;
+    // 이미 쌓인 레코드의 sdkLine을 소급 교정.
+    for (const r of records) {
+      r.sdkLine = resolvedSdkLine;
+    }
+  }
+
   const forCategory = records.filter((r) => r.category === category);
   if (forCategory.length === 0) {
     return;
   }
-  mkdirSync(CAPTURE_DIR, { recursive: true });
-  const file = resolve(CAPTURE_DIR, `${category}.${CELL_SDK_LINE}.${CELL_PLATFORM}.json`);
-  writeFileSync(file, `${JSON.stringify(forCategory, null, 2)}\n`, 'utf8');
+
+  if (isNode) {
+    // env1(vitest/Node) — 파일시스템에 기록.
+    // 동적 import: top-level static import는 esbuild iife 번들에서 resolve 불가.
+    const { mkdirSync, writeFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    // process는 isNode 가드 안에서만 접근.
+    const captureDir = resolve(process.cwd(), '.ait-capture');
+    mkdirSync(captureDir, { recursive: true });
+    const file = resolve(captureDir, `${category}.${CELL_SDK_LINE}.${CELL_PLATFORM}.json`);
+    writeFileSync(file, `${JSON.stringify(forCategory, null, 2)}\n`, 'utf8');
+  } else {
+    // env3(브라우저/run_tests 주입) — global 배열 + console.log.
+    // run_tests가 relay 콘솔을 수확해 4-cell 레코드를 추출한다.
+    const g = globalThis as AitCaptureGlobal;
+    if (!Array.isArray(g.__AIT_CAPTURE__)) {
+      g.__AIT_CAPTURE__ = [];
+    }
+    for (const r of forCategory) {
+      g.__AIT_CAPTURE__!.push(r);
+    }
+    // 에이전트가 console.log 스트림에서 파싱할 수 있도록 안정적인 prefix + 단일 JSON 라인.
+    console.log(`__AIT_CAPTURE__ ${category} ${JSON.stringify(forCategory)}`);
+  }
 }

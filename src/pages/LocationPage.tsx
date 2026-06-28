@@ -10,20 +10,10 @@ import getCurrentLocationSnippet from '../snippets/location/getCurrentLocation.t
 import getCurrentPositionSnippet from '../snippets/location/getCurrentPosition.ts?raw';
 import startUpdateLocationSnippet from '../snippets/location/startUpdateLocation.ts?raw';
 import watchPositionSnippet from '../snippets/location/watchPosition.ts?raw';
+// 순수 모듈에서 import + re-export — aitCapture.ts가 ?raw/React 그래프를 타지 않도록 분리됨.
+import { isLocationNativeError } from '../test/isNativeError';
 
-/**
- * Returns true when `err` looks like an OS-level location failure.
- *
- * SDK surfaces iOS CoreLocation errors as untyped native strings containing
- * "LocationError" or "오류" (e.g. "MiniApp.LocationError 오류 1"), which is
- * distinct from the typed `GetCurrentLocationPermissionError` thrown when the
- * mini-app-level grant is "denied". Exported for unit testing.
- */
-export function isLocationNativeError(err: unknown): boolean {
-  return (
-    err instanceof Error && (err.message.includes('LocationError') || err.message.includes('오류'))
-  );
-}
+export { isLocationNativeError };
 
 function pickStandardCoords(pos: GeolocationPosition) {
   return {

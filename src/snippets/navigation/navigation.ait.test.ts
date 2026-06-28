@@ -18,8 +18,8 @@ import { captureAsync, captureSync, flushCapture } from '../../test/aitCapture';
 
 const CATEGORY = 'navigation';
 
-afterAll(() => {
-  flushCapture(CATEGORY);
+afterAll(async () => {
+  await flushCapture(CATEGORY);
 });
 
 afterEach(() => {

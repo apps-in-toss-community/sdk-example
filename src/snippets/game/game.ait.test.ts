@@ -19,8 +19,8 @@ import { captureAsync, flushCapture } from '../../test/aitCapture';
 
 const CATEGORY = 'game';
 
-afterAll(() => {
-  flushCapture(CATEGORY);
+afterAll(async () => {
+  await flushCapture(CATEGORY);
 });
 
 describe('game · 값 다양화 (happy path)', () => {

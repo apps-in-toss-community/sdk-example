@@ -21,8 +21,8 @@ import { captureAsync, captureSync, flushCapture } from '../../test/aitCapture';
 
 const CATEGORY = 'auth';
 
-afterAll(() => {
-  flushCapture(CATEGORY);
+afterAll(async () => {
+  await flushCapture(CATEGORY);
 });
 
 describe('auth · 값 다양화 (happy path)', () => {
