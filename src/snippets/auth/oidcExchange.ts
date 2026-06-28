@@ -7,15 +7,15 @@ import { createClient } from '@supabase/supabase-js';
 // `/oidc/token` endpoint and returns a standard OIDC id_token. The browser
 // then signs in with that id_token.
 
-// Step 1: get a Toss authorizationCode from the SDK.
-const { authorizationCode } = await appLogin();
-
-// Step 2: hand it to your backend, which calls the bridge `/oidc/token`.
+// Step 1: get a Toss authorizationCode and referrer from the SDK.
 // `referrer` is "DEFAULT" for production, "SANDBOX" for the dev sandbox.
+const { authorizationCode, referrer } = await appLogin();
+
+// Step 2: hand them to your backend, which calls the bridge `/oidc/token`.
 const res = await fetch('/functions/v1/toss-login', {
   method: 'POST',
   headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ authorizationCode, referrer: 'DEFAULT' }),
+  body: JSON.stringify({ authorizationCode, referrer }),
 });
 const { id_token } = await res.json();
 // → { id_token, expires_in, scope }

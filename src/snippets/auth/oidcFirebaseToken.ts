@@ -10,13 +10,14 @@ import { OAuthProvider, getAuth, signInWithCredential } from 'firebase/auth';
 // self-hosting the bridge with a Firebase service account — the community
 // instance deliberately does not custody end-user service accounts.
 
-// Step 1 + 2: same as the Supabase path — get the code, exchange it via your
-// backend (`supabase/functions/toss-login` or your own), receive an id_token.
-const { authorizationCode } = await appLogin();
+// Step 1 + 2: same as the Supabase path — get the code and referrer, exchange
+// via your backend (`supabase/functions/toss-login` or your own), receive an id_token.
+// `referrer` is "DEFAULT" for production, "SANDBOX" for the dev sandbox.
+const { authorizationCode, referrer } = await appLogin();
 const res = await fetch('/functions/v1/toss-login', {
   method: 'POST',
   headers: { 'content-type': 'application/json' },
-  body: JSON.stringify({ authorizationCode, referrer: 'DEFAULT' }),
+  body: JSON.stringify({ authorizationCode, referrer }),
 });
 const { id_token } = await res.json();
 
