@@ -346,9 +346,13 @@ export async function flushCapture(category: string): Promise<void> {
 
   if (isNode) {
     // env1(vitest/Node) — 파일시스템에 기록.
-    // 동적 import: top-level static import는 esbuild iife 번들에서 resolve 불가.
-    const { mkdirSync, writeFileSync } = await import('node:fs');
-    const { resolve } = await import('node:path');
+    // specifier를 변수로 간접화해 esbuild/browser 번들의 정적 그래프에서 제외한다.
+    // (리터럴 동적 import는 esbuild가 여전히 따라가 `node:fs` resolve를 시도하므로
+    //  env3 run_tests 브라우저 번들이 깨진다 — 변수 specifier는 external로 남는다.)
+    const fsMod = 'node:fs';
+    const pathMod = 'node:path';
+    const { mkdirSync, writeFileSync } = await import(/* @vite-ignore */ fsMod);
+    const { resolve } = await import(/* @vite-ignore */ pathMod);
     // process는 isNode 가드 안에서만 접근.
     const captureDir = resolve(process.cwd(), '.ait-capture');
     mkdirSync(captureDir, { recursive: true });
