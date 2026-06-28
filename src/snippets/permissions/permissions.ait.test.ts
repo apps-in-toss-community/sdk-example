@@ -27,8 +27,8 @@ const PERMISSION_NAMES = [
   'microphone',
 ] as const;
 
-afterAll(() => {
-  flushCapture(CATEGORY);
+afterAll(async () => {
+  await flushCapture(CATEGORY);
 });
 
 describe('permissions · 값 다양화 (happy path)', () => {

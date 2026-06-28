@@ -13,8 +13,8 @@ import { captureAsync, flushCapture } from '../../test/aitCapture';
 
 const CATEGORY = 'iap';
 
-afterAll(() => {
-  flushCapture(CATEGORY);
+afterAll(async () => {
+  await flushCapture(CATEGORY);
 });
 
 describe('iap · 값 다양화 (happy path)', () => {

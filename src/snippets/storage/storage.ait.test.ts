@@ -12,8 +12,8 @@ import { captureAsync, cell, flushCapture } from '../../test/aitCapture';
 
 const CATEGORY = 'storage';
 
-afterAll(() => {
-  flushCapture(CATEGORY);
+afterAll(async () => {
+  await flushCapture(CATEGORY);
 });
 
 describe('storage · 값 다양화 (happy path)', () => {

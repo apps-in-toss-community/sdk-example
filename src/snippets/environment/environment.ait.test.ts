@@ -23,8 +23,8 @@ import { captureAsync, captureSync, flushCapture } from '../../test/aitCapture';
 
 const CATEGORY = 'environment';
 
-afterAll(() => {
-  flushCapture(CATEGORY);
+afterAll(async () => {
+  await flushCapture(CATEGORY);
 });
 
 describe('environment · 값 다양화 (happy path)', () => {

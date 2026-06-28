@@ -25,8 +25,8 @@ const LOG_TYPES = [
   'popup',
 ] as const;
 
-afterAll(() => {
-  flushCapture(CATEGORY);
+afterAll(async () => {
+  await flushCapture(CATEGORY);
 });
 
 describe('analytics · 값 다양화 (happy path)', () => {
