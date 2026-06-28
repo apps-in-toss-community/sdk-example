@@ -47,7 +47,7 @@ export function NavigationPage() {
           description={t('pages.navigation.openURL.description')}
           params={[{ name: 'url', label: 'URL', placeholder: 'https://example.com' }]}
           execute={async (p) => {
-            openURL(p.url);
+            await openURL(p.url);
           }}
           snippet={openURLSnippet}
         />
@@ -82,7 +82,13 @@ export function NavigationPage() {
           name="getTossShareLink"
           description={t('pages.navigation.getTossShareLink.description')}
           params={[
-            { name: 'path', label: 'Path', placeholder: '/some/path' },
+            {
+              name: 'path',
+              label: 'Path',
+              // intoss:// 형식의 딥링크 URI가 필요하다. 앱 이름 그대로가 기본값.
+              defaultValue: 'intoss://aitc-sdk-example',
+              placeholder: 'intoss://aitc-sdk-example',
+            },
             { name: 'ogImageUrl', label: 'OG Image URL (optional)', placeholder: 'https://...' },
           ]}
           execute={(p) => getTossShareLink(p.path, p.ogImageUrl || undefined)}
