@@ -31,3 +31,6 @@ aitcc/submit-*.json
 .granite/
 *.ait
 .codegraph/
+
+# .ait.test 4-cell 오류-shape 캡처 산출물 (per-run, fixture 아님)
+.ait-capture/
