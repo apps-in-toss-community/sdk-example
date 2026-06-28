@@ -2,7 +2,6 @@ import {
   contactsViral,
   getGameCenterGameProfile,
   grantPromotionReward,
-  grantPromotionRewardForGame,
   openGameCenterLeaderboard,
   submitGameCenterLeaderBoardScore,
 } from '@apps-in-toss/web-framework';
@@ -143,7 +142,7 @@ export function GamePage() {
             },
           ]}
           execute={async (p) =>
-            await grantPromotionRewardForGame({
+            await grantPromotionReward({
               params: { promotionCode: p.promotionCode, amount: p.amount },
             })
           }
