@@ -26,7 +26,9 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:install": "playwright install chromium",
-    "test:env3": "devtools-test 'src/**/*.ait.test.ts' --scheme-url \"$AIT_SCHEME_URL\" --cell-sdk-line \"${AIT_CELL_SDK_LINE:-2.x}\" --cell-platform \"${AIT_CELL_PLATFORM:-ios}\"",
+    "test:env3": "devtools-test 'src/**/*.ait.test.ts' --scheme-url \"$AIT_SCHEME_URL\" --cell-sdk-line \"${AIT_CELL_SDK_LINE:-2.x}\" --cell-platform \"${AIT_CELL_PLATFORM:-ios}\" --report-dir \"${AIT_REPORT_DIR:-.ait-run}\"",
+    "test:env3:matrix": "AIT_CELL_SDK_LINE=2.x AIT_CELL_PLATFORM=ios pnpm test:env3 && AIT_CELL_SDK_LINE=2.x AIT_CELL_PLATFORM=android pnpm test:env3 && AIT_CELL_SDK_LINE=3.x AIT_CELL_PLATFORM=ios pnpm test:env3 && AIT_CELL_SDK_LINE=3.x AIT_CELL_PLATFORM=android pnpm test:env3",
+    "test:env3:vitest": "vitest run -c vitest.env3.config.ts",
     "bundle:ait": "ait build",
     "bundle:ait:dogfood": "RELEASE_CHANNEL=dogfood ait build",
     "scaffold:domain": "node scripts/scaffold-domain.ts",
@@ -34,7 +36,7 @@
     "sync:readme:check": "tsx scripts/sync-readme-domains.ts --check"
   },
   "dependencies": {
-    "@ait-co/devtools": "^0.1.116",
+    "@ait-co/devtools": "^0.1.118",
     "@ait-co/polyfill": "^0.1.17",
     "@apps-in-toss/web-framework": "2.10.0",
     "qrcode": "^1.5.4",

@@ -130,6 +130,10 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 새 컴포넌트 추가 시: render + 핵심 interaction 1개. SDK 자체 호출은 `vi.mock('@apps-in-toss/web-framework')` 또는 devtools mock에 의존. 깊은 단위 테스트는 지양 — sdk-example의 가치는 dog-food이지 라이브러리가 아니므로 테스트는 "렌더 깨짐" 가드 역할만.
 
+- **`pnpm test:env3`** — 실기기 WebView(env3)에서 `*.ait.test.ts` 슈트를 실행한다. `AIT_SCHEME_URL`(scheme URL) + `.ait_relay`(TOTP 시크릿)가 필요해 폰 스캔이 필수다. `--report-dir`(`AIT_REPORT_DIR`, 기본 `.ait-run`)에 runner-agnostic report(`<sdkLine>.<platform>.json`)와 capture 파일(`.ait-run/.ait-capture/<category>.<sdkLine>.<platform>.json`)을 산출한다. 두 경로 모두 gitignored(per-run).
+- **`pnpm test:env3:matrix`** — `{2.x,3.x}×{ios,android}` 4셀을 순차 실행해 `.ait-run/`에 세포별 파일을 누적한다. 4 run 완료 후 diff로 2.x↔3.0 오류-shape를 대조한다.
+- **`pnpm test:env3:vitest`** — `vitest.env3.config.ts`(maintainer dog-food 전용)를 통한 동일 슈트의 Vitest pool 경로. `AIT_SCHEME_URL` + `.ait_relay` 필요.
+
 ## 프로젝트 구조
 
 ```
