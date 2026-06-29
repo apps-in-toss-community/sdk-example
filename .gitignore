@@ -34,3 +34,6 @@ aitcc/submit-*.json
 
 # .ait.test 4-cell 오류-shape 캡처 산출물 (per-run, fixture 아님)
 .ait-capture/
+
+# env3 test run report artifacts (per-run, not fixtures — .ait-run/.ait-capture/ 포함)
+.ait-run/
