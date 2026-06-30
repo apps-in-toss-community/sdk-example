@@ -28,7 +28,10 @@ describe('payment · 값 다양화 (happy path)', () => {
         },
         () => requestTossPayPaysBilling({ params: { wrappedToken } }),
       );
-      if (outcome === 'resolved') {
+      // requestTossPayPaysBilling의 반환 타입은 Promise<Result | undefined>.
+      // dismissed sheet/bogus token에서 undefined resolve가 문서화된 동작이므로
+      // value != null narrow를 추가해 undefined resolve를 구별한다.
+      if (outcome === 'resolved' && value != null) {
         expect(value).toHaveProperty('success');
       }
     }
@@ -49,7 +52,10 @@ describe('payment · 의도적 오류 (결과 검사 가드)', () => {
       },
       () => requestTossPayPaysBilling({ params: { wrappedToken: 'wt_test_xxx' } }),
     );
-    if (outcome === 'resolved') {
+    // requestTossPayPaysBilling의 반환 타입은 Promise<Result | undefined>.
+    // dismissed sheet/bogus token에서 undefined resolve가 문서화된 동작이므로
+    // value != null narrow를 추가해 undefined resolve를 구별한다.
+    if (outcome === 'resolved' && value != null) {
       const result = value as { success?: boolean };
       expect(result).toHaveProperty('success');
       expect(typeof result.success).toBe('boolean');
