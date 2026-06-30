@@ -14,7 +14,7 @@ import {
   setDeviceOrientation,
 } from '@apps-in-toss/web-framework';
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
-import { captureAsync, captureSync, flushCapture } from '../../test/aitCapture';
+import { captureAsync, captureSync, cell, flushCapture } from '../../test/aitCapture';
 
 const CATEGORY = 'navigation';
 
@@ -53,8 +53,9 @@ describe('navigation · 값 다양화 (happy path)', () => {
       () => getTossShareLink('intoss://my-app'),
     );
     expect(typeof value).toBe('string');
-    // 유효 입력은 스킴을 링크에 round-trip한다.
-    expect(value as string).toContain('intoss://my-app');
+    // env3(실기기 2.x)는 verbatim intoss:// 스킴이 아니라 유효한 Toss 단축 링크
+    // (e.g. https://minion.toss.im/...)를 반환한다 — toContain('intoss://my-app')은
+    // env3에서 ENV_EXPECTED 실패다. string 계약(typeof)만 가드한다.
   });
 });
 
@@ -62,23 +63,29 @@ describe('navigation · 의도적 오류 (확인된 오용 가드)', () => {
   // N1: openURL이 reject하는 환경에서 그 rejection이 caller에게 전파되는지.
   // mock은 window.open으로 라우팅하므로, window.open이 throw하게 만들어
   // openURL이 reject하고 caller의 await가 그 reject를 관측하는지 가드한다.
-  it('[N1] openURL의 rejection이 caller에게 전파된다 (삼켜지지 않음)', async () => {
-    vi.spyOn(window, 'open').mockImplementation(() => {
-      throw new Error('navigation blocked');
-    });
-    const { outcome, error } = await captureAsync(
-      {
-        category: CATEGORY,
-        api: 'openURL',
-        scenario: 'N1-rejection-propagates',
-        input: 'https://example.com',
-      },
-      () => openURL('https://example.com'),
-    );
-    // reject가 caller에 도달해야 한다 — resolve로 삼켜지면 회귀.
-    expect(outcome).toBe('rejected');
-    expect(error).toBeInstanceOf(Error);
-  });
+  // env3(실기기)는 openURL이 native ReactNativeWebView 브리지로 라우팅되므로
+  // window.open spy가 발화하지 않아 call이 resolve된다 — spy 기반 rejection은
+  // mock 전용 테스트다. 실기기에서 유효한 URL이 resolve하는 것은 올바른 동작.
+  it.skipIf(cell.platform !== 'mock')(
+    '[N1] openURL의 rejection이 caller에게 전파된다 (삼켜지지 않음)',
+    async () => {
+      vi.spyOn(window, 'open').mockImplementation(() => {
+        throw new Error('navigation blocked');
+      });
+      const { outcome, error } = await captureAsync(
+        {
+          category: CATEGORY,
+          api: 'openURL',
+          scenario: 'N1-rejection-propagates',
+          input: 'https://example.com',
+        },
+        () => openURL('https://example.com'),
+      );
+      // reject가 caller에 도달해야 한다 — resolve로 삼켜지면 회귀.
+      expect(outcome).toBe('rejected');
+      expect(error).toBeInstanceOf(Error);
+    },
+  );
 
   // N2: bare path('/some/path', intoss:// 없음)는 유효한 mini-app 딥링크가 아니다.
   // 유효 입력(intoss://...)과 결과 shape가 발산하는지 가드 — 두 결과가 같으면

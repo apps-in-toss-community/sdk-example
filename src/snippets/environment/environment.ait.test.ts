@@ -19,7 +19,7 @@ import {
   isMinVersionSupported,
 } from '@apps-in-toss/web-framework';
 import { afterAll, describe, expect, it } from 'vitest';
-import { captureAsync, captureSync, flushCapture } from '../../test/aitCapture';
+import { captureAsync, captureSync, cell, flushCapture } from '../../test/aitCapture';
 
 const CATEGORY = 'environment';
 
@@ -107,11 +107,17 @@ describe('environment · 의도적 오류 (확인된 오용 가드)', () => {
       },
       () => getSafeAreaInsets(),
     );
-    // 권장 accessor는 top을 가진 객체를 준다.
+    // 권장 accessor는 top을 가진 객체를 준다 — 모든 환경에서 검사한다.
     expect(structured.value).toBeTypeOf('object');
     expect(structured.value).toHaveProperty('top');
-    // 두 accessor의 반환 shape가 발산함을 명시(= deprecated swap 회귀 가드).
-    expect(typeof structured.value).not.toBe(typeof legacy.value);
+    // REAL_SDK_FINDING (2.x env3): deprecated getSafeAreaInsets()는 타입 선언상
+    // `: number`(스칼라)지만 실기기 2.x는 object를 반환한다. env1(mock)에서는
+    // number를 반환하므로 typeof 발산 단언이 PASS하고, env3에서는 둘 다 object라
+    // FAIL한다. 이 발산 단언은 mock-only로 게이트해 env3 false-fail을 막되,
+    // 캡처 레코드는 device shape를 그대로 담아 2.x↔3.0 baseline diff에 남긴다.
+    if (cell.platform === 'mock') {
+      expect(typeof structured.value).not.toBe(typeof legacy.value);
+    }
   });
 });
 
