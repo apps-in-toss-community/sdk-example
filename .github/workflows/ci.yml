@@ -38,3 +38,6 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Debug build toggle (dogfood present / release absent)
+        run: bash scripts/check-debug-build.sh
