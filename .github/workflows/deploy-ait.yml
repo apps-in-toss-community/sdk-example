@@ -9,9 +9,11 @@ name: Deploy .ait bundle
 #
 # The `channel` input selects the build channel. `release` (default, also
 # used for v* tag pushes) builds a normal bundle. `dogfood` sets
-# RELEASE_CHANNEL=dogfood so vite.config.ts inlines __DEBUG_BUILD__=true,
-# keeping the in-app debug attach surface for on-device CDP relay sessions
-# (devtools-mcp). dog-food builds are workflow_dispatch only.
+# AIT_DEBUG_BUILD=1 (via the bundle:ait:dogfood script) so vite.config.ts
+# inlines __DEBUG_BUILD__=true, keeping the in-app debug attach surface
+# (Chii relay + eruda + __sdk bridge) for on-device CDP relay sessions
+# (devtools-mcp). RELEASE_CHANNEL=dogfood is also set for metadata purposes.
+# dog-food builds are workflow_dispatch only.
 
 on:
   push:
@@ -78,7 +80,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$CHANNEL" = "dogfood" ]; then
-            echo "Building dog-food channel — __DEBUG_BUILD__=true (in-app debug attach surface kept)"
+            echo "Building dog-food channel — AIT_DEBUG_BUILD=1 → __DEBUG_BUILD__=true (in-app debug attach surface kept)"
             pnpm bundle:ait:dogfood
           else
             pnpm bundle:ait

@@ -30,7 +30,7 @@
     "test:env3:matrix": "AIT_CELL_SDK_LINE=2.x AIT_CELL_PLATFORM=ios pnpm test:env3 && AIT_CELL_SDK_LINE=2.x AIT_CELL_PLATFORM=android pnpm test:env3 && AIT_CELL_SDK_LINE=3.x AIT_CELL_PLATFORM=ios pnpm test:env3 && AIT_CELL_SDK_LINE=3.x AIT_CELL_PLATFORM=android pnpm test:env3",
     "test:env3:vitest": "vitest run -c vitest.env3.config.ts",
     "bundle:ait": "ait build",
-    "bundle:ait:dogfood": "RELEASE_CHANNEL=dogfood ait build",
+    "bundle:ait:dogfood": "AIT_DEBUG_BUILD=1 RELEASE_CHANNEL=dogfood ait build",
     "scaffold:domain": "node scripts/scaffold-domain.ts",
     "sync:readme": "tsx scripts/sync-readme-domains.ts",
     "sync:readme:check": "tsx scripts/sync-readme-domains.ts --check"
