@@ -8,8 +8,10 @@
  *   fetchAlbumPhotos / fetchAlbumItems는 실기기에서 네이티브 사진 피커 시트를 열고
  *   사용자 탭을 기다린다. 자동화된 evaluate inject 환경(env3)에서는 사용자 탭이
  *   없어 무한 hang → 30초 타임아웃 → 파일 전체 drop으로 이어진다(camera=0의 원인).
- *   따라서 피커를 트리거하는 happy-path it은 mock에서만 실행(shape-only 검증)하고,
- *   env3(ios/android)에서는 skipIf로 skip한다. 실기기 camera 테스트는 수동 변형으로 분리 예정.
+ *   happy-path it뿐 아니라 "권한 거부 시 native shape" it도 마찬가지다 — 실기기에서
+ *   권한이 부여돼 있으면 fetchAlbumPhotos가 피커를 열어 hang한다(권한 거부는 보장되지
+ *   않는다). 따라서 피커를 트리거하는 모든 it을 mock에서만 실행(shape-only 검증)하고,
+ *   env3(ios/android)에서는 skip한다. 실기기 camera 테스트는 수동 변형으로 분리 예정.
  *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
@@ -67,23 +69,25 @@ describe('camera · 값 다양화 (happy path)', () => {
   );
 });
 
-describe('camera · native shape (env3 전용 단언)', () => {
-  it.skipIf(cell.platform === 'mock')(
-    '[native] 앨범 접근 권한 거부 시 native 오류 shape가 도착한다',
-    async () => {
-      const { outcome, error } = await captureAsync(
-        {
-          category: CATEGORY,
-          api: 'fetchAlbumPhotos',
-          scenario: 'native-permission-denied',
-          input: { maxCount: 1 },
-        },
-        () => fetchAlbumPhotos({ maxCount: 1 }),
-      );
-      expect(outcome).toBe('rejected');
-      expect(error).toBeInstanceOf(Error);
-    },
-  );
+describe('camera · native shape (오류-shape 검증)', () => {
+  // 이 단언은 어느 환경에서도 자동 실행할 수 없어 skip한다:
+  //   - env3: 권한이 부여돼 있으면 fetchAlbumPhotos가 피커를 열어 hang한다(권한 거부
+  //     보장 없음). 무인 실행 환경은 blocking 네이티브 시트를 열면 안 된다.
+  //   - mock: 권한 거부를 던지지 않고 resolve한다(rejected shape 검증 불가).
+  // 실기기 권한 거부 shape는 수동 변형(사용자가 권한 거부 후 실행)에서 확인한다.
+  it.skip('앨범 접근 권한 거부 시 native 오류 shape가 도착한다', async () => {
+    const { outcome, error } = await captureAsync(
+      {
+        category: CATEGORY,
+        api: 'fetchAlbumPhotos',
+        scenario: 'native-permission-denied',
+        input: { maxCount: 1 },
+      },
+      () => fetchAlbumPhotos({ maxCount: 1 }),
+    );
+    expect(outcome).toBe('rejected');
+    expect(error).toBeInstanceOf(Error);
+  });
 });
 
 describe('camera · 4-cell 오류-shape 캡처', () => {
