@@ -27,7 +27,7 @@
  *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
-import { isLocationNativeError } from './isNativeError';
+import { isNativeErrorShape } from './isNativeError';
 
 /** Node 환경 여부 — 브라우저(env3)에선 false. */
 const isNode =
@@ -61,7 +61,7 @@ export interface AitCaptureRecord {
   errorMessage: string | null;
   /** Object.keys(err) — name이 같아도 shape diff를 surface. */
   errorKeys: string[];
-  /** isLocationNativeError-style native-error 휴리스틱 매치. */
+  /** isNativeErrorShape — location native string 또는 알려진 native errorCode 매치. */
   isNativeShape: boolean;
   // --- value shape (오류 시 null) ---
   /** typeof result, 또는 thenable이 새면 'Promise' (A1 잡음). */
@@ -147,11 +147,6 @@ function resolvePlatform(): Platform {
   return 'mock';
 }
 
-// cell 값은 동기 resolvePlatform()로 즉시 확정. sdkLine은 비동기 probe지만
-// top-level await는 vitest ESM 환경에선 지원되나 iife 번들에선 불가 →
-// 초기값은 override 우선(동기)으로 결정하고, probe가 필요하면 flushCapture 시 확정.
-const CELL_PLATFORM = resolvePlatform();
-
 // sdkLine: override가 있으면 동기로 확정, 없으면 flushCapture 첫 호출 때 probe.
 function resolveSdkLineSync(): SdkLine {
   const override = globalThis.__AIT_CELL__?.sdkLine;
@@ -167,10 +162,28 @@ function resolveSdkLineSync(): SdkLine {
 // flushCapture 시 비동기 probe 결과로 교정한다.
 let CELL_SDK_LINE: SdkLine = resolveSdkLineSync();
 
-/** 현재 cell 축 — 테스트가 `skipIf(platform === 'mock')` 가드에 쓴다. */
-export const cell: { sdkLine: SdkLine; platform: Platform } = {
+/**
+ * 현재 cell 축 — 테스트가 `skipIf(platform === 'mock')` 가드에 쓴다.
+ *
+ * fix #3: `platform`은 모듈 로드 시 frozen되지 않고 getter로 매번 재읽는다.
+ * `__AIT_CELL__`이 inject 타이밍과 race하더라도 첫 `cell.platform` 접근 시점에
+ * 올바른 값을 반환하므로 latent race를 봉쇄한다. 한 번 non-mock으로 확정되면
+ * 캐시해 매 호출 오버헤드를 제한한다.
+ */
+let _resolvedPlatform: Platform | null = null;
+export const cell: { sdkLine: SdkLine; readonly platform: Platform } = {
   sdkLine: CELL_SDK_LINE,
-  platform: CELL_PLATFORM,
+  get platform(): Platform {
+    if (_resolvedPlatform !== null) {
+      return _resolvedPlatform;
+    }
+    const p = resolvePlatform();
+    // non-mock이 확정되면 이후 재읽기 불필요 — 캐시.
+    if (p !== 'mock') {
+      _resolvedPlatform = p;
+    }
+    return p;
+  },
 };
 
 /** module-level sink. afterAll에서 카테고리별로 파일에 flush한다. */
@@ -178,7 +191,8 @@ const records: AitCaptureRecord[] = [];
 
 /** 테스트가 부른다 — cell 축을 붙여 sink에 append. */
 export function capture(input: CaptureInput): void {
-  records.push({ ...input, sdkLine: CELL_SDK_LINE, platform: CELL_PLATFORM });
+  // fix #3: platform을 호출 시점에 재읽기 — 모듈 로드 시 frozen하지 않는다.
+  records.push({ ...input, sdkLine: CELL_SDK_LINE, platform: cell.platform });
 }
 
 /** 에러 객체에서 정규화 오류-shape 필드를 뽑는다. */
@@ -199,7 +213,8 @@ function extractErrorShape(err: unknown): {
       errorMessage: err.message,
       // own enumerable keys — name이 같아도 bridge가 붙인 extra 필드를 surface.
       errorKeys: Object.keys(err),
-      isNativeShape: isLocationNativeError(err),
+      // fix #6: location native string + 알려진 native errorCode 집합까지 확대.
+      isNativeShape: isNativeErrorShape(err),
     };
   }
   // Error가 아닌 값으로 reject/throw되는 경우(bridge가 raw object를 던질 수 있음).
@@ -213,7 +228,8 @@ function extractErrorShape(err: unknown): {
       errorCode,
       errorMessage: typeof rawMessage === 'string' ? rawMessage : null,
       errorKeys: Object.keys(obj),
-      isNativeShape: false,
+      // fix #6: raw object도 native shape 판정 대상.
+      isNativeShape: isNativeErrorShape(err),
     };
   }
   return {
@@ -356,7 +372,7 @@ export async function flushCapture(category: string): Promise<void> {
     // process는 isNode 가드 안에서만 접근.
     const captureDir = resolve(process.cwd(), '.ait-capture');
     mkdirSync(captureDir, { recursive: true });
-    const file = resolve(captureDir, `${category}.${CELL_SDK_LINE}.${CELL_PLATFORM}.json`);
+    const file = resolve(captureDir, `${category}.${CELL_SDK_LINE}.${cell.platform}.json`);
     writeFileSync(file, `${JSON.stringify(forCategory, null, 2)}\n`, 'utf8');
   } else {
     // env3(브라우저/run_tests 주입) — global 배열 + console.log.

@@ -26,7 +26,7 @@ describe('location · 값 다양화 (happy path)', () => {
     );
     expect(accuracyMembers.length).toBeGreaterThan(0);
     for (const accuracy of accuracyMembers) {
-      const { value } = await captureAsync(
+      const { outcome, value } = await captureAsync(
         {
           category: CATEGORY,
           api: 'getCurrentLocation',
@@ -35,7 +35,10 @@ describe('location · 값 다양화 (happy path)', () => {
         },
         () => getCurrentLocation({ accuracy }),
       );
-      expect(value).toMatchObject({ coords: expect.any(Object) });
+      // fix #5: GPS cold-fix/권한 거부 시 reject될 수 있다 — outcome-gate로 flaky 방지.
+      if (outcome === 'resolved') {
+        expect(value).toMatchObject({ coords: expect.any(Object) });
+      }
     }
   });
 });

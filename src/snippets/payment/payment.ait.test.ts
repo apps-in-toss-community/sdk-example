@@ -29,10 +29,15 @@ describe('payment · 값 다양화 (happy path)', () => {
         () => requestTossPayPaysBilling({ params: { wrappedToken } }),
       );
       // requestTossPayPaysBilling의 반환 타입은 Promise<Result | undefined>.
-      // dismissed sheet/bogus token에서 undefined resolve가 문서화된 동작이므로
-      // value != null narrow를 추가해 undefined resolve를 구별한다.
+      // fix #7: 실기기에서 가짜 토큰은 서버가 빠르게 reject해 `success` 없는 실패
+      // envelope로 resolve할 수 있다 — shape는 mock/native 경로에 따라 발산한다.
+      // resolved + non-null + `success` 있는 경우만 boolean을 검사한다.
       if (outcome === 'resolved' && value != null) {
-        expect(value).toHaveProperty('success');
+        const result = value as Record<string, unknown>;
+        if ('success' in result) {
+          expect(typeof result.success).toBe('boolean');
+        }
+        // `success` 없는 실패 envelope도 정상 캡처 대상 — 추가 단언 없음.
       }
     }
   });
@@ -53,12 +58,19 @@ describe('payment · 의도적 오류 (결과 검사 가드)', () => {
       () => requestTossPayPaysBilling({ params: { wrappedToken: 'wt_test_xxx' } }),
     );
     // requestTossPayPaysBilling의 반환 타입은 Promise<Result | undefined>.
-    // dismissed sheet/bogus token에서 undefined resolve가 문서화된 동작이므로
-    // value != null narrow를 추가해 undefined resolve를 구별한다.
+    // fix #7: 실기기에서 가짜 토큰은 `success` 없는 실패 envelope로 resolve될 수 있다.
+    // `success` 필드가 있을 때만 boolean 계약을 검사한다.
     if (outcome === 'resolved' && value != null) {
       const result = value as { success?: boolean };
-      expect(result).toHaveProperty('success');
-      expect(typeof result.success).toBe('boolean');
+      if ('success' in result) {
+        expect(typeof result.success).toBe('boolean');
+        // success===false면 reason을 surface해야 한다(성공으로 삼키면 안 됨).
+        if (result.success === false) {
+          const withReason = value as { reason?: unknown };
+          expect(withReason).toHaveProperty('reason');
+        }
+      }
+      // `success` 없는 실패 envelope: 실 SDK가 내는 정상 경로 — 추가 단언 없음.
     }
   });
 });
