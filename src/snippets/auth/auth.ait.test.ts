@@ -90,8 +90,12 @@ describe('auth · 의도적 오류 (확인된 오용 가드)', () => {
       },
       () => getIsTossLoginIntegratedService(),
     );
-    expect(awaited.outcome).toBe('resolved');
-    expect(['boolean', 'undefined']).toContain(typeof awaited.value);
+    // env3 계약 관측(#256): 실기기에서 이 호출은 reject할 수 있다(통합 서비스 컨텍스트가
+    // 아닐 때로 추정 — run5에서 관측). resolved일 때만 값 타입을 단언하고, rejected면
+    // 캡처 레코드의 오류 shape가 4-cell diff 신호로 남는다 (location #254 패턴).
+    if (awaited.outcome === 'resolved') {
+      expect(['boolean', 'undefined']).toContain(typeof awaited.value);
+    }
   });
 
   // A2/A3: appLogin 응답의 referrer는 SDK가 환경별로 채우는 값('SANDBOX'/'DEFAULT')이다.
