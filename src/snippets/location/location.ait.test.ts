@@ -59,9 +59,13 @@ describe('location · 의도적 오류 + native shape (env3 전용 단언)', () 
         },
         () => getCurrentLocation({ accuracy: Accuracy.Highest }),
       );
-      // 실기기에서 권한이 거부된 셋업이라면 reject가 와야 한다.
-      expect(outcome).toBe('rejected');
-      expect(error).toBeInstanceOf(Error);
+      // env3 test-design(#254): 권한 거부는 기기 셋업에 달려 있어 보장되지 않는다 —
+      // 권한이 부여된 실기기에서는 정상 resolve한다(camera #249와 같은 패턴, 단 location은
+      // blocking UI가 없어 skip 대신 outcome-분기). rejected로 도착했을 때만 native 오류
+      // shape를 단언하고, resolved면 권한-부여 런으로 캡처 레코드만 남긴다.
+      if (outcome === 'rejected') {
+        expect(error).toBeInstanceOf(Error);
+      }
     },
   );
 
