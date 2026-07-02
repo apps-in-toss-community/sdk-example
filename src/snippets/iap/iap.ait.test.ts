@@ -60,8 +60,15 @@ describe('iap · 값 다양화 (happy path)', () => {
         },
         () => IAP.getSubscriptionInfo({ params: { orderId } }),
       );
-      // env3에서 날조된 orderId는 SDK가 reject한다 — resolved 시에만 shape를 단언한다.
-      if (outcome === 'resolved') {
+      // env3 계약 관측(#253): 날조된 orderId는 reject가 아니라 빈 객체 {}로 resolve된다
+      // (not-found envelope — subscription 필드 없음). payment의 success-누락 envelope과
+      // 같은 계열. subscription이 실제로 담긴 응답에만 shape를 단언한다.
+      if (
+        outcome === 'resolved' &&
+        typeof value === 'object' &&
+        value !== null &&
+        'subscription' in value
+      ) {
         expect(value).toMatchObject({ subscription: expect.any(Object) });
       }
     }

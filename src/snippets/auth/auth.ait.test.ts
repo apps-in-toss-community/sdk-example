@@ -17,7 +17,7 @@ import {
   getUserKeyForGame,
 } from '@apps-in-toss/web-framework';
 import { afterAll, describe, expect, it } from 'vitest';
-import { captureAsync, captureSync, flushCapture } from '../../test/aitCapture';
+import { captureAsync, captureSync, cell, flushCapture } from '../../test/aitCapture';
 
 const CATEGORY = 'auth';
 
@@ -53,11 +53,16 @@ describe('auth · 값 다양화 (happy path)', () => {
 });
 
 describe('auth · 의도적 오류 (확인된 오용 가드)', () => {
-  // A1: getIsTossLoginIntegratedService는 Promise<boolean | undefined>를 반환한다
-  // (real SDK 계약). await 없이 반환값을 truthy 검사하면 항상 truthy인 Promise를
+  // A1: getIsTossLoginIntegratedService는 SDK 선언 타입상 Promise<boolean | undefined>를
+  // 반환한다. await 없이 반환값을 truthy 검사하면 항상 truthy인 Promise를
   // 검사하게 되는 오용이 발생한다 — 이 가드는 두 가지를 동시에 못 박는다:
   //  (1) 동기 반환값은 thenable이다(= 반드시 await해야 한다, returnType='Promise').
   //  (2) await한 값은 boolean(또는 undefined)이지 pending Promise가 아니다.
+  //
+  // env3 계약 관측(#252): 실기기 2.x iOS에서는 (1)이 성립하지 않는다 — raw 반환이
+  // thenable이 아닌 동기값으로 도착한다(선언 타입과 런타임 컨테이너의 발산).
+  // awaited 값 타입 (2)는 양쪽 모두 성립. 따라서 thenable 단언은 mock에서만 못 박고,
+  // env3에서는 captureSync의 returnType 레코드가 발산을 4-cell diff 신호로 남긴다.
   it('[A1] getIsTossLoginIntegratedService: await 없는 반환은 thenable, await하면 boolean', async () => {
     // (1) 동기 반환값을 캡처 — captureSync가 thenable을 returnType='Promise'로 잡는다.
     const sync = captureSync(
@@ -70,8 +75,10 @@ describe('auth · 의도적 오류 (확인된 오용 가드)', () => {
       () => getIsTossLoginIntegratedService(),
     );
     expect(sync.outcome).toBe('returned-sync');
-    // raw 반환은 thenable(await 강제) — 이걸 boolean처럼 truthy 검사하면 버그.
-    expect(sync.value).toHaveProperty('then');
+    if (cell.platform === 'mock') {
+      // raw 반환은 thenable(await 강제) — 이걸 boolean처럼 truthy 검사하면 버그.
+      expect(sync.value).toHaveProperty('then');
+    }
 
     // (2) await한 값을 캡처 — boolean | undefined여야 한다(pending Promise 아님).
     const awaited = await captureAsync(
