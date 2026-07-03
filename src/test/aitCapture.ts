@@ -38,8 +38,17 @@ export type SdkLine = '2.x' | '3.x';
 /** 4-cell 축의 플랫폼. env1 → 'mock'; env3 → 실기기. */
 export type Platform = 'mock' | 'ios' | 'android';
 
-/** 호출 결과의 정규화 분류. */
-export type Outcome = 'resolved' | 'rejected' | 'returned-sync' | 'threw-sync';
+/**
+ * 호출 결과의 정규화 분류.
+ *
+ * `callback-timeout`은 `captureCallback` 전용 — onEvent/onError 어느 쪽도
+ * 정해진 시간 내에 발화하지 않은 경우다. `rejected`(명시적 오류 응답)와
+ * 의미가 다르므로 별도 태그로 둔다: 이벤트-구독형 API(광고 미노출, 알림
+ * 미수신 등)에서는 "제한 시간 내 무응답"이 실기기에서 흔히 발생하는
+ * 정상 상황이라, 이를 `rejected`로 오기록하면 진짜 오류와 구분이 안 돼
+ * 4-cell diff가 무의미해진다.
+ */
+export type Outcome = 'resolved' | 'rejected' | 'returned-sync' | 'threw-sync' | 'callback-timeout';
 
 /**
  * 4-cell 대조용 정규화 레코드. 필드명은 12개 파일 전체에서 고정 —
@@ -295,6 +304,148 @@ export async function captureAsync(
     });
     return { outcome: 'rejected', error };
   }
+}
+
+/** `captureCallback`이 `run`에 넘기는 핸들러. */
+export interface CallbackHandlers {
+  onEvent: (value: unknown) => void;
+  onError: (error: unknown) => void;
+}
+
+/** `run`이 돌려주는 구독 해제 함수 — 없으면(undefined/void) 생략 가능. */
+export type CallbackCleanup = (() => void) | undefined;
+
+/**
+ * 이벤트-구독형 SDK API(`(params + onEvent/onError) => cleanupFn` 형태 —
+ * contactsViral, events, notification, ads load/show 등)를 캡처한다.
+ *
+ * `captureAsync`는 반환된 Promise 하나가 최종 결과인 API를 전제하지만,
+ * 이 계열 API는 콜백으로 결과를 통지하고 구독 해제 함수를 동기 반환한다
+ * (또는 아무것도 반환하지 않는다). 이 함수는 그 형태를 `captureAsync`와
+ * 동일한 4-cell 레코드로 정규화한다.
+ *
+ * ─ `callback-timeout` — legitimate-silence vs error ────────────────────────
+ * onEvent/onError 어느 쪽도 `timeoutMs`(기본 3000ms, 러너의 파일당 예산보다
+ * 훨씬 짧게 잡아 hang이 파일 전체를 드롭시키지 않게 함) 내에 발화하지 않으면
+ * `outcome: 'callback-timeout'`으로 기록한다. 이는 `rejected`(명시적 오류
+ * 응답)와 의도적으로 구분한다 — 실기기에서 "3초 내 이벤트 없음"은 광고 미노출,
+ * 푸시 미수신처럼 **정당한 무응답**인 경우가 흔해, 이를 오류로 오기록하면
+ * 4-cell diff 도구가 실제 회귀와 정상 무응답을 구분할 수 없게 된다.
+ *
+ * ─ cleanup 보장 ─────────────────────────────────────────────────────────────
+ * `run`이 반환한 cleanup은 성공/오류/타임아웃 모든 경로에서 `finally`로
+ * 반드시 호출한다 — 구독이 새면 같은 파일의 이후 테스트를 오염시킬 수 있다.
+ * cleanup 자체가 던지는 예외는 삼켜서(outcome을 덮어쓰지 않음) 원래 결과를
+ * 가린다.
+ *
+ * @returns `captureAsync`와 동일한 형태 — `value`는 최초 onEvent 페이로드.
+ */
+export function captureCallback(
+  meta: { category: string; api: string; scenario: string; input: unknown; timeoutMs?: number },
+  run: (handlers: CallbackHandlers) => CallbackCleanup,
+): Promise<{ outcome: Outcome; value?: unknown; error?: unknown }> {
+  const timeoutMs = meta.timeoutMs ?? 3000;
+
+  return new Promise((resolvePromise) => {
+    let settled = false;
+    // `run`이 onEvent/onError를 **동기로** 호출하는 경우, `finish`가 실행되는
+    // 시점엔 아직 `run()`이 반환 전이라 cleanup fn을 못 받은 상태다. 그래서
+    // cleanup 실행 여부를 별도 플래그로 늦추고, `run()` 반환 직후 이미
+    // settle됐다면 그때 cleanup을 돌린다 — sync/async 두 경로 모두 커버.
+    let cleanup: CallbackCleanup;
+    // `run()`이 아직 cleanup fn을 반환하기 전인지(sync onEvent/onError 경로)
+    // 구분하는 플래그 — 이게 true인 동안은 `runCleanup`을 호출해도 아직 실행할
+    // 게 없으므로 "완료됨"으로 표시하지 않고, `run()` 반환 직후 다시 시도한다.
+    let cleanupAssigned = false;
+    let cleanupDone = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
+    const runCleanup = () => {
+      if (cleanupDone || !cleanupAssigned) {
+        return;
+      }
+      cleanupDone = true;
+      try {
+        cleanup?.();
+      } catch {
+        // cleanup 자체의 예외는 삼킨다 — 원래 outcome을 가리지 않는다.
+      }
+    };
+
+    const finish = (result: { outcome: Outcome; value?: unknown; error?: unknown }) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      clearTimeout(timer);
+      // cleanup이 아직 (sync run 도중이라) 대입 전일 수 있다 — 대입돼 있으면
+      // 바로 돌리고, 아니라면 run() 반환 직후 지점에서 마저 돌린다.
+      runCleanup();
+
+      if (result.outcome === 'resolved') {
+        const { returnType, valueKeys } = extractValueShape(result.value);
+        capture({
+          category: meta.category,
+          api: meta.api,
+          scenario: meta.scenario,
+          input: meta.input,
+          outcome: 'resolved',
+          errorName: null,
+          errorCode: null,
+          errorMessage: null,
+          errorKeys: [],
+          isNativeShape: false,
+          returnType,
+          valueKeys,
+        });
+      } else if (result.outcome === 'rejected') {
+        capture({
+          category: meta.category,
+          api: meta.api,
+          scenario: meta.scenario,
+          input: meta.input,
+          outcome: 'rejected',
+          ...extractErrorShape(result.error),
+          returnType: 'undefined',
+          valueKeys: null,
+        });
+      } else {
+        // callback-timeout — 명시적 응답 없음. 오류-shape 필드는 전부 null/빈값.
+        capture({
+          category: meta.category,
+          api: meta.api,
+          scenario: meta.scenario,
+          input: meta.input,
+          outcome: 'callback-timeout',
+          errorName: null,
+          errorCode: null,
+          errorMessage: null,
+          errorKeys: [],
+          isNativeShape: false,
+          returnType: 'undefined',
+          valueKeys: null,
+        });
+      }
+
+      resolvePromise(result);
+    };
+
+    timer = setTimeout(() => {
+      finish({ outcome: 'callback-timeout' });
+    }, timeoutMs);
+
+    cleanup = run({
+      onEvent: (value) => finish({ outcome: 'resolved', value }),
+      onError: (error) => finish({ outcome: 'rejected', error }),
+    });
+    cleanupAssigned = true;
+    // sync onEvent/onError 경로: `finish`가 이미 위에서 실행돼 settled=true지만
+    // 그 시점엔 `cleanup`이 아직 미대입이라 runCleanup()이 no-op였다 — 지금
+    // `cleanup`이 확정됐으니 여기서 마저 돌린다.
+    if (settled) {
+      runCleanup();
+    }
+  });
 }
 
 /**
