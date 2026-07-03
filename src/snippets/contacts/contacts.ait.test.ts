@@ -19,11 +19,19 @@
  * 여전히 mock-only skipIf 안에서 거부 경로를 확인한다 — mock은 permission 체크가
  * UI 없이 동기 판정이라 hang 위험이 없다(clipboard.ait.test.ts 패턴, PR #266).
  *
+ * ─ #265: env3 denied 실행 추가 (camera rescue와 동일 패턴) ──────────────────
+ * mock-only 경로와 별개로, `getAitPerms().contacts`(devtools#744 preflight)가
+ * 기기에서 `'denied'`로 확정되면 `fetchContacts()` 실호출도 env3에서 안전하게
+ * 돈다 — denied는 피커를 열지 않고 즉시 reject하는 계약이기 때문이다(camera의
+ * fetchAlbumPhotos와 동일 근거). allowed/notDetermined/unavailable에서는 여전히
+ * 피커 오픈 위험 또는 판정 불가라 skip한다.
+ *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import { FetchContactsPermissionError, fetchContacts } from '@apps-in-toss/web-framework';
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 import { captureAsync, cell, flushCapture } from '../../test/aitCapture';
+import { getAitPerms } from '../../test/aitPerms';
 import { isNativeErrorShape } from '../../test/isNativeError';
 
 const CATEGORY = 'contacts';
@@ -131,6 +139,34 @@ describe('contacts · fetchContacts (mock-only — 실기기 피커 hang 위험)
       expect(error).toBeInstanceOf(Error);
     },
   );
+});
+
+describe('contacts · env3 권한-상태 결정적 분기 (__AIT_PERMS__)', () => {
+  // camera rescue와 동일 패턴(#265): denied가 확정된 기기에서만 실행 — denied는
+  // 피커를 열지 않고 즉시 reject하므로 무인 실행에 안전하다. mock에서는 위
+  // describe 블록이 이미 강제-patch로 결정적이라 이 it은 mock에서 skip한다
+  // (이중 커버리지 방지 — 같은 계약을 두 경로로 중복 단언하지 않는다).
+  it('[denied] fetchContacts가 native/PermissionError shape로 reject된다', async (ctx) => {
+    ctx.skip(cell.platform === 'mock', 'mock 경로는 위 [C1] it이 강제-patch로 이미 커버');
+    const perms = await getAitPerms();
+    ctx.skip(
+      perms.contacts !== 'denied',
+      `contacts 권한이 denied가 아님(현재: ${perms.contacts}) — allowed/notDetermined는 피커 오픈 위험`,
+    );
+    const { outcome, error } = await captureAsync(
+      {
+        category: CATEGORY,
+        api: 'fetchContacts',
+        scenario: 'env3-denied-fetch',
+        input: { size: 10, offset: 0 },
+      },
+      () => fetchContacts({ size: 10, offset: 0 }),
+    );
+    expect(outcome).toBe('rejected');
+    const isKnownShape = error instanceof FetchContactsPermissionError || isNativeErrorShape(error);
+    expect(isKnownShape).toBe(true);
+    expect(error).toBeInstanceOf(Error);
+  });
 });
 
 describe('contacts · 4-cell 오류-shape 캡처', () => {
