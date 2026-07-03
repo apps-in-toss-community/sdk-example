@@ -14,6 +14,12 @@
  * env3(real SDK)에서는 `aitState`가 없으므로(mock 전용 export) 여전히
  * outcome-분기 관측 + rejected 시 `isNativeErrorShape`/errorCode 단언으로 처리한다.
  *
+ * ─ #265: __AIT_PERMS__ 기반 결정적 분기 추가 ─────────────────────────────────
+ * env1(mock)은 이미 위 강제 patch로 결정적이었다 — 여기서 추가하는 것은 env3
+ * (실기기) 결정성이다. devtools#744 preflight가 채운 `getAitPerms().clipboardRead`
+ * /`clipboardWrite`가 `'denied'`면, 기기 셋업을 몰라도 이제는 "reject 해야
+ * 한다"는 사실을 알고 있으므로 outcome-분기 대신 하드 단언한다.
+ *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import {
@@ -24,6 +30,7 @@ import {
 } from '@apps-in-toss/web-framework';
 import { afterAll, afterEach, describe, expect, it } from 'vitest';
 import { captureAsync, cell, flushCapture } from '../../test/aitCapture';
+import { getAitPerms } from '../../test/aitPerms';
 import { isNativeErrorShape } from '../../test/isNativeError';
 
 const CATEGORY = 'clipboard';
@@ -118,6 +125,15 @@ describe('clipboard · 권한 거부 (실계약 단언)', () => {
       // mock 권한을 강제로 denied했으므로 거부 경로가 반드시 실행돼야 한다.
       expect(outcome).toBe('rejected');
     }
+    if (cell.platform !== 'mock') {
+      // env3: __AIT_PERMS__.clipboardRead가 denied로 확정된 경우에만 이 실행분을
+      // 결정적으로 해석할 수 있다 — 그 외 상태(allowed/notDetermined/unavailable)에서는
+      // outcome이 기기 셋업에 달려 있으므로 하드 단언하지 않는다.
+      const perms = await getAitPerms();
+      if (perms.clipboardRead === 'denied') {
+        expect(outcome).toBe('rejected');
+      }
+    }
     if (outcome === 'rejected') {
       const isKnownShape =
         error instanceof GetClipboardTextPermissionError || isNativeErrorShape(error);
@@ -154,6 +170,12 @@ describe('clipboard · 권한 거부 (실계약 단언)', () => {
     );
     if (cell.platform === 'mock') {
       expect(outcome).toBe('rejected');
+    } else {
+      // env3: __AIT_PERMS__.clipboardWrite가 denied로 확정된 경우에만 결정적.
+      const perms = await getAitPerms();
+      if (perms.clipboardWrite === 'denied') {
+        expect(outcome).toBe('rejected');
+      }
     }
     if (outcome === 'rejected') {
       const isKnownShape =
