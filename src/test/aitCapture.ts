@@ -47,8 +47,20 @@ export type Platform = 'mock' | 'ios' | 'android';
  * 미수신 등)에서는 "제한 시간 내 무응답"이 실기기에서 흔히 발생하는
  * 정상 상황이라, 이를 `rejected`로 오기록하면 진짜 오류와 구분이 안 돼
  * 4-cell diff가 무의미해진다.
+ *
+ * `timeout`은 `captureAsync`의 `raceTimeoutMs` 옵션 전용(#274) — 단일
+ * Promise 호출(`getCurrentLocation` 등)이 native 브리지에서 hang되는 경우를
+ * 잡는다. `callback-timeout`(이벤트 구독형, "무응답이 정상"인 API)과는
+ * 발생 맥락이 달라 별도 태그로 둔다 — 4-cell diff에서 "구독 API가 정상
+ * 무응답" vs "단발 호출이 native에서 멈춤"을 구분할 수 있어야 한다.
  */
-export type Outcome = 'resolved' | 'rejected' | 'returned-sync' | 'threw-sync' | 'callback-timeout';
+export type Outcome =
+  | 'resolved'
+  | 'rejected'
+  | 'returned-sync'
+  | 'threw-sync'
+  | 'callback-timeout'
+  | 'timeout';
 
 /**
  * 4-cell 대조용 정규화 레코드. 필드명은 12개 파일 전체에서 고정 —
@@ -273,14 +285,40 @@ function extractValueShape(value: unknown): { returnType: string; valueKeys: str
  * async 호출을 실행해 정규화 레코드 한 건을 캡처하고, 동시에 raw 결과를
  * 테스트가 단언할 수 있게 돌려준다. resolve/reject를 잡아 sink에 push.
  *
+ * `raceTimeoutMs`(#274) — 지정하면 `call()`의 Promise를 JS 타이머와
+ * `Promise.race`한다. native 브리지 호출이 hang되면(예: GPS cold-fix로
+ * `getCurrentLocation`이 응답 없이 멈춤) JS는 그 native Promise를 취소할
+ * 방법이 없다 — 그래서 이 레이스는 **버려진 원본 Promise를 의도적으로
+ * dangling 상태로 남긴다**. 목적은 hang을 없애는 게 아니라, hang이 파일
+ * 전체의 evaluate 예산을 다 태워 파일을 전멸시키기 전에 이 한 호출만
+ * `outcome: 'timeout'` 레코드로 낙착시켜 파일이 다음 테스트로 넘어가게
+ * 하는 것이다(런타임 프로세스가 종료되면 dangling promise도 함께 사라진다).
+ *
  * @returns `{ outcome, value?, error? }` — 단언은 테스트가 한다(캡처는 부수효과).
  */
 export async function captureAsync(
   meta: { category: string; api: string; scenario: string; input: unknown },
   call: () => Promise<unknown>,
+  options?: { raceTimeoutMs?: number },
 ): Promise<{ outcome: Outcome; value?: unknown; error?: unknown }> {
+  const raceTimeoutMs = options?.raceTimeoutMs;
   try {
-    const value = await call();
+    const value =
+      raceTimeoutMs === undefined ? await call() : await raceWithTimeout(call(), raceTimeoutMs);
+    if (value === TIMEOUT_SENTINEL) {
+      capture({
+        ...meta,
+        outcome: 'timeout',
+        errorName: null,
+        errorCode: null,
+        errorMessage: null,
+        errorKeys: [],
+        isNativeShape: false,
+        returnType: 'undefined',
+        valueKeys: null,
+      });
+      return { outcome: 'timeout' };
+    }
     const { returnType, valueKeys } = extractValueShape(value);
     capture({
       ...meta,
@@ -304,6 +342,33 @@ export async function captureAsync(
     });
     return { outcome: 'rejected', error };
   }
+}
+
+/** `raceWithTimeout` 내부에서만 쓰는 sentinel — 실제 SDK 반환값과 절대 충돌하지 않도록 고유 심볼로 둔다. */
+const TIMEOUT_SENTINEL: unique symbol = Symbol('ait-capture-race-timeout');
+
+/**
+ * `promise`와 `timeoutMs` 타이머를 경합시킨다. 타이머가 먼저 끝나면
+ * `TIMEOUT_SENTINEL`로 resolve한다 — 원본 `promise`는 취소되지 않고
+ * 그대로 버려진다(JS에는 native Promise를 취소할 방법이 없다).
+ */
+function raceWithTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+): Promise<T | typeof TIMEOUT_SENTINEL> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => resolve(TIMEOUT_SENTINEL), timeoutMs);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
 }
 
 /** `captureCallback`이 `run`에 넘기는 핸들러. */
