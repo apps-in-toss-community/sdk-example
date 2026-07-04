@@ -36,7 +36,7 @@
     "sync:readme:check": "tsx scripts/sync-readme-domains.ts --check"
   },
   "dependencies": {
-    "@ait-co/devtools": "^0.1.133",
+    "@ait-co/devtools": "0.1.134",
     "@ait-co/polyfill": "^0.1.17",
     "@apps-in-toss/web-framework": "2.10.0",
     "qrcode": "^1.5.4",
