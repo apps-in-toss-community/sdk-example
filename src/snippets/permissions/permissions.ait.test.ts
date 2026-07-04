@@ -27,6 +27,15 @@
  * 이 파일에 남는 나머지 on-device 호출(`getPermission` 순수 쿼리, cross-check)은
  * `captureAsync`의 `raceTimeoutMs`로 감싸 hang이 파일을 전멸시키지 않게 한다.
  *
+ * ─ #281: cross-check 계약 관측 — generic getPermission이 2.x iOS에서 reject ───
+ * run9 1F: SE-5 교차검증 테스트가 generic `getPermission({name:'geolocation'})`의
+ * resolve를 전제했으나 실기기에서 rejected로 낙착했다. run7 late-flush 캡처도
+ * 동일 시나리오 rejected + happy-each-name 3/6 rejected를 보여 재현성 있는
+ * 계약이다: permissions-group generic API는 name에 따라 reject할 수 있고,
+ * method-level `getCurrentLocation.getPermission()`(preflight, 'allowed')과
+ * 발산한다. #252/#256 계약-관측 패턴을 따라 resolved/rejected 분기 단언으로
+ * 바꿨다 — 항진 없이 각 분기가 실제 값을 확인한다.
+ *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import {
@@ -37,6 +46,7 @@ import {
 import { afterAll, describe, expect, it } from 'vitest';
 import { captureAsync, cell, flushCapture } from '../../test/aitCapture';
 import { getAitPerms } from '../../test/aitPerms';
+import { isNativeErrorShape } from '../../test/isNativeError';
 
 const CATEGORY = 'permissions';
 
@@ -124,10 +134,22 @@ describe('permissions · 값 다양화 (happy path)', () => {
   );
 });
 
-describe('permissions · __AIT_PERMS__ 교차검증 (#265)', () => {
+describe('permissions · __AIT_PERMS__ 교차검증 (#265, #281)', () => {
+  // #281: run9 1F 관측 — 이 테스트는 원래 generic `getPermission(geolocation)`이
+  // 항상 resolve한다고 전제했으나, 실기기에서 rejected로 낙착했다("Expected
+  // resolved, received rejected"). run7 late-flush 캡처에도 동일 시나리오
+  // (cross-check-location) rejected + happy-each-name 3/6 rejected가 있어
+  // 우연이 아니라 재현성 있는 2.x iOS 계약이다: permissions-group generic API
+  // (`getPermission`)는 name에 따라 reject할 수 있고, 이는 method-level
+  // preflight(`getCurrentLocation.getPermission()` → `getAitPerms().location`)가
+  // 'allowed'를 보고하는 것과 발산한다 — 두 API 표면이 같은 기기 상태를 서로
+  // 다른 방식으로 (불)일치하게 보고하는 것 자체가 관측 대상이다. #252/#256
+  // 계약-관측 패턴을 따라 resolved/rejected 양쪽 모두 실제 단언을 두고
+  // (tautology 금지), rejected 분기의 native shape 캡처가 4-cell diff 신호로
+  // 남게 한다.
   it('getPermission(geolocation)이 getAitPerms().location과 일치한다', async () => {
     const perms = await getAitPerms();
-    const { outcome, value } = await captureAsync(
+    const { outcome, value, error } = await captureAsync(
       {
         category: CATEGORY,
         api: 'getPermission',
@@ -137,15 +159,23 @@ describe('permissions · __AIT_PERMS__ 교차검증 (#265)', () => {
       () => getPermission({ name: 'geolocation', access: 'read' }),
       { raceTimeoutMs: PERMISSIONS_CALL_TIMEOUT_MS },
     );
-    expect(outcome).toBe('resolved');
-    // union 값이라는 shape뿐 아니라, 같은 기기 상태를 가리키는 두 진입점(범용
-    // getPermission vs devtools#744 preflight의 getCurrentLocation.getPermission())이
-    // 실제로 일치하는지까지 확인한다 — 'unavailable'은 preflight 전용 sentinel이라
-    // SDK 쪽 union에는 없으므로 그 경우는 비교 대상에서 제외한다.
-    if (perms.location !== 'unavailable') {
-      expect(value).toBe(perms.location);
+    if (outcome === 'resolved') {
+      // union 값이라는 shape뿐 아니라, 같은 기기 상태를 가리키는 두 진입점(범용
+      // getPermission vs devtools#744 preflight의 getCurrentLocation.getPermission())이
+      // 실제로 일치하는지까지 확인한다 — 'unavailable'은 preflight 전용 sentinel이라
+      // SDK 쪽 union에는 없으므로 그 경우는 비교 대상에서 제외한다.
+      if (perms.location !== 'unavailable') {
+        expect(value).toBe(perms.location);
+      } else {
+        expect(PERMISSION_STATUSES).toContain(value);
+      }
     } else {
-      expect(PERMISSION_STATUSES).toContain(value);
+      // #281: generic getPermission이 reject하는 관측된 2.x iOS 계약 분기.
+      // method-level preflight가 'allowed'를 보고해도 이 표면은 독립적으로
+      // 실패할 수 있다는 발산 자체가 신호이므로, native 오류 shape인지만
+      // 정직하게 단언한다(항진 금지).
+      expect(outcome).toBe('rejected');
+      expect(isNativeErrorShape(error) || error instanceof Error).toBe(true);
     }
   });
 });
