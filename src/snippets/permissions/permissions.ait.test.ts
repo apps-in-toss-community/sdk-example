@@ -12,6 +12,21 @@
  * 경로 간 정합이 깨졌다는 회귀 신호다. union 멤버 검증에 그치지 않고 두 값이
  * 일치하는지까지 하드 단언한다.
  *
+ * ─ #277: blocking native-UI 호출 mock-only 게이트 (run7·run8 hang/freeze 진범) ──
+ * `openPermissionDialog`(권한 다이얼로그를 여는 blocking 호출)와
+ * `requestPermission`(기기 상태에 따라 네이티브 프롬프트를 띄울 수 있는 호출)은
+ * camera/contacts `.ait.test.ts`가 이미 지키는 무인-안전 규칙 — "네이티브 UI를
+ * 여는 호출은 mock-only, 실기기 커버리지는 `*.manual.ait.test.ts`로 분리" —를
+ * 이 파일만 누락하고 있었다. 특히 옛 L118은 `it.skipIf(cell.platform === 'mock')`로
+ * **실기기에서만** openPermissionDialog를 실행하는 게이트 반전이었다 — mock에서
+ * skip하고 실기기에서만 도는, 의도와 정반대인 무인-안전 위반. run7·run8 연속
+ * 사고(§이슈 #277 forensics)에서 이 파일이 60s evaluate 타임아웃으로 죽고
+ * storage까지 연쇄로 wedge된 뒤 폰이 freeze(네이티브 표면 + 스피너 + 터치
+ * 무반응)된 진범으로 지목됐다. 실기기 커버리지는
+ * `permissions.manual.ait.test.ts`로 옮기고(사람이 다이얼로그를 닫는 전제),
+ * 이 파일에 남는 나머지 on-device 호출(`getPermission` 순수 쿼리, cross-check)은
+ * `captureAsync`의 `raceTimeoutMs`로 감싸 hang이 파일을 전멸시키지 않게 한다.
+ *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import {
@@ -37,6 +52,17 @@ const PERMISSION_NAMES = [
   'microphone',
 ] as const;
 
+/**
+ * #277: 남은 on-device 호출(getPermission 순수 쿼리·cross-check)의 per-call
+ * 예산. 이 파일은 최대 3회 호출(ACCESS_VALUES 3종 + PERMISSION_NAMES 루프는
+ * 내부 반복이라 파일 전체 호출은 union 크기만큼 늘지만, 각 호출은 순수 쿼리라
+ * blocking UI 호출보다 훨씬 빨리 응답하는 것이 정상 계약이다)에 걸쳐 호출되므로
+ * location.ait.test.ts(#274)와 동일하게 5s로 잡아 파일당 evaluate 예산(현재
+ * 실효 30s, devtools#747 fix 후 60s) 안에 여유를 둔다 — 단발 hang이 파일
+ * 전체를 죽이는 대신 그 1건만 `outcome: 'timeout'`으로 낙착시킨다.
+ */
+const PERMISSIONS_CALL_TIMEOUT_MS = 5_000;
+
 afterAll(async () => {
   await flushCapture(CATEGORY);
 });
@@ -52,6 +78,7 @@ describe('permissions · 값 다양화 (happy path)', () => {
           input: { name: 'geolocation', access },
         },
         () => getPermission({ name: 'geolocation', access }),
+        { raceTimeoutMs: PERMISSIONS_CALL_TIMEOUT_MS },
       );
       expect(['resolved', 'rejected']).toContain(outcome);
     }
@@ -67,26 +94,34 @@ describe('permissions · 값 다양화 (happy path)', () => {
           input: { name, access: 'read' },
         },
         () => getPermission({ name, access: 'read' }),
+        { raceTimeoutMs: PERMISSIONS_CALL_TIMEOUT_MS },
       );
       expect(['resolved', 'rejected']).toContain(outcome);
     }
   });
 
-  it('requestPermission이 notDetermined가 아닌 상태로 resolve', async () => {
-    const { value, outcome } = await captureAsync(
-      {
-        category: CATEGORY,
-        api: 'requestPermission',
-        scenario: 'happy-request',
-        input: { name: 'geolocation', access: 'read' },
-      },
-      () => requestPermission({ name: 'geolocation', access: 'read' }),
-    );
-    if (outcome === 'resolved') {
-      // 계약: requestPermission은 notDetermined를 반환하지 않는다.
-      expect(value).not.toBe('notDetermined');
-    }
-  });
+  // #277: requestPermission은 기기 상태(notDetermined)에 따라 네이티브 프롬프트를
+  // 띄울 수 있는 blocking 호출이다 — camera/contacts가 지키는 무인-안전 규칙과
+  // 동일하게 mock-only로 gate한다. 실기기 커버리지(사람이 프롬프트를 응답)는
+  // `permissions.manual.ait.test.ts`로 이동했다.
+  it.skipIf(cell.platform !== 'mock')(
+    '[mock] requestPermission이 notDetermined가 아닌 상태로 resolve',
+    async () => {
+      const { value, outcome } = await captureAsync(
+        {
+          category: CATEGORY,
+          api: 'requestPermission',
+          scenario: 'happy-request',
+          input: { name: 'geolocation', access: 'read' },
+        },
+        () => requestPermission({ name: 'geolocation', access: 'read' }),
+      );
+      if (outcome === 'resolved') {
+        // 계약: requestPermission은 notDetermined를 반환하지 않는다.
+        expect(value).not.toBe('notDetermined');
+      }
+    },
+  );
 });
 
 describe('permissions · __AIT_PERMS__ 교차검증 (#265)', () => {
@@ -100,6 +135,7 @@ describe('permissions · __AIT_PERMS__ 교차검증 (#265)', () => {
         input: { name: 'geolocation', access: 'read' },
       },
       () => getPermission({ name: 'geolocation', access: 'read' }),
+      { raceTimeoutMs: PERMISSIONS_CALL_TIMEOUT_MS },
     );
     expect(outcome).toBe('resolved');
     // union 값이라는 shape뿐 아니라, 같은 기기 상태를 가리키는 두 진입점(범용
@@ -114,9 +150,17 @@ describe('permissions · __AIT_PERMS__ 교차검증 (#265)', () => {
   });
 });
 
-describe('permissions · native shape (env3 전용 단언)', () => {
-  it.skipIf(cell.platform === 'mock')(
-    '[native] openPermissionDialog 거부 시 native 권한 오류 shape가 도착한다',
+describe('permissions · native shape (mock-only — dialog는 blocking UI)', () => {
+  // #277: openPermissionDialog는 네이티브 권한 다이얼로그를 여는 blocking 호출이다.
+  // 옛 게이트(`it.skipIf(cell.platform === 'mock')`)는 이 호출을 **실기기에서만**
+  // 무인 실행했다 — camera/contacts가 지키는 "blocking UI는 mock-only" 규칙의
+  // 정반대였고, run7·run8 hang/freeze 사고의 진범으로 지목됐다(#277 forensics).
+  // mock은 다이얼로그를 실제로 띄우지 않으므로 native 거부 shape 자체는 낼 수
+  // 없다 — 여기서는 shape-only(호출이 정규 outcome으로 낙착되는지)만 관찰하고,
+  // 실기기 native shape 커버리지는 사람이 다이얼로그를 닫는
+  // `permissions.manual.ait.test.ts`로 옮겼다.
+  it.skipIf(cell.platform !== 'mock')(
+    '[mock] openPermissionDialog(camera/access) 호출이 정규 outcome으로 낙착한다',
     async () => {
       const { outcome } = await captureAsync(
         {
@@ -131,18 +175,23 @@ describe('permissions · native shape (env3 전용 단언)', () => {
     },
   );
 
-  it('mock cell도 openPermissionDialog 결과를 캡처한다', async () => {
-    const { outcome } = await captureAsync(
-      {
-        category: CATEGORY,
-        api: 'openPermissionDialog',
-        scenario: 'capture-baseline',
-        input: { name: 'geolocation', access: 'read' },
-      },
-      () => openPermissionDialog({ name: 'geolocation', access: 'read' }),
-    );
-    expect(['resolved', 'rejected']).toContain(outcome);
-  });
+  // #277: L134 원본도 openPermissionDialog를 어떤 플랫폼 게이트도 없이(=실기기
+  // 포함) 호출했다 — 동일 규칙 위반이라 mock-only로 전환한다.
+  it.skipIf(cell.platform !== 'mock')(
+    '[mock] openPermissionDialog(geolocation/read) 결과를 캡처한다',
+    async () => {
+      const { outcome } = await captureAsync(
+        {
+          category: CATEGORY,
+          api: 'openPermissionDialog',
+          scenario: 'capture-baseline',
+          input: { name: 'geolocation', access: 'read' },
+        },
+        () => openPermissionDialog({ name: 'geolocation', access: 'read' }),
+      );
+      expect(['resolved', 'rejected']).toContain(outcome);
+    },
+  );
 });
 
 describe('permissions · 4-cell 오류-shape 캡처', () => {
