@@ -1,8 +1,4 @@
-import {
-  graniteEvent,
-  onVisibilityChangedByTransparentServiceWeb,
-  tdsEvent,
-} from '@apps-in-toss/web-framework';
+import { graniteEvent, tdsEvent } from '@apps-in-toss/web-framework';
 import { useEffect, useRef, useState } from 'react';
 import { CodeSnippet } from '../components/CodeSnippet';
 import { DocsLink } from '../components/DocsLink';
@@ -17,7 +13,6 @@ import { t } from '../i18n';
 import appsInTossEventAddEventListenerSnippet from '../snippets/events/appsInTossEventAddEventListener.ts?raw';
 import graniteBackEventSnippet from '../snippets/events/graniteBackEvent.ts?raw';
 import graniteHomeEventSnippet from '../snippets/events/graniteHomeEvent.ts?raw';
-import onVisibilityChangedByTransparentServiceWebSnippet from '../snippets/events/onVisibilityChangedByTransparentServiceWeb.ts?raw';
 import tdsNavigationAccessoryEventSnippet from '../snippets/events/tdsNavigationAccessoryEvent.ts?raw';
 
 interface EventSubscriberCardProps {
@@ -153,18 +148,8 @@ export function EventsPage() {
           snippet={tdsNavigationAccessoryEventSnippet}
           docsSlug="tdsEvent-addEventListener"
         />
-        <EventSubscriberCard
-          name="onVisibilityChangedByTransparentServiceWeb"
-          description={t('pages.events.onVisibilityChangedByTransparentServiceWeb.description')}
-          subscribe={(onEvent) =>
-            onVisibilityChangedByTransparentServiceWeb({
-              options: { callbackId: 'sdk-example-visibility' },
-              onEvent: (isVisible) => onEvent({ isVisible }),
-              onError: (err) => onEvent({ error: String(err) }),
-            })
-          }
-          snippet={onVisibilityChangedByTransparentServiceWebSnippet}
-        />
+        {/* onVisibilityChangedByTransparentServiceWeb — 3.x 계약 divergence:
+            web-framework 3.0-beta에서 이 API가 제거됐다(대체 없음). 2.x 전용 카드다. */}
         <AppsInTossEventCard />
       </div>
     </div>

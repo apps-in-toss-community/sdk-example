@@ -45,12 +45,9 @@ export default defineConfig({
   // unplugin (which only runs on source resolves) never gets a chance to
   // rewrite them to the mock. Result: the SDK tries to talk to the RN
   // bridge and hangs in a plain browser.
+  // 3.x cell: web-framework 3.0-beta의 transitive bridge 패키지는
+  // `@apps-in-toss/webview-bridge`로 개명됐다(2.x의 web-bridge+web-analytics 대체).
   optimizeDeps: {
-    exclude: [
-      '@apps-in-toss/web-framework',
-      '@apps-in-toss/web-bridge',
-      '@apps-in-toss/web-analytics',
-      '@ait-co/polyfill',
-    ],
+    exclude: ['@apps-in-toss/web-framework', '@apps-in-toss/webview-bridge', '@ait-co/polyfill'],
   },
 });

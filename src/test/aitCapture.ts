@@ -125,6 +125,13 @@ declare global {
  * 설치된 `@apps-in-toss/web-framework`의 major로 sdkLine을 결정한다.
  * env1(vitest alias → mock)에서도 real 패키지의 version은 그대로 읽힌다.
  * env3(브라우저)에서는 globalThis.__AIT_CELL__?.sdkLine 주입값 또는 '2.x' fallback.
+ *
+ * **3.x 계약 divergence**: web-framework 3.0-beta의 `package.json` `exports` 맵에는
+ * `./package.json` subpath가 없다(2.x엔 있었다) — `require('.../package.json')`이
+ * `ERR_PACKAGE_PATH_NOT_EXPORTED`로 던진다. 이 자체가 QA harness 관점의 실제
+ * 3.x divergence이지만, 이 probe가 실패해 조용히 '2.x'로 fallback하면 4-cell
+ * 레코드 전체가 잘못된 cell(2.x/mock)로 오분류된다 — 그래서 `require.resolve`로
+ * 얻은 진입점 경로에서 위로 올라가며 `package.json`을 찾는 fallback을 둔다.
  */
 async function resolveSdkLine(): Promise<SdkLine> {
   const override = globalThis.__AIT_CELL__?.sdkLine;
@@ -132,17 +139,40 @@ async function resolveSdkLine(): Promise<SdkLine> {
     return override;
   }
   if (isNode) {
+    // 런타임 의존이 아니라 버전 probe — alias 영향 밖의 real 패키지 메타.
+    // 동적 import: esbuild iife 번들이 static 'node:module' import를 resolve할 수 없다.
+    const { createRequire } = await import('node:module');
+    const nodeRequire = createRequire(import.meta.url);
     try {
-      // 런타임 의존이 아니라 버전 probe — alias 영향 밖의 real 패키지 메타.
-      // 동적 import: esbuild iife 번들이 static 'node:module' import를 resolve할 수 없다.
-      const { createRequire } = await import('node:module');
-      const nodeRequire = createRequire(import.meta.url);
       const pkg = nodeRequire('@apps-in-toss/web-framework/package.json') as {
         version?: string;
       };
       const major = pkg.version?.split('.')[0];
       return major === '3' ? '3.x' : '2.x';
     } catch {
+      // exports 맵에 './package.json'이 없는 라인(3.0-beta) — entry 파일 경로에서
+      // 위로 올라가며 package.json을 찾는다.
+      try {
+        const entry = nodeRequire.resolve('@apps-in-toss/web-framework');
+        const { dirname, join } = await import('node:path');
+        const { readFileSync, existsSync } = await import('node:fs');
+        let dir = dirname(entry);
+        for (let i = 0; i < 6; i++) {
+          const candidate = join(dir, 'package.json');
+          if (existsSync(candidate)) {
+            const pkg = JSON.parse(readFileSync(candidate, 'utf8')) as { version?: string };
+            if (pkg.version !== undefined) {
+              const major = pkg.version.split('.')[0];
+              return major === '3' ? '3.x' : '2.x';
+            }
+          }
+          const parent = dirname(dir);
+          if (parent === dir) break;
+          dir = parent;
+        }
+      } catch {
+        // fall through to default below
+      }
       return '2.x';
     }
   }

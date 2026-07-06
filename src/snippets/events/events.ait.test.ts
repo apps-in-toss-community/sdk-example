@@ -16,6 +16,8 @@
  *    불가능하므로, 이 API는 "구독하면 즉시 예외 없이 cleanup fn을 반환한다"는 생명주기
  *    shape만 단언하고 실제 이벤트 발화는 callback-timeout으로 정상 처리한다 —
  *    이는 회귀가 아니라 jsdom 환경 제약이다(실 브라우저 tab-visibility 토글 필요).
+ *    **3.x 계약 divergence**: web-framework 3.0-beta에서 이 export가 완전히
+ *    제거됐다(대체 없음) — `cell.sdkLine === '2.x'`로 이 describe 블록 전체를 게이트한다.
  *  - `appsInTossEvent.addEventListener` — `AppsInTossEvent` 타입이 현재 `{}`라 구독
  *    가능한 이벤트 키가 없다(SDK 문서: "예약된 네임스페이스"). mock 구현도 항상
  *    no-op cleanup만 반환한다. 따라서 실제 이벤트 키로 구독하는 테스트는 만들 수
@@ -26,12 +28,7 @@
  *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
-import {
-  appsInTossEvent,
-  graniteEvent,
-  onVisibilityChangedByTransparentServiceWeb,
-  tdsEvent,
-} from '@apps-in-toss/web-framework';
+import { appsInTossEvent, graniteEvent, tdsEvent } from '@apps-in-toss/web-framework';
 import { afterAll, describe, expect, it } from 'vitest';
 import { captureCallback, cell, flushCapture } from '../../test/aitCapture';
 
@@ -113,34 +110,61 @@ describe('events · tdsEvent (captureCallback, mock 합성 트리거)', () => {
   });
 });
 
-describe('events · onVisibilityChangedByTransparentServiceWeb (captureCallback, cleanup shape만 단언)', () => {
-  // jsdom에서 document.hidden은 read-only getter라 visibilitychange를 프로그래매틱
-  // 발화할 수단이 없다 — 구독 자체가 예외 없이 cleanup fn을 반환하는 생명주기만
-  // 단언하고, 이벤트 미도착은 callback-timeout(정당한 무응답)으로 수렴시킨다.
-  it('구독이 예외 없이 성립하고, 이벤트 미도착 시 callback-timeout으로 수렴한다', async () => {
-    const result = await captureCallback(
-      {
-        category: CATEGORY,
-        api: 'onVisibilityChangedByTransparentServiceWeb',
-        scenario: 'happy-subscribe-lifecycle',
-        input: { callbackId: 'ait-test-visibility' },
-        timeoutMs: 500,
-      },
-      ({ onEvent, onError }) =>
-        onVisibilityChangedByTransparentServiceWeb({
-          options: { callbackId: 'ait-test-visibility' },
-          onEvent: (isVisible) => onEvent({ isVisible }),
-          onError,
-        }),
-    );
-    // jsdom·env3 둘 다 이 테스트에서 visibility를 합성 토글하지 않으므로
-    // callback-timeout이 기대 outcome이다 — resolved가 온다면 그것도 유효한 shape.
-    expect(['resolved', 'callback-timeout']).toContain(result.outcome);
-    if (result.outcome === 'resolved') {
-      expect(result.value).toMatchObject({ isVisible: expect.any(Boolean) });
-    }
-  });
-});
+describe.skipIf(cell.sdkLine === '3.x')(
+  'events · onVisibilityChangedByTransparentServiceWeb (captureCallback, cleanup shape만 단언)',
+  () => {
+    // jsdom에서 document.hidden은 read-only getter라 visibilitychange를 프로그래매틱
+    // 발화할 수단이 없다 — 구독 자체가 예외 없이 cleanup fn을 반환하는 생명주기만
+    // 단언하고, 이벤트 미도착은 callback-timeout(정당한 무응답)으로 수렴시킨다.
+    //
+    // 3.x 계약 divergence: web-framework 3.0-beta에서 이 export가 완전히
+    // 제거됐다(대체 없음). 정적 import는 typecheck·모듈 로드 시점에 깨지므로
+    // describe 블록 전체를 `cell.sdkLine`으로 skip하고, import 자체도 동적으로
+    // 블록 안에서만 수행한다.
+    it('구독이 예외 없이 성립하고, 이벤트 미도착 시 callback-timeout으로 수렴한다', async () => {
+      const { onVisibilityChangedByTransparentServiceWeb } = (await import(
+        '@apps-in-toss/web-framework'
+      )) as typeof import('@apps-in-toss/web-framework') & {
+        onVisibilityChangedByTransparentServiceWeb: (params: {
+          options: { callbackId: string };
+          onEvent: (isVisible: boolean) => void;
+          onError: (err: unknown) => void;
+        }) => (() => void) | undefined;
+      };
+      const result = await captureCallback(
+        {
+          category: CATEGORY,
+          api: 'onVisibilityChangedByTransparentServiceWeb',
+          scenario: 'happy-subscribe-lifecycle',
+          input: { callbackId: 'ait-test-visibility' },
+          timeoutMs: 500,
+        },
+        ({ onEvent, onError }) =>
+          onVisibilityChangedByTransparentServiceWeb({
+            options: { callbackId: 'ait-test-visibility' },
+            onEvent: (isVisible) => onEvent({ isVisible }),
+            onError,
+          }),
+      );
+      // jsdom·env3 둘 다 이 테스트에서 visibility를 합성 토글하지 않으므로
+      // callback-timeout이 기대 outcome이다 — resolved가 온다면 그것도 유효한 shape.
+      expect(['resolved', 'callback-timeout']).toContain(result.outcome);
+      if (result.outcome === 'resolved') {
+        expect(result.value).toMatchObject({ isVisible: expect.any(Boolean) });
+      }
+    });
+  },
+);
+
+describe.runIf(cell.sdkLine === '3.x')(
+  'events · onVisibilityChangedByTransparentServiceWeb (3.x 계약 divergence — export 제거 확인)',
+  () => {
+    it('web-framework 3.0-beta에서 이 export가 존재하지 않는다', async () => {
+      const mod = await import('@apps-in-toss/web-framework');
+      expect('onVisibilityChangedByTransparentServiceWeb' in mod).toBe(false);
+    });
+  },
+);
 
 describe('events · appsInTossEvent (예약된 네임스페이스 — export surface만 확인)', () => {
   // `AppsInTossEvent`가 현재 `{}`라 구독 가능한 이벤트 키가 없다(SDK 문서 명시).
