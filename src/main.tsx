@@ -18,6 +18,8 @@ import { App } from './App';
 // self-gate(host allowlist + ?debug=1 + relay + TOTP)를 그대로 상속한다.
 if (__DEBUG_BUILD__) {
   import('@ait-co/devtools/in-app/auto');
+  // 측정 브랜치 한정 gate 진단 오버레이 (#284) — release 빌드에선 가드째 DCE.
+  import('./debug-gate-probe');
 }
 
 createRoot(document.getElementById('root')!).render(
