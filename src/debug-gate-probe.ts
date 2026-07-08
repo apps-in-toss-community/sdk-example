@@ -12,9 +12,22 @@
 // 값을 이미 보유하고 있고(QR 대시보드도 같은 URL을 평문 표시) 화면 표시는
 // 새 노출이 아니다. 단, 이 값을 콘솔 로그·리포트·relay 이벤트로 되돌려
 // 보내는 코드는 금지 — 세션 로그 경계 밖으로 값이 나가면 안 된다.
+import { getSchemeUri } from '@apps-in-toss/web-framework';
+
 const PRIVATE_APPS_SUFFIX = '.private-apps.tossmini.com';
 const TOSSMINI_SUFFIX = '.tossmini.com';
 const PARAM_NAMES = ['_deploymentId', 'debug', 'relay', 'at', 'host'] as const;
+
+// 3.0 로더는 scheme 쿼리를 location으로 전파하지 않는다(devtools#760) —
+// SDK getSchemeUri()가 원본 launch URI(_deploymentId 포함)를 회수하는지가
+// 러너 페이지-매칭/entry 판정의 다음 설계 근거다. 실패해도 probe는 죽지 않는다.
+function readSchemeUri(): string {
+  try {
+    return getSchemeUri() || '(empty)';
+  } catch (e) {
+    return `(error: ${e instanceof Error ? e.message : String(e)})`;
+  }
+}
 
 function describeGateInputs(): string[] {
   const { hostname, protocol, search, hash, href } = window.location;
@@ -34,6 +47,7 @@ function describeGateInputs(): string[] {
     `search.len: ${search.length} hash.len: ${hash.length}`,
     `params: ${PARAM_NAMES.map((k) => `${k}=${params.has(k) ? 'Y' : 'N'}`).join(' ')}`,
     `url: ${href}`,
+    `schemeUri: ${readSchemeUri()}`,
   ];
 }
 
@@ -63,5 +77,3 @@ if (document.readyState === 'loading') {
 } else {
   mountProbe();
 }
-
-export {};
