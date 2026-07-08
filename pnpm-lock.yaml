@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@ait-co/devtools':
-        specifier: 0.0.0-beta-20260705131417-81b6ea5bb75d1bab35f786ec500750b6495f5f8f
-        version: 0.0.0-beta-20260705131417-81b6ea5bb75d1bab35f786ec500750b6495f5f8f(@apps-in-toss/web-framework@3.0.0-beta.b36d7b5(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@26.0.1)(typanion@3.14.0)(typescript@6.0.3))(rolldown@1.1.3)(rollup@4.62.2)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(zod@4.4.3)
       '@ait-co/polyfill':
         specifier: ^0.1.17
         version: 0.1.17(@apps-in-toss/web-framework@3.0.0-beta.b36d7b5(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@26.0.1)(typanion@3.14.0)(typescript@6.0.3))
@@ -30,6 +27,9 @@ importers:
         specifier: ^7.18.0
         version: 7.18.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
     devDependencies:
+      '@ait-co/devtools':
+        specifier: 0.0.0-beta-20260708035642-44099dd489899ffc4f799af99d8784c499e932c3
+        version: 0.0.0-beta-20260708035642-44099dd489899ffc4f799af99d8784c499e932c3(@apps-in-toss/web-framework@3.0.0-beta.b36d7b5(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@26.0.1)(typanion@3.14.0)(typescript@6.0.3))(rolldown@1.1.3)(rollup@4.62.2)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(zod@4.4.3)
       '@apps-in-toss/cli':
         specifier: 2.10.0
         version: 2.10.0(@babel/core@7.29.7)(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@react-navigation/native@7.2.2(react-native@0.72.6(@babel/core@7.29.7)(@babel/preset-env@7.28.5(@babel/core@7.29.7))(react@19.2.7))(react@19.2.7))(@swc/helpers@0.5.23)(@types/node@26.0.1)(react-native-safe-area-context@5.6.2(react-native@0.72.6(@babel/core@7.29.7)(@babel/preset-env@7.28.5(@babel/core@7.29.7))(react@19.2.7))(react@19.2.7))(react-native-screens@4.23.0(react-native@0.72.6(@babel/core@7.29.7)(@babel/preset-env@7.28.5(@babel/core@7.29.7))(react@19.2.7))(react@19.2.7))(react-native@0.72.6(@babel/core@7.29.7)(@babel/preset-env@7.28.5(@babel/core@7.29.7))(react@19.2.7))(react@19.2.7)(typanion@3.14.0)(typescript@6.0.3)
@@ -96,8 +96,8 @@ packages:
   '@adobe/css-tools@4.5.0':
     resolution: {integrity: sha512-6OzddxPio9UiWTCemp4N8cYLV2ZN1ncRnV1cVGtve7dhPOtRkleRyx32GQCYSwDYgaHU3USMm84tNsvKzRCa1Q==}
 
-  '@ait-co/devtools@0.0.0-beta-20260705131417-81b6ea5bb75d1bab35f786ec500750b6495f5f8f':
-    resolution: {integrity: sha512-njM2QrpgJ+LQjTbZBMXnChRGakEOfYpepZbRWGJXn6c+9IKwjvs6Jw+sgaPf2H9TmSywi/3XnqerGoGba45jUg==}
+  '@ait-co/devtools@0.0.0-beta-20260708035642-44099dd489899ffc4f799af99d8784c499e932c3':
+    resolution: {integrity: sha512-G5nS2i6zxLYMncrwy5/zInznLAH2Us3FqQHZC73UyuYaIlcL4mYLQQbP6AaX+/673OhRm21ZCBfBNGYFg2POXA==}
     engines: {node: '>=24'}
     hasBin: true
     peerDependencies:
@@ -6002,7 +6002,7 @@ snapshots:
 
   '@adobe/css-tools@4.5.0': {}
 
-  '@ait-co/devtools@0.0.0-beta-20260705131417-81b6ea5bb75d1bab35f786ec500750b6495f5f8f(@apps-in-toss/web-framework@3.0.0-beta.b36d7b5(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@26.0.1)(typanion@3.14.0)(typescript@6.0.3))(rolldown@1.1.3)(rollup@4.62.2)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(zod@4.4.3)':
+  '@ait-co/devtools@0.0.0-beta-20260708035642-44099dd489899ffc4f799af99d8784c499e932c3(@apps-in-toss/web-framework@3.0.0-beta.b36d7b5(@babel/preset-env@7.28.5(@babel/core@7.29.7))(@types/node@26.0.1)(typanion@3.14.0)(typescript@6.0.3))(rolldown@1.1.3)(rollup@4.62.2)(vite@8.1.0(@types/node@26.0.1)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(zod@4.4.3)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.29.0(zod@4.4.3)
       '@vitest/expect': 4.1.9
