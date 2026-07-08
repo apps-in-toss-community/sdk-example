@@ -44,7 +44,7 @@
     "react-router-dom": "^7.18.0"
   },
   "devDependencies": {
-    "@ait-co/devtools": "0.0.0-beta-20260708035642-44099dd489899ffc4f799af99d8784c499e932c3",
+    "@ait-co/devtools": "0.0.0-beta-20260708073416-26e18cfec4693246198778d93d56d0a09022634d",
     "@apps-in-toss/cli": "2.10.0",
     "@biomejs/biome": "2.5.1",
     "@playwright/test": "^1.61.1",
