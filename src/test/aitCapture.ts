@@ -140,8 +140,10 @@ async function resolveSdkLine(): Promise<SdkLine> {
   }
   if (isNode) {
     // 런타임 의존이 아니라 버전 probe — alias 영향 밖의 real 패키지 메타.
-    // 동적 import: esbuild iife 번들이 static 'node:module' import를 resolve할 수 없다.
-    const { createRequire } = await import('node:module');
+    // specifier를 변수로 간접화해 esbuild/browser 번들의 정적 그래프에서 제외한다
+    // (#233과 동일 — 리터럴 동적 import는 esbuild가 여전히 따라가 env3 번들이 깨진다).
+    const moduleMod = 'node:module';
+    const { createRequire } = await import(/* @vite-ignore */ moduleMod);
     const nodeRequire = createRequire(import.meta.url);
     try {
       const pkg = nodeRequire('@apps-in-toss/web-framework/package.json') as {
@@ -154,8 +156,10 @@ async function resolveSdkLine(): Promise<SdkLine> {
       // 위로 올라가며 package.json을 찾는다.
       try {
         const entry = nodeRequire.resolve('@apps-in-toss/web-framework');
-        const { dirname, join } = await import('node:path');
-        const { readFileSync, existsSync } = await import('node:fs');
+        const pathMod = 'node:path';
+        const fsMod = 'node:fs';
+        const { dirname, join } = await import(/* @vite-ignore */ pathMod);
+        const { readFileSync, existsSync } = await import(/* @vite-ignore */ fsMod);
         let dir = dirname(entry);
         for (let i = 0; i < 6; i++) {
           const candidate = join(dir, 'package.json');
