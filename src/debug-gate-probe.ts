@@ -12,7 +12,7 @@
 // 값을 이미 보유하고 있고(QR 대시보드도 같은 URL을 평문 표시) 화면 표시는
 // 새 노출이 아니다. 단, 이 값을 콘솔 로그·리포트·relay 이벤트로 되돌려
 // 보내는 코드는 금지 — 세션 로그 경계 밖으로 값이 나가면 안 된다.
-import { getSchemeUri } from '@apps-in-toss/web-framework';
+import { getAppsInTossGlobals, getSchemeUri } from '@apps-in-toss/web-framework';
 
 const PRIVATE_APPS_SUFFIX = '.private-apps.tossmini.com';
 const TOSSMINI_SUFFIX = '.tossmini.com';
@@ -24,6 +24,41 @@ const PARAM_NAMES = ['_deploymentId', 'debug', 'relay', 'at', 'host'] as const;
 function readSchemeUri(): string {
   try {
     return getSchemeUri() || '(empty)';
+  } catch (e) {
+    return `(error: ${e instanceof Error ? e.message : String(e)})`;
+  }
+}
+
+// getOriginalSchemeURI는 web-framework public export가 아니다 (3.0-beta 기준
+// scheme 계열 export는 getSchemeUri뿐). 네이티브 런타임이 window나 globals에
+// 미문서로 심었을 가능성을 런타임 탐색으로 확인한다 — 이름 변형 몇 가지 +
+// globals key 전수 표시(아래 describeAitGlobals)로 실명이 뭐든 드러나게.
+function readOriginalSchemeUri(): string {
+  try {
+    const w = window as unknown as Record<string, unknown>;
+    for (const name of ['getOriginalSchemeURI', 'getOriginalSchemeUri']) {
+      const fn = w[name];
+      if (typeof fn === 'function') return String((fn as () => unknown)()) || '(empty)';
+    }
+    const g = getAppsInTossGlobals() as unknown as Record<string, unknown> | null | undefined;
+    for (const key of ['originalSchemeURI', 'originalSchemeUri', 'originalScheme', 'schemeUri']) {
+      const v = g?.[key];
+      if (typeof v === 'function') return String((v as () => unknown)()) || '(empty)';
+      if (typeof v === 'string') return `${key}=${v}`;
+    }
+    return '(not found)';
+  } catch (e) {
+    return `(error: ${e instanceof Error ? e.message : String(e)})`;
+  }
+}
+
+function describeAitGlobals(): string {
+  try {
+    const g = getAppsInTossGlobals() as unknown;
+    if (g == null) return '(null)';
+    if (typeof g !== 'object') return `(${typeof g})`;
+    const keys = Object.keys(g as object);
+    return keys.length > 0 ? keys.join(',') : '(no keys)';
   } catch (e) {
     return `(error: ${e instanceof Error ? e.message : String(e)})`;
   }
@@ -48,6 +83,8 @@ function describeGateInputs(): string[] {
     `params: ${PARAM_NAMES.map((k) => `${k}=${params.has(k) ? 'Y' : 'N'}`).join(' ')}`,
     `url: ${href}`,
     `schemeUri: ${readSchemeUri()}`,
+    `originalSchemeURI: ${readOriginalSchemeUri()}`,
+    `aitGlobals: ${describeAitGlobals()}`,
   ];
 }
 
