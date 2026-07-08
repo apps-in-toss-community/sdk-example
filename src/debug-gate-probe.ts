@@ -7,25 +7,33 @@
 // 전제한다. 3.0 신규 로더(`host` 파라미터, `sources/` 레이아웃)가 그 계약을
 // 지키는지 이 오버레이의 불리언만으로 판정한다.
 //
-// SECRET-HANDLING: 파라미터/호스트의 값은 절대 렌더하지 않는다 — 존재 여부
-// Y/N, 라벨 수, 마지막 2라벨 suffix(공개 TLD 수준)까지만.
+// SECRET-HANDLING: URL 전체(location.href)는 **기기 화면 렌더 한정**으로
+// 허용한다 — 이 페이지는 QR을 스캔한 기기에서만 열리므로, 기기는 relay/at
+// 값을 이미 보유하고 있고(QR 대시보드도 같은 URL을 평문 표시) 화면 표시는
+// 새 노출이 아니다. 단, 이 값을 콘솔 로그·리포트·relay 이벤트로 되돌려
+// 보내는 코드는 금지 — 세션 로그 경계 밖으로 값이 나가면 안 된다.
 const PRIVATE_APPS_SUFFIX = '.private-apps.tossmini.com';
+const TOSSMINI_SUFFIX = '.tossmini.com';
 const PARAM_NAMES = ['_deploymentId', 'debug', 'relay', 'at', 'host'] as const;
 
 function describeGateInputs(): string[] {
-  const { hostname, protocol, search, hash } = window.location;
+  const { hostname, protocol, search, hash, href } = window.location;
   const labels = hostname === '' ? [] : hostname.split('.');
   const params = new URLSearchParams(search);
+  // devtools#760 이후 gate와 동일한 계열 판정: tossmini 계열 전체 허용
+  // (private-apps가 아니면 at= 필수 — 아래 params 행으로 교차 확인).
   const hostAllow =
     hostname === 'localhost' ||
     hostname === '127.0.0.1' ||
     hostname.endsWith('.trycloudflare.com') ||
-    hostname.endsWith(PRIVATE_APPS_SUFFIX);
+    hostname.endsWith(TOSSMINI_SUFFIX);
+  const isPrivateApps = hostname.endsWith(PRIVATE_APPS_SUFFIX);
   return [
     `proto: ${protocol}`,
-    `host-allow: ${hostAllow ? 'Y' : 'N'} (labels=${labels.length}, suffix2=${labels.slice(-2).join('.') || '(none)'})`,
+    `host-allow: ${hostAllow ? 'Y' : 'N'} (labels=${labels.length}, private-apps=${isPrivateApps ? 'Y' : 'N'})`,
     `search.len: ${search.length} hash.len: ${hash.length}`,
     `params: ${PARAM_NAMES.map((k) => `${k}=${params.has(k) ? 'Y' : 'N'}`).join(' ')}`,
+    `url: ${href}`,
   ];
 }
 
