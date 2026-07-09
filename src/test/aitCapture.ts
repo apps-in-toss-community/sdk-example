@@ -134,8 +134,10 @@ async function resolveSdkLine(): Promise<SdkLine> {
   if (isNode) {
     try {
       // 런타임 의존이 아니라 버전 probe — alias 영향 밖의 real 패키지 메타.
-      // 동적 import: esbuild iife 번들이 static 'node:module' import를 resolve할 수 없다.
-      const { createRequire } = await import('node:module');
+      // specifier를 변수로 간접화해 esbuild/browser 번들의 정적 그래프에서 제외한다
+      // (#233과 동일 — 리터럴 동적 import는 esbuild가 여전히 따라가 env3 번들이 깨진다).
+      const moduleMod = 'node:module';
+      const { createRequire } = await import(/* @vite-ignore */ moduleMod);
       const nodeRequire = createRequire(import.meta.url);
       const pkg = nodeRequire('@apps-in-toss/web-framework/package.json') as {
         version?: string;
