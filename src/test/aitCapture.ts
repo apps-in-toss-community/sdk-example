@@ -92,6 +92,11 @@ export interface AitCaptureRecord {
   // --- 4-cell 축 (runner가 채움, 테스트가 아님) ---
   sdkLine: SdkLine;
   platform: Platform;
+  /**
+   * THROTTLED(#290) backoff 재시도 횟수 — **1회 이상 발생했을 때만** 존재한다.
+   * 0이면 필드 자체를 생략해 기존 레코드 shape(및 diff 스크립트 호환)를 무변경으로 둔다.
+   */
+  throttleRetries?: number;
 }
 
 /** 테스트가 채우는 부분 — cell 축(sdkLine/platform)은 runner가 주입한다. */
@@ -296,6 +301,17 @@ function extractValueShape(value: unknown): { returnType: string; valueKeys: str
  * `outcome: 'timeout'` 레코드로 낙착시켜 파일이 다음 테스트로 넘어가게
  * 하는 것이다(런타임 프로세스가 종료되면 dangling promise도 함께 사라진다).
  *
+ * ─ THROTTLED backoff 재시도(#290) ──────────────────────────────────────────
+ * 2026-07-10 토스 앱 업데이트 이후 2.x 브리지 경로에 native rate limit이
+ * 생겼다 — 같은 브리지 메서드를 짧은 윈도우 안에 반복 호출하면
+ * `errorCode: 'APP_BRIDGE_THROTTLED'`로 즉시 reject된다. 이 슈트의 호출은
+ * 전부 이 함수 안에서 실행되므로(러너 레벨 재시도가 못 보는 계층), THROTTLED
+ * rejection만 골라 backoff 후 같은 `call()`을 재시도한다. 사다리
+ * `[1000, 3000, 8000]`ms는 누적-윈도우 가설(#290 관측)을 감안해 인내심 있게
+ * 설계됐다 — 임의로 줄이지 않는다. THROTTLED가 아닌 rejection은 재시도 없이
+ * 즉시 기록한다(2.x↔3.0 오류-shape 대조가 이 슈트의 존재 이유라, 진짜 오류를
+ * 재시도로 가리면 안 된다).
+ *
  * @returns `{ outcome, value?, error? }` — 단언은 테스트가 한다(캡처는 부수효과).
  */
 export async function captureAsync(
@@ -304,46 +320,84 @@ export async function captureAsync(
   options?: { raceTimeoutMs?: number },
 ): Promise<{ outcome: Outcome; value?: unknown; error?: unknown }> {
   const raceTimeoutMs = options?.raceTimeoutMs;
-  try {
-    const value =
-      raceTimeoutMs === undefined ? await call() : await raceWithTimeout(call(), raceTimeoutMs);
-    if (value === TIMEOUT_SENTINEL) {
+  let throttleRetries = 0;
+  for (;;) {
+    try {
+      const value =
+        raceTimeoutMs === undefined ? await call() : await raceWithTimeout(call(), raceTimeoutMs);
+      if (value === TIMEOUT_SENTINEL) {
+        capture({
+          ...meta,
+          outcome: 'timeout',
+          errorName: null,
+          errorCode: null,
+          errorMessage: null,
+          errorKeys: [],
+          isNativeShape: false,
+          returnType: 'undefined',
+          valueKeys: null,
+          ...(throttleRetries > 0 ? { throttleRetries } : {}),
+        });
+        return { outcome: 'timeout' };
+      }
+      const { returnType, valueKeys } = extractValueShape(value);
       capture({
         ...meta,
-        outcome: 'timeout',
+        outcome: 'resolved',
         errorName: null,
         errorCode: null,
         errorMessage: null,
         errorKeys: [],
         isNativeShape: false,
+        returnType,
+        valueKeys,
+        ...(throttleRetries > 0 ? { throttleRetries } : {}),
+      });
+      return { outcome: 'resolved', value };
+    } catch (error) {
+      if (isThrottledError(error) && throttleRetries < THROTTLE_BACKOFF_MS.length) {
+        // 가드가 인덱스 유효성을 보장하지만 `noUncheckedIndexedAccess`는 이를 narrow하지
+        // 못한다 — 마지막 사다리 값(8000ms)을 안전한 fallback으로 둔다(도달할 일 없음).
+        const waitMs = THROTTLE_BACKOFF_MS[throttleRetries] ?? 8000;
+        throttleRetries += 1;
+        await delay(waitMs);
+        continue;
+      }
+      capture({
+        ...meta,
+        outcome: 'rejected',
+        ...extractErrorShape(error),
         returnType: 'undefined',
         valueKeys: null,
+        ...(throttleRetries > 0 ? { throttleRetries } : {}),
       });
-      return { outcome: 'timeout' };
+      return { outcome: 'rejected', error };
     }
-    const { returnType, valueKeys } = extractValueShape(value);
-    capture({
-      ...meta,
-      outcome: 'resolved',
-      errorName: null,
-      errorCode: null,
-      errorMessage: null,
-      errorKeys: [],
-      isNativeShape: false,
-      returnType,
-      valueKeys,
-    });
-    return { outcome: 'resolved', value };
-  } catch (error) {
-    capture({
-      ...meta,
-      outcome: 'rejected',
-      ...extractErrorShape(error),
-      returnType: 'undefined',
-      valueKeys: null,
-    });
-    return { outcome: 'rejected', error };
   }
+}
+
+/**
+ * 2.x native bridge rate-limit rejection 감지(#290). envelope은
+ * `{ name, code, userInfo, moduleName, __isError }` — `code`가 문자열로
+ * 오지만 message 텍스트로만 판별 가능한 변형도 있어 두 기준을 or로 둔다.
+ */
+function isThrottledError(err: unknown): boolean {
+  if (err === null || typeof err !== 'object') {
+    return false;
+  }
+  const withFields = err as { code?: unknown; message?: unknown };
+  if (withFields.code === 'APP_BRIDGE_THROTTLED') {
+    return true;
+  }
+  return String(withFields.message ?? '').includes('Too many app bridge calls');
+}
+
+/** THROTTLED 재시도 대기 사다리(ms) — 누적-윈도우 가설을 감안한 인내심 있는 backoff(#290). */
+const THROTTLE_BACKOFF_MS = [1000, 3000, 8000] as const;
+
+/** page-side 안전한 순수 지연 — node builtin 의존 없음. */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /** `raceWithTimeout` 내부에서만 쓰는 sentinel — 실제 SDK 반환값과 절대 충돌하지 않도록 고유 심볼로 둔다. */
