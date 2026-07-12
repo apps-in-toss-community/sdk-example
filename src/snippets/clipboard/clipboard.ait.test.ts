@@ -66,47 +66,10 @@ afterEach(async () => {
   }
 });
 
-describe('clipboard · 값 다양화 (happy path)', () => {
-  it('setClipboardText → getClipboardText 라운드트립 (빈 문자열·유니코드·긴 문자열)', async () => {
-    for (const text of ['', 'hello', '한글 텍스트 😀', 'x'.repeat(2000)]) {
-      const setResult = await captureAsync(
-        {
-          category: CATEGORY,
-          api: 'setClipboardText',
-          scenario: 'happy-varied-text',
-          input: { length: text.length },
-        },
-        () => setClipboardText(text),
-      );
-      if (cell.platform === 'mock') {
-        // mock은 권한이 allowed인 한 항상 resolve — 실계약 하드 단언.
-        expect(setResult.outcome).toBe('resolved');
-      } else {
-        expect(['resolved', 'rejected']).toContain(setResult.outcome);
-      }
-
-      const getResult = await captureAsync(
-        {
-          category: CATEGORY,
-          api: 'getClipboardText',
-          scenario: 'happy-round-trip-read',
-          input: { length: text.length },
-        },
-        () => getClipboardText(),
-      );
-      if (cell.platform === 'mock' && setResult.outcome === 'resolved') {
-        // set이 성공했으면 곧바로 이어지는 get은 같은 값을 반환해야 한다 — 라운드트립 실계약.
-        expect(getResult.outcome).toBe('resolved');
-        expect(getResult.value).toBe(text);
-      } else if (getResult.outcome === 'resolved') {
-        // env3: 다른 프로세스가 클립보드를 바꿀 수 있어 값 동일성은 보장 못 하지만
-        // shape는 단언한다.
-        expect(typeof getResult.value).toBe('string');
-      }
-    }
-  });
-});
-
+// 이 denied 블록은 파일에서 가장 먼저 실행돼야 한다 — 실기기 토스 앱의
+// per-method 브리지 rate limit(APP_BRIDGE_THROTTLED) 때문에, happy 블록이
+// 같은 메서드를 연타해 limiter를 포화시킨 뒤에는 권한 계약 대신 THROTTLED
+// rejection이 관측된다 (#293).
 describe('clipboard · 권한 거부 (실계약 단언)', () => {
   it('getClipboardText: 거부 시 GetClipboardTextPermissionError / native shape + errorCode 필드', async () => {
     if (cell.platform === 'mock') {
@@ -187,6 +150,48 @@ describe('clipboard · 권한 거부 (실계약 단언)', () => {
     }
   });
 });
+
+describe('clipboard · 값 다양화 (happy path)', () => {
+  it('setClipboardText → getClipboardText 라운드트립 (빈 문자열·유니코드·긴 문자열)', async () => {
+    for (const text of ['', 'hello', '한글 텍스트 😀', 'x'.repeat(2000)]) {
+      const setResult = await captureAsync(
+        {
+          category: CATEGORY,
+          api: 'setClipboardText',
+          scenario: 'happy-varied-text',
+          input: { length: text.length },
+        },
+        () => setClipboardText(text),
+      );
+      if (cell.platform === 'mock') {
+        // mock은 권한이 allowed인 한 항상 resolve — 실계약 하드 단언.
+        expect(setResult.outcome).toBe('resolved');
+      } else {
+        expect(['resolved', 'rejected']).toContain(setResult.outcome);
+      }
+
+      const getResult = await captureAsync(
+        {
+          category: CATEGORY,
+          api: 'getClipboardText',
+          scenario: 'happy-round-trip-read',
+          input: { length: text.length },
+        },
+        () => getClipboardText(),
+      );
+      if (cell.platform === 'mock' && setResult.outcome === 'resolved') {
+        // set이 성공했으면 곧바로 이어지는 get은 같은 값을 반환해야 한다 — 라운드트립 실계약.
+        expect(getResult.outcome).toBe('resolved');
+        expect(getResult.value).toBe(text);
+      } else if (getResult.outcome === 'resolved') {
+        // env3: 다른 프로세스가 클립보드를 바꿀 수 있어 값 동일성은 보장 못 하지만
+        // shape는 단언한다.
+        expect(typeof getResult.value).toBe('string');
+      }
+    }
+  });
+});
+
 
 describe('clipboard · 4-cell 오류-shape 캡처', () => {
   it('호출 결과가 capture sink에 쌓인다', () => {
