@@ -35,8 +35,12 @@ const isNode =
 
 /** 4-cell 축의 SDK 라인 (런타임 web-framework major). */
 export type SdkLine = '2.x' | '3.x';
-/** 4-cell 축의 플랫폼. env1 → 'mock'; env3 → 실기기. */
-export type Platform = 'mock' | 'ios' | 'android';
+/**
+ * 4-cell 축의 플랫폼. env1 → 'mock'; env3 → 실기기('ios'/'android').
+ * `'ios-pwa'`는 env2(AITC Sandbox PWA — mock@실기기 WebKit) 축 — 러너(devtools#776)가
+ * `__AIT_CELL__.platform`으로 주입한다.
+ */
+export type Platform = 'mock' | 'ios' | 'android' | 'ios-pwa';
 
 /**
  * 호출 결과의 정규화 분류.
@@ -158,17 +162,23 @@ async function resolveSdkLine(): Promise<SdkLine> {
 }
 
 /**
- * 플랫폼 축. env1에서는 항상 'mock'. env3 runner가 override로 'ios'/'android' 주입.
+ * 플랫폼 축. env1에서는 항상 'mock'. env3 runner가 override로 'ios'/'android' 주입,
+ * env2(AITC Sandbox PWA) 러너는 'ios-pwa'를 주입한다.
  */
 function resolvePlatform(): Platform {
   const override = globalThis.__AIT_CELL__?.platform;
-  if (override === 'mock' || override === 'ios' || override === 'android') {
+  if (
+    override === 'mock' ||
+    override === 'ios' ||
+    override === 'android' ||
+    override === 'ios-pwa'
+  ) {
     return override;
   }
   // process는 브라우저에 없다 — 가드 필수.
   if (isNode) {
     const fromEnv = process.env.AIT_CELL_PLATFORM;
-    if (fromEnv === 'ios' || fromEnv === 'android') {
+    if (fromEnv === 'ios' || fromEnv === 'android' || fromEnv === 'ios-pwa') {
       return fromEnv;
     }
   }

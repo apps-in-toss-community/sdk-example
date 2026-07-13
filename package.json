@@ -33,7 +33,8 @@
     "bundle:ait:dogfood": "AIT_DEBUG_BUILD=1 RELEASE_CHANNEL=dogfood ait build",
     "scaffold:domain": "node scripts/scaffold-domain.ts",
     "sync:readme": "tsx scripts/sync-readme-domains.ts",
-    "sync:readme:check": "tsx scripts/sync-readme-domains.ts --check"
+    "sync:readme:check": "tsx scripts/sync-readme-domains.ts --check",
+    "diff:captures": "tsx scripts/diff-ait-captures.ts"
   },
   "dependencies": {
     "@ait-co/devtools": "^0.1.137",

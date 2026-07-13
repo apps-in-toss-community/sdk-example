@@ -7,7 +7,7 @@ export default defineConfig({
     environment: 'jsdom',
     globals: false,
     setupFiles: ['./src/test/setup.ts'],
-    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    include: ['src/**/*.{test,spec}.{ts,tsx}', 'scripts/**/*.{test,spec}.{ts,tsx}'],
     // `*.manual.ait.test.ts`는 devtools 0.1.132 `--manual-blocking` 전용
     // 수동-변형 파일(사람이 fullscreen interstitial 등을 지켜보고 닫아야 함) —
     // device-only 계약이라 일반 `pnpm test`(env1 mock, CI)에서는 제외한다.
