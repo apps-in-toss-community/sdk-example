@@ -44,7 +44,9 @@ afterAll(async () => {
 describe('events · graniteEvent (captureCallback, mock 합성 트리거)', () => {
   it('backEvent — 구독 후 합성 CustomEvent로 onEvent가 도착한다', async () => {
     const result = await captureCallback(
-      { category: CATEGORY, api: 'graniteEvent.addEventListener', scenario: 'happy-backEvent', input: 'backEvent' },
+      { category: CATEGORY, api: 'graniteEvent.addEventListener', scenario: 'happy-backEvent',
+        nonComparable:
+          'env1 전용 전제 — mock 내부 이벤트 채널(window `__ait:*` CustomEvent)을 직접 발화시킨 실행분이다. real SDK는 네이티브 브리지를 구독하므로 그 CustomEvent가 갈 곳이 없고, 실기기는 사람이 실제로 back/home을 눌러야 도달한다(실측: env3 run11 → callback-timeout). mock 배선 회귀 감시는 여기서 계속하되 비교 코퍼스 밖으로 격리한다.', input: 'backEvent' },
       ({ onEvent }) => {
         const unsubscribe = graniteEvent.addEventListener('backEvent', { onEvent: () => onEvent(undefined) });
         if (cell.platform === 'mock') {
@@ -65,7 +67,9 @@ describe('events · graniteEvent (captureCallback, mock 합성 트리거)', () =
 
   it('homeEvent — 구독 후 합성 CustomEvent로 onEvent가 도착한다', async () => {
     const result = await captureCallback(
-      { category: CATEGORY, api: 'graniteEvent.addEventListener', scenario: 'happy-homeEvent', input: 'homeEvent' },
+      { category: CATEGORY, api: 'graniteEvent.addEventListener', scenario: 'happy-homeEvent',
+        nonComparable:
+          'env1 전용 전제 — mock 내부 이벤트 채널(window `__ait:*` CustomEvent)을 직접 발화시킨 실행분이다. real SDK는 네이티브 브리지를 구독하므로 그 CustomEvent가 갈 곳이 없고, 실기기는 사람이 실제로 back/home을 눌러야 도달한다(실측: env3 run11 → callback-timeout). mock 배선 회귀 감시는 여기서 계속하되 비교 코퍼스 밖으로 격리한다.', input: 'homeEvent' },
       ({ onEvent }) => {
         const unsubscribe = graniteEvent.addEventListener('homeEvent', { onEvent: () => onEvent(undefined) });
         if (cell.platform === 'mock') {
@@ -89,6 +93,8 @@ describe('events · tdsEvent (captureCallback, mock 합성 트리거)', () => {
         category: CATEGORY,
         api: 'tdsEvent.addEventListener',
         scenario: 'happy-navigationAccessoryEvent',
+        nonComparable:
+          'env1 전용 전제 — mock 내부 이벤트 채널(window `__ait:*` CustomEvent)을 직접 발화시킨 실행분이다. real SDK는 네이티브 브리지를 구독하므로 그 CustomEvent가 갈 곳이 없고, 실기기는 사람이 실제로 back/home을 눌러야 도달한다(실측: env3 run11 → callback-timeout). mock 배선 회귀 감시는 여기서 계속하되 비교 코퍼스 밖으로 격리한다.',
         input: 'navigationAccessoryEvent',
       },
       ({ onEvent }) => {

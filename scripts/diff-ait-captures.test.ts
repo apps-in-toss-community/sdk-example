@@ -124,6 +124,36 @@ describe('diff', () => {
     expect(m?.shapesB?.[0]?.count).toBe(2);
   });
 
+  // `nonComparable`은 시나리오의 성질이지 실행분의 성질이 아니다 — 그래서 키 단위로
+  // 뺀다. 특히 표식 도입 **전에** 뜬 코퍼스(실제로 env3 run11이 그렇다)에는 표식이
+  // 아예 없으므로, 레코드 단위로 걸렀다면 한쪽만 빠져 불일치가 커버리지 갭으로
+  // 둔갑했을 것이다 — 숫자만 옮겨 앉고 실체는 그대로인 종류의 거짓 개선이다.
+  it('nonComparable 표식이 붙은 키는 양쪽에서 제외한다', () => {
+    const a = [record({ api: 'probe', scenario: 'env1-only', nonComparable: '전제가 env1 전용' })];
+    const b = [record({ api: 'probe', scenario: 'env1-only', outcome: 'rejected' })];
+
+    const result = diff(a, b);
+
+    expect(result.totalKeys).toBe(0);
+    expect(result.mismatches).toHaveLength(0);
+    expect(result.onlyInA).toHaveLength(0);
+    expect(result.onlyInB).toHaveLength(0);
+  });
+
+  it('한쪽에만 표식이 있어도 그 키는 커버리지 갭으로 새지 않는다', () => {
+    const marked = record({ api: 'probe', scenario: 'env1-only', nonComparable: '사유' });
+    const plain = record({ api: 'probe', scenario: 'env1-only' });
+    const other = record({ api: 'shared', scenario: 's' });
+
+    // B에만 표식이 있는 경우(반대 방향)도 같은 답이어야 한다.
+    const result = diff([plain, other], [marked, other]);
+
+    expect(result.totalKeys).toBe(1);
+    expect(result.equivalentCount).toBe(1);
+    expect(result.onlyInA).toHaveLength(0);
+    expect(result.onlyInB).toHaveLength(0);
+  });
+
   it('한쪽 버킷 전체가 valueKeys를 안 갖고 있으면 그 키에서 비교를 뺀다', () => {
     const a = [record({ valueKeys: null })];
     const b = [record({ valueKeys: ['latitude'] })];
