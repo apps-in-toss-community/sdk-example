@@ -40,3 +40,4 @@ aitcc/submit-*.json
 
 # env3 test run report artifacts (per-run, not fixtures — .ait-run/.ait-capture/ 포함)
 .ait-run/
+.ait-engine-sim/
