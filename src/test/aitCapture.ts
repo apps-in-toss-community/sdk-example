@@ -159,6 +159,17 @@ export interface AitCaptureRecord {
   returnType: string;
   /** object 반환의 Object.keys(result) — { success, reason } vs { top,bottom,... }. */
   valueKeys: string[] | null;
+  /**
+   * 값 축 최소 지문 — 반환 객체의 boolean 필드만 값째로. boolean이 없으면 null.
+   *
+   * `valueKeys`가 같아도 값이 갈리는 발산(payment `"false"` 키, haptic `vibrated`,
+   * engine `coarse`/`available`)을 보이게 한다. boolean만 싣는 이유는
+   * `extractValueShape` 주석 참조 — 요약하면 시크릿이 boolean으로 표현되지 않기 때문이다.
+   *
+   * 표식 도입 전 코퍼스(env3 run11 등)에는 이 필드가 없다. diff는 **양쪽 다 있을 때만**
+   * 비교한다 — 한쪽에만 있다고 불일치로 세면 재측정 안 한 코퍼스가 전부 붉어진다.
+   */
+  booleanValues?: Record<string, boolean> | null;
   // --- 4-cell 축 (runner가 채움, 테스트가 아님) ---
   sdkLine: SdkLine;
   platform: Platform;
@@ -450,23 +461,87 @@ function extractErrorShape(err: unknown): {
   };
 }
 
-/** 반환값에서 value-shape 필드(returnType/valueKeys)를 뽑는다. */
-function extractValueShape(value: unknown): { returnType: string; valueKeys: string[] | null } {
+/**
+ * `extractValueShape`의 반환 묶음. 호출부는 이걸 **통째로 spread**한다 —
+ * 필드를 손으로 하나씩 옮기면 새 필드를 추가했을 때 조용히 누락된다(optional이라
+ * `tsc`도 안 잡는다). `nonComparable`이 실제로 그렇게 events 3건에서 빠졌었다.
+ */
+interface ValueShape {
+  returnType: string;
+  valueKeys: string[] | null;
+  booleanValues: Record<string, boolean> | null;
+}
+
+/**
+ * 값 축이 없는 결과(reject/throw/timeout)의 shape.
+ *
+ * 상수로 둔 이유는 성공 경로를 spread로 바꾼 것과 같다 — 필드를 사이트마다 손으로
+ * 나열하면 값 축에 필드가 늘 때 **일부 사이트에만** 반영돼 코퍼스가 불균일해진다.
+ * `booleanValues`를 추가했을 때 실제로 reject 경로 5곳이 그렇게 빠졌고, optional
+ * 필드라 `tsc`가 아니라 테스트가 잡았다.
+ */
+const NO_VALUE_SHAPE: ValueShape = {
+  returnType: 'undefined',
+  valueKeys: null,
+  booleanValues: null,
+};
+
+/**
+ * 반환값에서 value-shape 필드(returnType/valueKeys/booleanValues)를 뽑는다.
+ *
+ * `booleanValues`는 값 축의 최소 지문이다 — 객체 필드 중 **boolean인 것만** 값을
+ * 그대로 싣는다. 왜 boolean만인가:
+ *
+ * - 시크릿 위험이 0이다. 토큰·deviceId·금액은 string/number라 애초에 안 실린다.
+ *   "무엇을 가릴까"를 고르는 대신 "무엇만 실을까"를 고르므로 redact 목록이 낡아서
+ *   새는 실패 방식이 없다.
+ * - 신호 대비 비용이 가장 크다. 지금까지 값 축 발산 4건 중 3건이 boolean이었다 —
+ *   payment의 `"false"` 키(#303), haptic `vibrated`, engine 프로브의
+ *   `available`/`coarse`/`supported`/`hasRead` 계열이 전부 여기 해당한다.
+ *
+ * 이게 없으면 `valueKeys`가 같다는 이유로 **존재하지 않는 동치가 인증된다** —
+ * haptic이 그 실증 사례다(jsdom `vibrated:false` ↔ Chrome `true`인데 양쪽 다
+ * `resolved`/`undefined`로 집계됐다).
+ */
+function extractValueShape(value: unknown): ValueShape {
   // thenable이 새어나오면(A1: await 안 한 Promise 반환) returnType='Promise'.
   if (
     value !== null &&
     typeof value === 'object' &&
     typeof (value as { then?: unknown }).then === 'function'
   ) {
-    return { returnType: 'Promise', valueKeys: null };
+    return { returnType: 'Promise', valueKeys: null, booleanValues: null };
   }
   if (Array.isArray(value)) {
-    return { returnType: 'array', valueKeys: null };
+    return { returnType: 'array', valueKeys: null, booleanValues: null };
   }
   if (value !== null && typeof value === 'object') {
-    return { returnType: 'object', valueKeys: Object.keys(value) };
+    return {
+      returnType: 'object',
+      valueKeys: Object.keys(value),
+      booleanValues: extractBooleanValues(value),
+    };
   }
-  return { returnType: value === null ? 'null' : typeof value, valueKeys: null };
+  if (typeof value === 'boolean') {
+    // 스칼라 boolean 반환도 값 축이다 — 키가 없으니 `self`로 싣는다.
+    return { returnType: 'boolean', valueKeys: null, booleanValues: { self: value } };
+  }
+  return {
+    returnType: value === null ? 'null' : typeof value,
+    valueKeys: null,
+    booleanValues: null,
+  };
+}
+
+/** 객체의 1-depth boolean 필드만 뽑는다. 없으면 null(키 자체를 안 만든다). */
+function extractBooleanValues(value: object): Record<string, boolean> | null {
+  const booleans: Record<string, boolean> = {};
+  for (const [key, entry] of Object.entries(value)) {
+    if (typeof entry === 'boolean') {
+      booleans[key] = entry;
+    }
+  }
+  return Object.keys(booleans).length > 0 ? booleans : null;
 }
 
 /**
@@ -515,13 +590,12 @@ export async function captureAsync(
           errorMessage: null,
           errorKeys: [],
           isNativeShape: false,
-          returnType: 'undefined',
-          valueKeys: null,
+          ...NO_VALUE_SHAPE,
           ...(throttleRetries > 0 ? { throttleRetries } : {}),
         });
         return { outcome: 'timeout' };
       }
-      const { returnType, valueKeys } = extractValueShape(value);
+      const valueShape = extractValueShape(value);
       capture({
         ...meta,
         outcome: 'resolved',
@@ -530,8 +604,7 @@ export async function captureAsync(
         errorMessage: null,
         errorKeys: [],
         isNativeShape: false,
-        returnType,
-        valueKeys,
+        ...valueShape,
         ...(throttleRetries > 0 ? { throttleRetries } : {}),
       });
       return { outcome: 'resolved', value };
@@ -548,8 +621,7 @@ export async function captureAsync(
         ...meta,
         outcome: 'rejected',
         ...extractErrorShape(error),
-        returnType: 'undefined',
-        valueKeys: null,
+        ...NO_VALUE_SHAPE,
         ...(throttleRetries > 0 ? { throttleRetries } : {}),
       });
       return { outcome: 'rejected', error };
@@ -685,7 +757,7 @@ export function captureCallback(
       runCleanup();
 
       if (result.outcome === 'resolved') {
-        const { returnType, valueKeys } = extractValueShape(result.value);
+        const valueShape = extractValueShape(result.value);
         capture({
           category: meta.category,
           api: meta.api,
@@ -698,8 +770,7 @@ export function captureCallback(
           errorMessage: null,
           errorKeys: [],
           isNativeShape: false,
-          returnType,
-          valueKeys,
+          ...valueShape,
         });
       } else if (result.outcome === 'rejected') {
         capture({
@@ -710,8 +781,7 @@ export function captureCallback(
           nonComparable: meta.nonComparable,
           outcome: 'rejected',
           ...extractErrorShape(result.error),
-          returnType: 'undefined',
-          valueKeys: null,
+          ...NO_VALUE_SHAPE,
         });
       } else {
         // callback-timeout — 명시적 응답 없음. 오류-shape 필드는 전부 null/빈값.
@@ -727,8 +797,7 @@ export function captureCallback(
           errorMessage: null,
           errorKeys: [],
           isNativeShape: false,
-          returnType: 'undefined',
-          valueKeys: null,
+          ...NO_VALUE_SHAPE,
         });
       }
 
@@ -791,7 +860,7 @@ export function captureSync(
 ): { outcome: Outcome; value?: unknown; error?: unknown } {
   try {
     const value = call();
-    const { returnType, valueKeys } = extractValueShape(value);
+    const valueShape = extractValueShape(value);
     markThenableHandled(value);
     capture({
       ...meta,
@@ -801,8 +870,7 @@ export function captureSync(
       errorMessage: null,
       errorKeys: [],
       isNativeShape: false,
-      returnType,
-      valueKeys,
+      ...valueShape,
     });
     return { outcome: 'returned-sync', value };
   } catch (error) {
@@ -810,8 +878,7 @@ export function captureSync(
       ...meta,
       outcome: 'threw-sync',
       ...extractErrorShape(error),
-      returnType: 'undefined',
-      valueKeys: null,
+      ...NO_VALUE_SHAPE,
     });
     return { outcome: 'threw-sync', error };
   }
