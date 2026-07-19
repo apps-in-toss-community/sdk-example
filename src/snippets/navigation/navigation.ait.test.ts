@@ -117,8 +117,12 @@ describe('navigation · 의도적 오류 (확인된 오용 가드)', () => {
     expect(bare.outcome).toBe('rejected');
     expect((bare.error as { errorCode?: unknown } | undefined)?.errorCode).toBe('EXECUTION_ERROR');
     // scheme이 있는 유효 입력은 계속 통과한다 — 검증이 과도하지 않은지 확인.
+    // 반환 문자열의 내용은 단언하지 않는다: env3는 verbatim intoss:// 스킴이 아니라
+    // Toss 단축 링크를 돌려주므로(위 happy-intoss-uri 주석 참조) toContain('intoss://')는
+    // mock 구현이 입력을 그대로 echo하는 것에만 성립하는 env1 전용 단언이 된다.
+    // N2가 가드하려는 건 "과도한 검증이 유효 입력까지 막지 않는다"이고, outcome만으로 충분하다.
     expect(valid.outcome).toBe('resolved');
-    expect(valid.value).toContain('intoss://');
+    expect(typeof valid.value).toBe('string');
   });
 });
 
