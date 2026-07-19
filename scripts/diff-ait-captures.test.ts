@@ -216,6 +216,44 @@ describe('diff', () => {
     expect(result.mismatches).toHaveLength(1);
     expect(result.mismatches[0]?.fields.map((f) => f.field)).toEqual(['valueKeys']);
   });
+
+  it('errorKeys만 갈려도 불일치로 잡는다 — 오류 shape 발산 (#317)', () => {
+    // 실측 회귀: env1 mock은 손으로 만든 `{ errorCode }`를, env3는 네이티브
+    // envelope을 던진다. outcome/errorName/errorCode/returnType이 전부 같아서
+    // errorKeys를 비교하지 않으면 완전 동치로 집계된다(run11에서 3건이 그랬다).
+    const a = [record({ outcome: 'rejected', errorName: 'Error', errorKeys: ['errorCode'] })];
+    const b = [
+      record({
+        outcome: 'rejected',
+        errorName: 'Error',
+        errorKeys: ['name', 'code', 'userInfo', 'moduleName', '__isError'],
+      }),
+    ];
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(0);
+    expect(result.mismatches).toHaveLength(1);
+    expect(result.mismatches[0]?.fields.map((f) => f.field)).toEqual(['errorKeys']);
+  });
+
+  it('errorKeys는 순서를 계약으로 보지 않는다 — 순서만 다르면 동치', () => {
+    const a = [record({ errorKeys: ['code', 'name'] })];
+    const b = [record({ errorKeys: ['name', 'code'] })];
+
+    expect(diff(a, b).equivalentCount).toBe(1);
+  });
+
+  it('errorMessage는 비교하지 않는다 — 기기별 자유 문자열이라 의도적 제외', () => {
+    // iOS CoreLocation native string처럼 기기·OS별로 갈리는 값이다. 비교에 넣으면
+    // 오류라는 오류가 전부 불일치로 떠 계기가 쓸모없어진다.
+    const a = [
+      record({ outcome: 'rejected', errorMessage: 'The operation couldn’t be completed.' }),
+    ];
+    const b = [record({ outcome: 'rejected', errorMessage: 'Location permission denied' })];
+
+    expect(diff(a, b).equivalentCount).toBe(1);
+  });
 });
 
 describe('compareRecords', () => {
