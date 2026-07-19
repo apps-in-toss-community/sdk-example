@@ -265,4 +265,25 @@ describe('booleanValues (값 축 지문)', () => {
 
     expect(diff(a, b).equivalentCount).toBe(1);
   });
+
+  it('reject record가 섞인 버킷에서도 지문 불일치를 잡는다 (#300과 같은 결함)', () => {
+    // 오류 경로는 `NO_VALUE_SHAPE`로 `booleanValues: null`을 남긴다. 게이트를
+    // `every`로 두면 그 record 하나 때문에 같은 버킷 resolved record의 지문까지
+    // 서명에서 빠져 true/false 발산이 조용히 동치로 집계된다.
+    const rejected = () =>
+      record({
+        outcome: 'rejected',
+        errorCode: 'DENIED',
+        returnType: 'undefined',
+        valueKeys: null,
+        booleanValues: null,
+      });
+    const a = [record({ valueKeys: ['success'], booleanValues: { success: true } }), rejected()];
+    const b = [record({ valueKeys: ['success'], booleanValues: { success: false } }), rejected()];
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(0);
+    expect(result.mismatches).toHaveLength(1);
+  });
 });
