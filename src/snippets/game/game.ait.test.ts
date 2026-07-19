@@ -66,9 +66,12 @@ describe('game · 값 다양화 (happy path)', () => {
         },
         () => grantPromotionRewardForGame({ params }),
       );
-      // env3에서 날조된 promotionCode는 workspace 3095/app 31146에 미등록이라
-      // errorCode 4100 'No promotions found'로 reject된다 — ENV_EXPECTED 동작.
-      // mock(env1)에서만 { key } shape를 단언하고, env3에서는 캡처만 수행한다.
+      // env3에서 날조된 promotionCode는 workspace 3095/app 31146에 미등록이지만
+      // **reject되지 않는다** — 실기기는 `{ errorCode, message }` 본문을 담아
+      // resolve하는 soft-resolve다(실기기 캡처 관측: outcome=resolved,
+      // valueKeys=['errorCode','message']). 즉 outcome만 보면 성공과 구분되지 않는다.
+      // mock(env1)은 `{ key }`를 반환하므로 shape 단언은 mock + resolved 조합에서만
+      // 하고, env3에서는 캡처만 수행한다.
       if (outcome === 'resolved' && cell.platform === 'mock') {
         expect(value).toMatchObject({ key: expect.any(String) });
       }
@@ -99,8 +102,10 @@ describe('game · 의도적 오류 (확인된 오용 가드)', () => {
       },
       () => grantPromotionReward({ params: { promotionCode: 'PC', amount: 100 } }),
     );
-    // env3에서 미등록 promotionCode 'PC'는 errorCode 4100으로 reject된다 — ENV_EXPECTED.
-    // { key } shape 단언은 mock(env1) + resolved 조합일 때만 의미가 있다.
+    // env3에서 미등록 promotionCode 'PC'도 reject가 아니라 `{ errorCode, message }`
+    // soft-resolve다(위 happy-varied-promotion 주석과 같은 관측). 아래 outcome 단언이
+    // 'rejected'를 함께 허용하는 건 향후 계약 변화를 견디기 위한 여유지, 실기기가
+    // reject한다는 뜻이 아니다. `{ key }` 단언은 mock(env1) + resolved 조합일 때만.
     expect(['resolved', 'rejected']).toContain(forGame.outcome);
     if (forGame.outcome === 'resolved' && cell.platform === 'mock') {
       expect(forGame.value).toMatchObject({ key: expect.any(String) });
