@@ -43,10 +43,11 @@ import {
   openPermissionDialog,
   requestPermission,
 } from '@apps-in-toss/web-framework';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { captureAsync, cell, flushCapture } from '../../test/aitCapture';
 import { getAitPerms } from '../../test/aitPerms';
 import { isNativeErrorShape } from '../../test/isNativeError';
+import { clearProvisioningMirror, mirrorProvisioning } from '../../test/provisioningMirror';
 
 const CATEGORY = 'permissions';
 
@@ -73,7 +74,15 @@ const PERMISSION_NAMES = [
  */
 const PERMISSIONS_CALL_TIMEOUT_MS = 5_000;
 
+// 31146의 `granite.config.ts`는 `permissions: []`다 — 선언되지 않은 권한
+// (geolocation/camera/microphone)만 실기기에서 `NO_PERMISSION`으로 거부되고
+// clipboard/contacts/photos는 통과한다. 이름 단위 맵으로 그 그림을 옮긴다.
+beforeAll(async () => {
+  await mirrorProvisioning('getPermission');
+});
+
 afterAll(async () => {
+  await clearProvisioningMirror('getPermission');
   await flushCapture(CATEGORY);
 });
 
@@ -121,7 +130,7 @@ describe('permissions · 값 다양화 (happy path)', () => {
         {
           category: CATEGORY,
           api: 'requestPermission',
-          scenario: 'happy-request',
+          scenario: 'native-request-geolocation',
           input: { name: 'geolocation', access: 'read' },
         },
         () => requestPermission({ name: 'geolocation', access: 'read' }),
@@ -196,7 +205,7 @@ describe('permissions · native shape (mock-only — dialog는 blocking UI)', ()
         {
           category: CATEGORY,
           api: 'openPermissionDialog',
-          scenario: 'native-dialog-denied',
+          scenario: 'native-dialog-camera',
           input: { name: 'camera', access: 'access' },
         },
         () => openPermissionDialog({ name: 'camera', access: 'access' }),
@@ -214,7 +223,7 @@ describe('permissions · native shape (mock-only — dialog는 blocking UI)', ()
         {
           category: CATEGORY,
           api: 'openPermissionDialog',
-          scenario: 'capture-baseline',
+          scenario: 'native-dialog-geolocation',
           input: { name: 'geolocation', access: 'read' },
         },
         () => openPermissionDialog({ name: 'geolocation', access: 'read' }),

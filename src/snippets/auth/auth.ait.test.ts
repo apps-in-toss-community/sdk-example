@@ -16,13 +16,21 @@ import {
   getIsTossLoginIntegratedService,
   getUserKeyForGame,
 } from '@apps-in-toss/web-framework';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { captureAsync, captureSync, cell, flushCapture } from '../../test/aitCapture';
 import { isNativeErrorShape } from '../../test/isNativeError';
+import { clearProvisioningMirror, mirrorProvisioning } from '../../test/provisioningMirror';
 
 const CATEGORY = 'auth';
 
+// 31146은 토스 로그인이 연동돼 있지 않다 — env1의 mock은 연동된 앱을 모델링하므로
+// 계측 시점에만 실기기 프로비저닝 상태로 맞춰 세운다(`provisioningMirror.ts` 참조).
+beforeAll(async () => {
+  await mirrorProvisioning('appLogin', 'getIsTossLoginIntegratedService');
+});
+
 afterAll(async () => {
+  await clearProvisioningMirror('appLogin', 'getIsTossLoginIntegratedService');
   await flushCapture(CATEGORY);
 });
 

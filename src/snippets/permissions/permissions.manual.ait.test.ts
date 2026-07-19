@@ -50,7 +50,7 @@ describe('permissions · openPermissionDialog (수동-변형 — 사람이 다�
       {
         category: CATEGORY,
         api: 'openPermissionDialog',
-        scenario: 'manual-native-dialog-camera',
+        scenario: 'native-dialog-camera',
         input: { name: 'camera', access: 'access' },
       },
       () => openPermissionDialog({ name: 'camera', access: 'access' }),
@@ -69,7 +69,7 @@ describe('permissions · openPermissionDialog (수동-변형 — 사람이 다�
       {
         category: CATEGORY,
         api: 'openPermissionDialog',
-        scenario: 'manual-native-dialog-geolocation',
+        scenario: 'native-dialog-geolocation',
         input: { name: 'geolocation', access: 'read' },
       },
       () => openPermissionDialog({ name: 'geolocation', access: 'read' }),
@@ -89,7 +89,7 @@ describe('permissions · requestPermission (수동-변형 — 사람이 네이�
       {
         category: CATEGORY,
         api: 'requestPermission',
-        scenario: 'manual-native-request-geolocation',
+        scenario: 'native-request-geolocation',
         input: { name: 'geolocation', access: 'read' },
       },
       () => requestPermission({ name: 'geolocation', access: 'read' }),

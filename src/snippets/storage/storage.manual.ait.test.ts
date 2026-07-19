@@ -45,7 +45,7 @@ describe('storage · saveBase64Data 다양한 mimeType (수동-변형 — 사람
       {
         category: CATEGORY,
         api: 'saveBase64Data',
-        scenario: 'manual-happy-varied-mime-png',
+        scenario: 'happy-varied-mime',
         input: { data: 'AAAA', fileName: 'a.png', mimeType: 'image/png' },
       },
       () => saveBase64Data({ data: 'AAAA', fileName: 'a.png', mimeType: 'image/png' }),
@@ -64,7 +64,7 @@ describe('storage · saveBase64Data 다양한 mimeType (수동-변형 — 사람
       {
         category: CATEGORY,
         api: 'saveBase64Data',
-        scenario: 'manual-happy-varied-mime-text',
+        scenario: 'happy-varied-mime',
         input: { data: 'BBBB', fileName: 'b.txt', mimeType: 'text/plain' },
       },
       () => saveBase64Data({ data: 'BBBB', fileName: 'b.txt', mimeType: 'text/plain' }),
@@ -84,7 +84,7 @@ describe('storage · saveBase64Data 빈 입력 (수동-변형 — 사람이 nati
       {
         category: CATEGORY,
         api: 'saveBase64Data',
-        scenario: 'manual-native-save-failure',
+        scenario: 'native-save-failure',
         input: { data: '', fileName: '', mimeType: '' },
       },
       () => saveBase64Data({ data: '', fileName: '', mimeType: '' }),
