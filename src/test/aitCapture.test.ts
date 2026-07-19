@@ -219,3 +219,42 @@ describe('CaptureMeta 필드 전달 (조용한 누락 방지)', () => {
     expect(reasonOf('no-reason')).toBeUndefined();
   });
 });
+
+describe('booleanValues (값 축 지문)', () => {
+  function booleansOf(api: string): unknown {
+    return __getPendingRecordsForTest().find(
+      (r) => r.api === api && r.scenario === meta.scenario,
+    )?.booleanValues;
+  }
+
+  it('객체 반환의 boolean 필드만 값째로 싣는다 — string/number는 안 싣는다', async () => {
+    await captureAsync({ ...meta, api: 'bv-object' }, async () => ({
+      success: true,
+      hasNext: false,
+      token: 'secret-value',
+      amount: 1000,
+    }));
+
+    expect(booleansOf('bv-object')).toEqual({ success: true, hasNext: false });
+  });
+
+  it('boolean이 하나도 없으면 null — 빈 객체를 만들지 않는다', async () => {
+    await captureAsync({ ...meta, api: 'bv-none' }, async () => ({ token: 'abc' }));
+
+    expect(booleansOf('bv-none')).toBeNull();
+  });
+
+  it('스칼라 boolean 반환은 self 키로 싣는다', async () => {
+    await captureAsync({ ...meta, api: 'bv-scalar' }, async () => false);
+
+    expect(booleansOf('bv-scalar')).toEqual({ self: false });
+  });
+
+  it('reject하면 값 축이 없다', async () => {
+    await captureAsync({ ...meta, api: 'bv-reject' }, async () => {
+      throw new Error('nope');
+    });
+
+    expect(booleansOf('bv-reject')).toBeNull();
+  });
+});

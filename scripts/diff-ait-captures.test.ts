@@ -237,3 +237,32 @@ describe('compareRecords', () => {
     expect(fields).toEqual([]);
   });
 });
+
+describe('booleanValues (값 축 지문)', () => {
+  it('양쪽 다 있고 값이 갈리면 불일치로 잡는다 — valueKeys가 같아도', () => {
+    const a = [record({ valueKeys: ['success'], booleanValues: { success: true } })];
+    const b = [record({ valueKeys: ['success'], booleanValues: { success: false } })];
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(0);
+    expect(result.mismatches).toHaveLength(1);
+  });
+
+  it('한쪽에 필드가 없으면 비교에서 뺀다 — 표식 이전 코퍼스를 붉게 만들지 않는다', () => {
+    const a = [record({ valueKeys: ['success'], booleanValues: { success: true } })];
+    const b = [record({ valueKeys: ['success'] })]; // 재측정 안 한 구 코퍼스
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(1);
+    expect(result.mismatches).toHaveLength(0);
+  });
+
+  it('키 순서는 계약이 아니다 — 순서만 다르면 동치', () => {
+    const a = [record({ booleanValues: { ok: true, done: false } })];
+    const b = [record({ booleanValues: { done: false, ok: true } })];
+
+    expect(diff(a, b).equivalentCount).toBe(1);
+  });
+});

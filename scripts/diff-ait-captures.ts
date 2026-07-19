@@ -177,18 +177,47 @@ function groupByKey(records: CaptureRecord[]): Map<string, CaptureRecord[]> {
  * 서명에서 아예 뺀다 — "양쪽 다 존재할 때만 비교한다"는 계약을 키 단위로 지키기
  * 위해서다(`shapeMultiset` 참조).
  */
-function shapeOf(r: CaptureRecord, includeValueKeys: boolean): string {
+function shapeOf(r: CaptureRecord, includeValueKeys: boolean, includeBooleans: boolean): string {
   const base = [r.outcome ?? null, r.errorName ?? null, r.errorCode ?? null, r.returnType ?? null];
-  if (!includeValueKeys) {
-    return JSON.stringify(base);
+  if (includeValueKeys) {
+    const valueKeys = Array.isArray(r.valueKeys) ? [...r.valueKeys].sort() : (r.valueKeys ?? null);
+    base.push(valueKeys as never);
   }
-  const valueKeys = Array.isArray(r.valueKeys) ? [...r.valueKeys].sort() : (r.valueKeys ?? null);
-  return JSON.stringify([...base, valueKeys]);
+  if (includeBooleans) {
+    base.push(canonicalBooleans(r) as never);
+  }
+  return JSON.stringify(base);
+}
+
+/** boolean 지문을 키 정렬된 쌍 배열로 — 객체 키 순서를 계약으로 보지 않는다. */
+function canonicalBooleans(r: CaptureRecord): [string, boolean][] | null {
+  const bv = (r as { booleanValues?: Record<string, boolean> | null }).booleanValues;
+  if (bv == null) {
+    return null;
+  }
+  return Object.entries(bv).sort(([a], [b]) => a.localeCompare(b));
 }
 
 /** record가 비교 가능한 valueKeys를 갖고 있는가. */
 function hasValueKeys(r: CaptureRecord): boolean {
   return r.valueKeys != null;
+}
+
+/**
+ * record가 비교 가능한 boolean 지문을 갖고 있는가.
+ *
+ * `valueKeys`와 같은 게이트 계약을 따른다(`shapeMultiset` 참조) — 이 필드는 나중에
+ * 추가됐으므로 그 이전 코퍼스(env3 run11 등)에는 아예 없다. 없는 쪽을 불일치로
+ * 세면 재측정 안 한 환경이 통째로 붉어져 숫자가 거짓말을 한다.
+ *
+ * 게이트는 `every`가 아니라 `some`이다 — 묻는 건 "이 캡처가 지문을 기록하는
+ * 포맷인가"이지 개별 record의 값이 아니다. 오류 경로는 `NO_VALUE_SHAPE`로
+ * `booleanValues: null`을 남기므로, `every`로 걸면 reject record 하나가 섞인
+ * 버킷에서 나머지 record의 지문까지 서명에서 빠져 거짓 동치가 된다(#300과
+ * 같은 결함이 축만 바뀐 것).
+ */
+function hasBooleans(r: CaptureRecord): boolean {
+  return (r as { booleanValues?: unknown }).booleanValues != null;
 }
 
 /**
@@ -206,10 +235,14 @@ function hasValueKeys(r: CaptureRecord): boolean {
  * 안 잡힌다). `getPermission :: happy-each-name`처럼 한 키에서 resolved/rejected가
  * 재현성 있게 섞이는 시나리오가 실제로 있으므로 가상의 경우가 아니다.
  */
-function shapeMultiset(records: CaptureRecord[], includeValueKeys: boolean): Map<string, number> {
+function shapeMultiset(
+  records: CaptureRecord[],
+  includeValueKeys: boolean,
+  includeBooleans: boolean,
+): Map<string, number> {
   const counts = new Map<string, number>();
   for (const r of records) {
-    const s = shapeOf(r, includeValueKeys);
+    const s = shapeOf(r, includeValueKeys, includeBooleans);
     counts.set(s, (counts.get(s) ?? 0) + 1);
   }
   return counts;
@@ -311,8 +344,9 @@ function diff(recordsA: CaptureRecord[], recordsB: CaptureRecord[]): DiffResult 
     }
     totalKeys++;
     const includeValueKeys = a.some(hasValueKeys) && b.some(hasValueKeys);
-    const countsA = shapeMultiset(a, includeValueKeys);
-    const countsB = shapeMultiset(b, includeValueKeys);
+    const includeBooleans = a.some(hasBooleans) && b.some(hasBooleans);
+    const countsA = shapeMultiset(a, includeValueKeys, includeBooleans);
+    const countsB = shapeMultiset(b, includeValueKeys, includeBooleans);
     if (multisetsEqual(countsA, countsB)) {
       equivalentCount++;
       continue;
