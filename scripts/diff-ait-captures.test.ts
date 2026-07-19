@@ -124,14 +124,46 @@ describe('diff', () => {
     expect(m?.shapesB?.[0]?.count).toBe(2);
   });
 
-  it('valueKeys는 양쪽 다 존재할 때만 비교한다', () => {
+  it('한쪽 버킷 전체가 valueKeys를 안 갖고 있으면 그 키에서 비교를 뺀다', () => {
     const a = [record({ valueKeys: null })];
     const b = [record({ valueKeys: ['latitude'] })];
 
     const result = diff(a, b);
 
-    // valueKeys가 한쪽만 null이 아니어도 — 스펙상 "양쪽 다 있을 때만 비교"이므로
-    // 한쪽이 null이면 valueKeys 비교는 스킵된다(다른 필드가 같으면 equivalent).
+    // 게이트가 묻는 건 "이 캡처가 valueKeys를 기록하는가"다 — a쪽엔 기록한 record가
+    // 하나도 없으므로(valueKeys 이전 버전 캡처) 이 키에선 서명에서 뺀다.
+    expect(result.mismatches).toHaveLength(0);
+    expect(result.equivalentCount).toBe(1);
+  });
+
+  it('reject record가 섞인 버킷에서도 resolved의 valueKeys 불일치를 잡는다 (#300)', () => {
+    // 회귀 가드: 게이트를 `every`로 두면 reject record 하나(valueKeys: null) 때문에
+    // 같은 버킷 resolved record의 valueKeys까지 서명에서 빠져 거짓 동치가 된다.
+    // 나머지 필드가 전부 같으므로 "다른 필드에서 잡힌다"는 방어도 성립하지 않는다.
+    const a = [
+      record({ outcome: 'resolved', valueKeys: ['latitude', 'longitude'] }),
+      record({ outcome: 'rejected', errorCode: 'DENIED', returnType: null, valueKeys: null }),
+    ];
+    const b = [
+      record({ outcome: 'resolved', valueKeys: ['latitude', 'longitude', 'accuracy'] }),
+      record({ outcome: 'rejected', errorCode: 'DENIED', returnType: null, valueKeys: null }),
+    ];
+
+    const result = diff(a, b);
+
+    expect(result.mismatches).toHaveLength(1);
+    expect(result.equivalentCount).toBe(0);
+  });
+
+  it('reject record가 섞여 있고 resolved가 일치하면 동치로 본다 (#300)', () => {
+    // 위 가드의 짝 — null이 서명에 들어가도 양쪽 다 null이라 그대로 일치한다.
+    const mixed = () => [
+      record({ outcome: 'resolved', valueKeys: ['latitude', 'longitude'] }),
+      record({ outcome: 'rejected', errorCode: 'DENIED', returnType: null, valueKeys: null }),
+    ];
+
+    const result = diff(mixed(), mixed());
+
     expect(result.mismatches).toHaveLength(0);
     expect(result.equivalentCount).toBe(1);
   });

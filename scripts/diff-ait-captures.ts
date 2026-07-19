@@ -192,11 +192,17 @@ function hasValueKeys(r: CaptureRecord): boolean {
 /**
  * shape → 관측 횟수. 키 하나의 멀티셋.
  *
- * `valueKeys`는 **양쪽 버킷의 모든 record가 갖고 있을 때만** 서명에 넣는다.
- * 단일 record 시절의 "양쪽 다 있을 때만 비교" 계약을 버킷으로 일반화한 것 —
- * 한쪽이라도 null이면(reject·非object 반환, 또는 valueKeys 이전 버전 캡처) 그
- * 키에서는 valueKeys를 비교 대상에서 뺀다. 다른 필드가 이미 갈렸다면 그쪽에서
- * 잡히므로 판별력 손실은 없다.
+ * `valueKeys`는 **양쪽 버킷에 그걸 기록한 record가 하나라도 있을 때** 서명에 넣는다.
+ * 게이트가 묻는 건 "이 캡처가 valueKeys를 기록하는가"(포맷 역량)이지 개별 record의
+ * 값이 아니다 — 그래서 `some`이지 `every`가 아니다. 서명 안에서 `null`은 결측이
+ * 아니라 정상 값으로 비교된다(reject·非object 반환은 양쪽 다 null이라 그대로 일치).
+ * 한쪽 버킷 전체가 null이면(valueKeys 이전 버전 캡처) 그 키에서만 비교를 뺀다.
+ *
+ * `every`로 게이트하면 **혼합 버킷에서 진짜 불일치를 감춘다**: reject record 하나가
+ * 섞였다는 이유로 같은 버킷의 resolved record에서까지 valueKeys가 서명에서 빠져,
+ * `['a','b']` vs `['a','b','c']`가 동치로 집계된다(다른 필드가 전부 같으면 그쪽에서도
+ * 안 잡힌다). `getPermission :: happy-each-name`처럼 한 키에서 resolved/rejected가
+ * 재현성 있게 섞이는 시나리오가 실제로 있으므로 가상의 경우가 아니다.
  */
 function shapeMultiset(records: CaptureRecord[], includeValueKeys: boolean): Map<string, number> {
   const counts = new Map<string, number>();
@@ -275,7 +281,7 @@ function diff(recordsA: CaptureRecord[], recordsB: CaptureRecord[]): DiffResult 
       continue;
     }
     totalKeys++;
-    const includeValueKeys = a.every(hasValueKeys) && b.every(hasValueKeys);
+    const includeValueKeys = a.some(hasValueKeys) && b.some(hasValueKeys);
     const countsA = shapeMultiset(a, includeValueKeys);
     const countsB = shapeMultiset(b, includeValueKeys);
     if (multisetsEqual(countsA, countsB)) {
