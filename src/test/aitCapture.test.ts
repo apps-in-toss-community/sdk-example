@@ -222,9 +222,8 @@ describe('CaptureMeta 필드 전달 (조용한 누락 방지)', () => {
 
 describe('booleanValues (값 축 지문)', () => {
   function booleansOf(api: string): unknown {
-    return __getPendingRecordsForTest().find(
-      (r) => r.api === api && r.scenario === meta.scenario,
-    )?.booleanValues;
+    return __getPendingRecordsForTest().find((r) => r.api === api && r.scenario === meta.scenario)
+      ?.booleanValues;
   }
 
   it('객체 반환의 boolean 필드만 값째로 싣는다 — string/number는 안 싣는다', async () => {
