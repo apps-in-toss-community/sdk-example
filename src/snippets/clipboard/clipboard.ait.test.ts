@@ -81,6 +81,8 @@ describe('clipboard · 권한 거부 (실계약 단언)', () => {
         api: 'getClipboardText',
         scenario: 'denied-read',
         input: null,
+        nonComparable:
+          'env1 전용 전제 — mock 권한 다이얼로 clipboard를 강제 denied한 실행분이다. 31146의 clipboard는 실제로 허용돼 있어 실기기는 같은 호출을 그냥 통과시킨다(실측: env3 run11 → resolved). 두 레코드는 같은 것을 관측한 게 아니라 전제가 다르므로 비교 코퍼스 밖으로 격리한다. 거부 경로의 오류 shape 회귀 감시는 여기서 계속된다.',
       },
       () => getClipboardText(),
     );
@@ -128,6 +130,8 @@ describe('clipboard · 권한 거부 (실계약 단언)', () => {
         api: 'setClipboardText',
         scenario: 'denied-write',
         input: { length: 5 },
+        nonComparable:
+          'env1 전용 전제 — mock 권한 다이얼로 clipboard를 강제 denied한 실행분이다. 31146의 clipboard는 실제로 허용돼 있어 실기기는 같은 호출을 그냥 통과시킨다(실측: env3 run11 → resolved). 두 레코드는 같은 것을 관측한 게 아니라 전제가 다르므로 비교 코퍼스 밖으로 격리한다. 거부 경로의 오류 shape 회귀 감시는 여기서 계속된다.',
       },
       () => setClipboardText('denied'),
     );

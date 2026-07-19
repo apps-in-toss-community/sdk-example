@@ -16,7 +16,12 @@
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { captureAsync, captureCallback } from './aitCapture';
+import {
+  __getPendingRecordsForTest,
+  captureAsync,
+  captureCallback,
+  captureSync,
+} from './aitCapture';
 
 const meta = {
   category: 'test-infra',
@@ -169,5 +174,48 @@ describe('captureAsync raceTimeoutMs (#274)', () => {
     expect(result.outcome).toBe('timeout');
     expect(result.value).toBeUndefined();
     expect(result.error).toBeUndefined();
+  });
+});
+
+describe('CaptureMeta 필드 전달 (조용한 누락 방지)', () => {
+  // 세 진입점이 record를 조립하는 방식이 다르다 — captureAsync/captureSync는
+  // `...meta`를 스프레드하지만 captureCallback은 outcome 확정 지점이 셋이라
+  // 필드를 손으로 옮긴다. 그래서 `CaptureMeta`에 필드를 더해도 captureCallback
+  // 경로에서만 누락될 수 있고, optional 필드라 타입 검사도 안 잡는다.
+  // `nonComparable` 도입 때 실제로 이 방식으로 새서 events 3건이 격리되지 않았다.
+  const withReason = { ...meta, nonComparable: 'env1 전용 전제 — 단위 테스트' };
+
+  function reasonOf(api: string): unknown {
+    const rec = __getPendingRecordsForTest().find(
+      (r) => r.api === api && r.scenario === meta.scenario,
+    );
+    return rec?.nonComparable;
+  }
+
+  it('captureCallback이 nonComparable을 record까지 옮긴다', async () => {
+    await captureCallback({ ...withReason, api: 'cb-forward' }, ({ onEvent }) => {
+      onEvent({ ok: true });
+      return () => {};
+    });
+
+    expect(reasonOf('cb-forward')).toBe(withReason.nonComparable);
+  });
+
+  it('captureAsync가 nonComparable을 record까지 옮긴다', async () => {
+    await captureAsync({ ...withReason, api: 'async-forward' }, async () => ({ ok: true }));
+
+    expect(reasonOf('async-forward')).toBe(withReason.nonComparable);
+  });
+
+  it('captureSync가 nonComparable을 record까지 옮긴다', () => {
+    captureSync({ ...withReason, api: 'sync-forward' }, () => ({ ok: true }));
+
+    expect(reasonOf('sync-forward')).toBe(withReason.nonComparable);
+  });
+
+  it('표식을 안 준 호출은 record에 사유가 붙지 않는다 (기본값 오염 방지)', async () => {
+    await captureAsync({ ...meta, api: 'no-reason' }, async () => ({ ok: true }));
+
+    expect(reasonOf('no-reason')).toBeUndefined();
   });
 });

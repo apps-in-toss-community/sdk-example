@@ -30,6 +30,8 @@ export interface CaptureRecord {
   valueKeys?: unknown;
   sdkLine?: unknown;
   platform?: unknown;
+  /** 붙어 있으면 이 (api, scenario) 키를 양쪽 코퍼스에서 제외한다 — nonComparableKeys 참조. */
+  nonComparable?: unknown;
   [key: string]: unknown;
 }
 
@@ -254,9 +256,36 @@ function compareRecords(a: CaptureRecord, b: CaptureRecord): FieldMismatch[] {
   return mismatches;
 }
 
+/**
+ * `nonComparable` 표식이 붙은 **키**를 모은다 — 레코드 단위가 아니라 키 단위다.
+ *
+ * 표식은 시나리오의 성질이지 특정 실행분의 성질이 아니다. 그래서 한쪽 코퍼스에서만
+ * 표식이 보여도 그 키 전체를 양쪽에서 뺀다. 이게 없으면 두 방식으로 지표가 왜곡된다:
+ *
+ *  - **표식 도입 전에 뜬 코퍼스**(여기선 env3 run11)에는 표식이 아예 없다. 레코드
+ *    단위로 거르면 env1 쪽만 빠져 같은 키가 "B에만 있는 키"(커버리지 갭)로 둔갑한다 —
+ *    불일치를 줄이는 대신 갭을 늘릴 뿐 실체는 그대로다.
+ *  - 반대로 나중에 env3를 다시 떠서 양쪽에 표식이 붙어도 결과가 같아야 한다.
+ *    키 단위로 빼면 코퍼스 나이와 무관하게 같은 답이 나온다.
+ */
+function nonComparableKeys(...corpora: CaptureRecord[][]): Set<string> {
+  const keys = new Set<string>();
+  for (const records of corpora) {
+    for (const r of records) {
+      if ((r as { nonComparable?: unknown }).nonComparable != null) {
+        keys.add(`${r.api} ${r.scenario}`);
+      }
+    }
+  }
+  return keys;
+}
+
 function diff(recordsA: CaptureRecord[], recordsB: CaptureRecord[]): DiffResult {
-  const mapA = groupByKey(recordsA);
-  const mapB = groupByKey(recordsB);
+  // 비교가 성립하지 않는 시나리오는 키 단위로 양쪽에서 제외한다.
+  const excluded = nonComparableKeys(recordsA, recordsB);
+  const keep = (r: CaptureRecord) => !excluded.has(`${r.api} ${r.scenario}`);
+  const mapA = groupByKey(recordsA.filter(keep));
+  const mapB = groupByKey(recordsB.filter(keep));
 
   const onlyInA: string[] = [];
   const onlyInB: string[] = [];

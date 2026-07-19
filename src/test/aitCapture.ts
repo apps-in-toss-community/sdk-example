@@ -167,10 +167,66 @@ export interface AitCaptureRecord {
    * 0이면 필드 자체를 생략해 기존 레코드 shape(및 diff 스크립트 호환)를 무변경으로 둔다.
    */
   throttleRetries?: number;
+  /**
+   * 이 시나리오가 **환경 간 비교 대상이 아닌** 이유. 값은 사람이 읽는 사유
+   * 문자열이고, `scripts/diff-ait-captures.ts`가 이 표식이 붙은 **키**를 양쪽
+   * 코퍼스에서 제외한다.
+   *
+   * ─ 왜 기질처럼 디렉토리로 안 가르는가 ──────────────────────────────────────
+   * `SUBSTRATE_ONLY_PLATFORMS`(jsdom)는 **파일 전체**가 비교 대상이 아니라서
+   * 디렉토리로 갈랐다 — 그 축은 파일명의 라벨일 뿐이라 도구가 알아볼 방법이
+   * 없었기 때문이다. 시나리오 축은 반대다: 표식이 레코드 안에 있고 자기 설명적이라
+   * 도구가 직접 읽는다. 오히려 디렉토리로 빼면 diff가 그 증거를 못 봐서 어느 키를
+   * 빼야 할지 알 수 없게 된다(표식 도입 전에 뜬 코퍼스와 대조할 때 특히) — 그래서
+   * 레코드는 제자리에 두고 도구가 거른다.
+   *
+   * ─ 왜 필요한가 ─────────────────────────────────────────────────────────────
+   * 일부 시나리오는 **env1에만 존재하는 어포던스**를 전제로 성립한다:
+   *   - mock 권한 다이얼로 상태를 강제(`aitState.patch('permissions', …)`) —
+   *     실기기의 그 권한은 실제로 허용돼 있어 같은 호출이 그냥 통과한다.
+   *   - mock 내부 이벤트 채널을 직접 두드림
+   *     (`window.dispatchEvent(new CustomEvent('__ait:backEvent'))`) — real SDK는
+   *     네이티브 브리지를 구독하므로 그 CustomEvent가 갈 곳이 없다.
+   *
+   * 이런 레코드를 비교 코퍼스에 두면 diff가 불일치로 센다. 그런데 그건 **env1이
+   * env3를 재현하지 못한다는 신호가 아니다** — 애초에 두 레코드가 같은 것을 관측한
+   * 게 아니다(전제가 다르다). 세면 셀수록 계기가 실제보다 나쁜 fidelity를 보고하고,
+   * 진짜 재현 실패가 그 노이즈에 묻힌다.
+   *
+   * 그렇다고 시나리오를 지우면 안 된다 — mock 다이얼이 올바른 오류 shape를 내는지,
+   * 이벤트 배선이 살아 있는지는 여전히 회귀로 지켜야 할 계약이다. 그래서 지우는 게
+   * 아니라 **코퍼스 밖으로 옮긴다**.
+   *
+   * ─ 남용 방지 ───────────────────────────────────────────────────────────────
+   * 사유 문자열을 필수로 둔 건 의도적이다. "불일치가 거슬려서" 다는 순간 계기는
+   * 거짓말을 시작한다 — 판정 기준은 **"env3가 구조적으로 같은 관측을 만들 수
+   * 없는가"**이지 "숫자가 안 예쁜가"가 아니다. 실기기가 다른 결과를 내는 것은
+   * 비교 대상이고(그게 우리가 찾는 것), 실기기가 그 관측 자체를 만들 수 없는 것만
+   * 여기 해당한다.
+   */
+  nonComparable?: string;
 }
 
 /** 테스트가 채우는 부분 — cell 축(sdkLine/platform)은 runner가 주입한다. */
 export type CaptureInput = Omit<AitCaptureRecord, 'sdkLine' | 'platform'>;
+
+/**
+ * `captureAsync`/`captureCallback`/`captureSync`가 받는 호출 메타.
+ *
+ * `nonComparable`이 여기 있는 이유: 이 필드는 **호출 지점에서만** 판단할 수 있다
+ * (그 시나리오가 env1 전용 전제 위에 서 있는지는 테스트를 쓴 사람만 안다).
+ * 예전에는 세 시그니처가 각각 인라인 객체 타입을 적어 필드를 추가해도 전달되지
+ * 않고 **조용히 누락**됐다 — 초과 프로퍼티 검사도 세 곳 중 어디서도 못 잡았다.
+ * 공용 타입 하나로 묶어 그 실패 방식을 없앤다.
+ */
+export interface CaptureMeta {
+  category: string;
+  api: string;
+  scenario: string;
+  input: unknown;
+  /** `AitCaptureRecord.nonComparable` 참조 — 비교 코퍼스 밖으로 격리하는 사유. */
+  nonComparable?: string;
+}
 
 /**
  * env3 runner가 device platform/version을 주입하는 hook. 있으면 우선한다.
@@ -330,6 +386,24 @@ export function capture(input: CaptureInput): void {
   records.push({ ...input, sdkLine: CELL_SDK_LINE, platform: cell.platform });
 }
 
+/**
+ * 아직 flush되지 않은 sink 레코드의 읽기 전용 스냅샷 — **단위 테스트 전용**.
+ *
+ * `captureAsync`/`captureCallback`/`captureSync`는 각자 record를 조립하는데, 그중
+ * `captureCallback`만 meta를 스프레드하지 않고 필드를 **손으로 하나씩 옮긴다**
+ * (콜백 경로는 outcome이 확정되는 지점이 셋이라 그렇다). 그래서 `CaptureMeta`에
+ * 필드를 추가해도 그 경로에서만 조용히 누락되는 실패 방식이 있다 —
+ * `nonComparable` 도입 때 실제로 겪었다(타입 검사도 못 잡았다: 필드가 optional이라
+ * 안 넘겨도 합법이다).
+ *
+ * 반환값을 보는 것만으로는 이 회귀를 못 잡는다(레코드가 아니라 outcome만 돌려준다).
+ * 그래서 sink를 직접 들여다보는 접근자를 둔다. 복사본을 돌려주므로 호출자가
+ * 내부 배열을 건드릴 수 없다.
+ */
+export function __getPendingRecordsForTest(): readonly AitCaptureRecord[] {
+  return [...records];
+}
+
 /** 에러 객체에서 정규화 오류-shape 필드를 뽑는다. */
 function extractErrorShape(err: unknown): {
   errorName: string | null;
@@ -422,7 +496,7 @@ function extractValueShape(value: unknown): { returnType: string; valueKeys: str
  * @returns `{ outcome, value?, error? }` — 단언은 테스트가 한다(캡처는 부수효과).
  */
 export async function captureAsync(
-  meta: { category: string; api: string; scenario: string; input: unknown },
+  meta: CaptureMeta,
   call: () => Promise<unknown>,
   options?: { raceTimeoutMs?: number },
 ): Promise<{ outcome: Outcome; value?: unknown; error?: unknown }> {
@@ -569,7 +643,7 @@ export type CallbackCleanup = (() => void) | undefined;
  * @returns `captureAsync`와 동일한 형태 — `value`는 최초 onEvent 페이로드.
  */
 export function captureCallback(
-  meta: { category: string; api: string; scenario: string; input: unknown; timeoutMs?: number },
+  meta: CaptureMeta & { timeoutMs?: number },
   run: (handlers: CallbackHandlers) => CallbackCleanup,
 ): Promise<{ outcome: Outcome; value?: unknown; error?: unknown }> {
   const timeoutMs = meta.timeoutMs ?? 3000;
@@ -617,6 +691,7 @@ export function captureCallback(
           api: meta.api,
           scenario: meta.scenario,
           input: meta.input,
+          nonComparable: meta.nonComparable,
           outcome: 'resolved',
           errorName: null,
           errorCode: null,
@@ -632,6 +707,7 @@ export function captureCallback(
           api: meta.api,
           scenario: meta.scenario,
           input: meta.input,
+          nonComparable: meta.nonComparable,
           outcome: 'rejected',
           ...extractErrorShape(result.error),
           returnType: 'undefined',
@@ -644,6 +720,7 @@ export function captureCallback(
           api: meta.api,
           scenario: meta.scenario,
           input: meta.input,
+          nonComparable: meta.nonComparable,
           outcome: 'callback-timeout',
           errorName: null,
           errorCode: null,
@@ -709,7 +786,7 @@ function markThenableHandled(value: unknown): void {
  * A1(getIsTossLoginIntegratedService가 boolean인지 Promise인지) 같은 sync 표면용.
  */
 export function captureSync(
-  meta: { category: string; api: string; scenario: string; input: unknown },
+  meta: CaptureMeta,
   call: () => unknown,
 ): { outcome: Outcome; value?: unknown; error?: unknown } {
   try {
