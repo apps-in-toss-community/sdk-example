@@ -16,7 +16,9 @@
  * 기존 컴포넌트 smoke 테스트는 SDK를 직접 import하지 않아 alias 영향이 없다.
  *
  * ─ 환경 적응 (env1 Node / env3 브라우저) ─────────────────────────────────────
- * env1(vitest/Node): Node builtins(fs/path)로 `.ait-capture/<cat>.<sdk>.<platform>.json` 기록.
+ * env1(vitest/Node): Node builtins(fs/path)로 `<dir>/<cat>.<sdk>.<platform>.json` 기록.
+ *   `<dir>`은 기질에 따라 갈린다 — 비교 대상 축은 `.ait-capture/`, 비교에
+ *   참여하지 않는 기질(jsdom)은 `.ait-capture-substrate/`(`captureDirFor` 참조).
  * env3(run_tests 브라우저 주입): 파일시스템 없음 → globalThis.__AIT_CAPTURE__ 배열 + console.log.
  * 분기는 `isNode` 런타임 가드로. Node builtins는 동적 import로만 로드(top-level 금지 —
  * esbuild iife 번들이 static import를 resolve할 수 없어 빌드 실패).
@@ -35,12 +37,76 @@ const isNode =
 
 /** 4-cell 축의 SDK 라인 (런타임 web-framework major). */
 export type SdkLine = '2.x' | '3.x';
+
 /**
- * 4-cell 축의 플랫폼. env1 → 'mock'; env3 → 실기기('ios'/'android').
- * `'ios-pwa'`는 env2(AITC Sandbox PWA — mock@실기기 WebKit) 축 — 러너(devtools#776)가
- * `__AIT_CELL__.platform`으로 주입한다.
+ * 캡처 축의 **기질(substrate)** — 이 레코드가 어디서 측정됐는가.
+ *
+ * 이름이 `platform`인 건 원래 4-cell(2.x/3.x × ios/android) 매트릭스에서 왔지만,
+ * 실제로 이 축이 가르는 것은 "SDK 호출을 무엇이 서빙했고, 그 코드가 어떤 엔진
+ * 위에서 돌았는가"다. 값이 섞이면 diff가 곧바로 무의미해지므로 각 값의 의미를
+ * 고정한다:
+ *
+ * - `mock`     — devtools mock이 SDK를 서빙한 실행분(vitest/jsdom). SDK 표면을
+ *                import하는 11개 카테고리의 env1 축.
+ * - `jsdom`    — 엔진 표면을 **직접** 찌른 실행분이 jsdom 위에서 돈 것.
+ *                `engine.*` 전용. jsdom은 개발자가 실제로 쓰는 env1(로컬
+ *                Chromium)이 아니므로 이 축은 **env1↔env2/env3 대조에 쓰지
+ *                않는다** — jsdom 기질 자체의 회귀 감시용이다.
+ * - `chromium` — 실 Chromium 브라우저. `engine.*`의 **진짜 env1 축**.
+ * - `webkit`   — 데스크톱 WebKit. env2(실기기 WebKit)의 근사치일 뿐 대체물이
+ *                아니다 — 실기기는 실 뷰포트·실 터치·PWA 셸을 추가로 가진다.
+ * - `ios-pwa`  — env2(AITC Sandbox PWA) 축: mock이 서빙하되 실기기 WebKit 위에서
+ *                돈다. 러너(devtools#776)가 `__AIT_CELL__.platform`으로 주입한다.
+ * - `ios` / `android` — env3 실기기 토스 앱 WebView.
  */
-export type Platform = 'mock' | 'ios' | 'android' | 'ios-pwa';
+export type Platform = 'mock' | 'jsdom' | 'chromium' | 'webkit' | 'ios-pwa' | 'ios' | 'android';
+
+/** `Platform` 런타임 검증용 — 러너가 주입하는 문자열을 좁힌다. */
+const PLATFORMS: readonly Platform[] = [
+  'mock',
+  'jsdom',
+  'chromium',
+  'webkit',
+  'ios-pwa',
+  'ios',
+  'android',
+];
+
+function isPlatform(value: unknown): value is Platform {
+  return typeof value === 'string' && (PLATFORMS as readonly string[]).includes(value);
+}
+
+/**
+ * 환경 간 비교에 **참여하지 않는** 기질. 캡처를 별도 디렉토리로 격리한다.
+ *
+ * ─ 왜 라벨 분리만으로는 부족한가 ────────────────────────────────────────────
+ * diff 도구(`scripts/diff-ait-captures.ts`)는 레코드를 `api::scenario` 키로만
+ * 짝짓고 **platform 축을 보지 않는다** — 주어진 디렉토리의 `*.json`을 전부 읽어
+ * 한 덩어리로 합친다. 즉 계약상 **디렉토리 자체가 비교 대상 집합(corpus)**이고,
+ * 파일명의 platform 세그먼트는 사람이 읽는 라벨일 뿐 도구의 필터가 아니다.
+ *
+ * 그래서 `jsdom` 캡처를 `.ait-capture/`에 두면, 파일명이 `jsdom`으로 갈려 있어도
+ * env1↔env3 diff에서 engine 프로브 9건이 "A에만 있는 키"로 잡혀 **커버리지 갭을
+ * 부풀린다**(A에만 10 → 19). 라벨 분리가 막으려던 오보고와 같은 종류의 오염이
+ * 방향만 바꿔 새는 것이다.
+ *
+ * 격리를 디렉토리로 하면 그 불변식이 **파일 배치로 강제**된다 —
+ * `.ait-capture/`에는 비교 가능한 축만 놓이고, 앞으로 축이 더 늘어도
+ * (ios-pwa 등) 같은 규칙이 계속 통한다. diff 도구를 고치는 대안도 있었지만
+ * 그 스크립트는 아직 머지 안 된 브랜치에 있어 브랜치 간 결합이 생긴다.
+ */
+const SUBSTRATE_ONLY_PLATFORMS: readonly Platform[] = ['jsdom'];
+
+/** 환경 간 비교 대상 축이 쌓이는 디렉토리 — diff 도구가 읽는 corpus. */
+const CAPTURE_DIR = '.ait-capture';
+
+/** 비교에 참여하지 않는 기질 감시용 디렉토리 — diff corpus 밖. */
+const SUBSTRATE_CAPTURE_DIR = '.ait-capture-substrate';
+
+/** 기질에 따라 캡처가 떨어질 디렉토리를 고른다. */
+function captureDirFor(platform: Platform): string {
+  return SUBSTRATE_ONLY_PLATFORMS.includes(platform) ? SUBSTRATE_CAPTURE_DIR : CAPTURE_DIR;
+}
 
 /**
  * 호출 결과의 정규화 분류.
@@ -162,25 +228,56 @@ async function resolveSdkLine(): Promise<SdkLine> {
 }
 
 /**
- * 플랫폼 축. env1에서는 항상 'mock'. env3 runner가 override로 'ios'/'android' 주입,
- * env2(AITC Sandbox PWA) 러너는 'ios-pwa'를 주입한다.
+ * 파일(카테고리)이 스스로 선언한 기질 — `declareSubstrate`가 채운다.
+ * 러너 주입(`__AIT_CELL__` / `AIT_CELL_PLATFORM`)보다 **낮은 우선순위**다.
+ */
+let _declaredSubstrate: Platform | null = null;
+
+/**
+ * mock이 서빙하지 않는 카테고리(= `engine.*`)가 자신이 도는 기질을 선언한다.
+ *
+ * 11개 SDK 카테고리는 vitest에서 devtools mock이 서빙하므로 `'mock'` 기본값이
+ * 정확하다. 그러나 `engine.*`는 SDK를 아예 import하지 않고 엔진 표면을 직접
+ * 찌르므로, vitest 실행분의 실제 기질은 mock이 아니라 **jsdom**이다. 그 실행분이
+ * `'mock'` 축으로 떨어지면 다른 카테고리와 같은 축에 섞여 env1↔env2 diff가
+ * jsdom 인공물만큼 구조적으로 과장된다.
+ *
+ * ─ 우선순위: 러너 주입 > 선언 > 'mock' ──────────────────────────────────────
+ * `engine.ait.test.ts`는 vitest(jsdom)뿐 아니라 env3 실기기에서도 같은 파일이
+ * 돈다. 그래서 이 선언은 러너 주입을 **덮지 않는다** — env3에서는
+ * `__AIT_CELL__.platform`(ios/android)이, Playwright 경로에서는 spec이 주입한
+ * chromium/webkit이 이긴다. 선언은 아무도 주입하지 않았을 때만 쓰인다.
+ *
+ * ─ 파일 스코프 가정 ─────────────────────────────────────────────────────────
+ * vitest는 기본값(pool `forks` + `isolate: true`)으로 테스트 파일마다 모듈
+ * 그래프를 새로 만든다 — 이 모듈 상태는 선언한 파일 밖으로 새지 않는다.
+ */
+export function declareSubstrate(platform: Platform): void {
+  _declaredSubstrate = platform;
+  // 이미 캐시된 값이 있으면 무효화 — 선언 시점이 첫 `cell.platform` 읽기보다
+  // 늦더라도 다음 읽기에서 반영되게 한다.
+  _resolvedPlatform = null;
+}
+
+/**
+ * 기질 축. 러너 주입 > 파일 선언 > 'mock'.
+ * env1(SDK 카테고리)에서는 'mock', env2(AITC Sandbox PWA) 러너는 'ios-pwa',
+ * env3 runner가 override로 'ios'/'android' 주입.
  */
 function resolvePlatform(): Platform {
   const override = globalThis.__AIT_CELL__?.platform;
-  if (
-    override === 'mock' ||
-    override === 'ios' ||
-    override === 'android' ||
-    override === 'ios-pwa'
-  ) {
+  if (isPlatform(override)) {
     return override;
   }
   // process는 브라우저에 없다 — 가드 필수.
   if (isNode) {
     const fromEnv = process.env.AIT_CELL_PLATFORM;
-    if (fromEnv === 'ios' || fromEnv === 'android' || fromEnv === 'ios-pwa') {
+    if (isPlatform(fromEnv)) {
       return fromEnv;
     }
+  }
+  if (_declaredSubstrate !== null) {
+    return _declaredSubstrate;
   }
   return 'mock';
 }
@@ -681,7 +778,8 @@ export async function flushCapture(category: string): Promise<void> {
     const { mkdirSync, writeFileSync } = await import(/* @vite-ignore */ fsMod);
     const { resolve } = await import(/* @vite-ignore */ pathMod);
     // process는 isNode 가드 안에서만 접근.
-    const captureDir = resolve(process.cwd(), '.ait-capture');
+    // 비교 대상이 아닌 기질(jsdom)은 diff corpus 밖 디렉토리로 격리한다.
+    const captureDir = resolve(process.cwd(), captureDirFor(cell.platform));
     mkdirSync(captureDir, { recursive: true });
     const file = resolve(captureDir, `${category}.${CELL_SDK_LINE}.${cell.platform}.json`);
     writeFileSync(file, `${JSON.stringify(forCategory, null, 2)}\n`, 'utf8');
