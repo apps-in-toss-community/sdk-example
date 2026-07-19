@@ -41,6 +41,8 @@
  * `valueKeys`뿐이다 — 값(value) 자체는 레코드에 저장되지 않는다. 따라서
  * "capability 없음"을 boolean 값으로 표현하면 diff에 절대 안 잡힌다. 각 프로브는
  * capability 유무를 resolve/reject 이분으로 인코딩한다(`engineProbes.ts` 참조).
+ * 같은 이유로 polyfill 백업 키 감지의 회귀도 diff로는 잡을 수 없다 — 그건 아래
+ * `SHIM_TARGET_APIS` 게이트가 단언으로 잡는다.
  *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
@@ -57,10 +59,34 @@ afterAll(async () => {
   await flushCapture(ENGINE_CATEGORY);
 });
 
+/**
+ * polyfill이 `navigator` 슬롯을 덮어쓰는 프로브 3종 — 이들만 백업 키를 경유해
+ * 엔진 원본을 읽는다(`engineProbes.ts`의 "polyfill 투명성" 참조).
+ */
+const SHIM_TARGET_APIS = new Set(['engine.share', 'engine.vibrate', 'engine.clipboardApi']);
+
 describe('engine · capability 프로브 (엔진 직접 접근, mock 우회)', () => {
   for (const probe of ENGINE_PROBES) {
     it(`${probe.api} — capture sink에 기록된다`, async () => {
-      const { outcome } = await captureProbeVerdict(probe, probe.run());
+      const { outcome, value } = await captureProbeVerdict(probe, probe.run());
+
+      // 백업 키 감지가 살아 있는지 확인하는 게이트.
+      //
+      // 위 "diff는 값을 비교하지 않는다" 제약 때문에 프로브가 기록하는
+      // `polyfillShimmed` **값**은 캡처 diff에 절대 나타나지 않는다 — 상류
+      // polyfill이 `Symbol.for(...)` 백업 키 이름을 바꾸면 프로브는 조용히
+      // "안 덮임" 분기로 빠져 다시 shim 값을 엔진 능력으로 오보고하는데,
+      // diff는 그 회귀를 영영 말해주지 않는다. 그래서 값이 아니라 **단언**으로
+      // 잡는다: polyfill이 로드된 환경이면 shim 대상 프로브는 반드시 백업 키를
+      // 찾았어야 한다. 키 이름이 어긋나는 순간 여기서 깨진다.
+      //
+      // resolve된 경우만 본다 — capability 부재는 errorName 분기라 값이 없다.
+      if (SHIM_TARGET_APIS.has(probe.api) && outcome === 'resolved') {
+        const polyfillLoaded = Boolean(
+          (globalThis as { __AIT_POLYFILL__?: { loaded?: boolean } }).__AIT_POLYFILL__?.loaded,
+        );
+        expect((value as { polyfillShimmed?: unknown }).polyfillShimmed).toBe(polyfillLoaded);
+      }
 
       if (probe.api === 'engine.devicePixelRatio') {
         // devicePixelRatio는 항상 resolve하는 계약(값 자체가 없는 엔진은 없다고 본다).
