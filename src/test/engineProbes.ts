@@ -32,6 +32,25 @@
  * 호출하지 않는다 — 실기기에서 네이티브 UI나 권한 프롬프트가 떠 슈트가 멈춘다.
  * 전부 존재/타입 확인만 하고, 모든 프로브는 동기적으로 끝난다.
  *
+ * ─ polyfill 투명성 (env3 비대칭 방지) ────────────────────────────────────────
+ * `src/main.tsx` 최상단의 `@ait-co/polyfill/auto` import는 `ait build`가 그대로
+ * 번들에 넣으므로, env3(실기기 토스 앱 WebView)는 항상 polyfill이 활성인 채로
+ * 실행된다. env1/env2는 polyfill 없는 페이지에서 같은 값을 잰다. `engine.share`
+ * / `engine.vibrate` / `engine.clipboardApi`는 polyfill이 `navigator`의 해당
+ * 슬롯을 shim으로 덮어쓰므로, 덮인 채로 값을 읽으면 "엔진 능력"이 아니라
+ * "polyfill 설치 여부"를 재게 되어 env3만 비대칭으로 왜곡된다. polyfill의 각
+ * shim은 패치 **전에** 네이티브 원본을 `Symbol.for('@ait-co/polyfill/<api>.original')`
+ * 전역 심볼 키로 `navigator`에 백업해 둔다 — 이 세 프로브는 그 키가 존재하면
+ * 백업값을, 없으면 `navigator`를 직접 읽어 세 환경 모두 같은 진실(엔진의 실제
+ * 지원 여부)을 답한다. **주의**: 설치 코드는 네이티브가 없어도 키를 항상
+ * 만든다(값만 `undefined`)이므로 "키 존재 여부"(덮였는가)와 "백업값의
+ * truthiness"(엔진이 지원하는가)를 반드시 분리해서 봐야 한다 — 값의
+ * truthiness만 보면 "안 덮임"과 "엔진 미지원"을 구분하지 못한다. `Symbol.for`
+ * 키 문자열은 polyfill의 내부 구현 세부라 상류가 바뀌면 이 세 프로브가 조용히
+ * "안 덮임" 분기로 빠져 다시 오염된 값을 답할 수 있다 — 그 조용한 회귀를 캡처
+ * diff에서 드러내기 위해 세 프로브 모두 성공 값에 `polyfillShimmed`(감지된
+ * shim 덮임 여부)를 함께 기록한다.
+ *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import { captureAsync, type Outcome } from './aitCapture';
@@ -115,22 +134,52 @@ export const ENGINE_PROBES: readonly EngineProbe[] = [
   },
   {
     // 4. `navigator.share` 존재 — 존재 확인만, 절대 호출하지 않는다.
+    //    polyfill이 활성(env3)이면 `navigator.share`는 shim이므로, 패치 전에
+    //    백업해 둔 네이티브 원본(`{ share, canShare }`)에서 진실을 읽는다
+    //    (파일 상단 "polyfill 투명성" 참조). 키 존재 ≠ 지원 — 백업 객체는
+    //    네이티브가 없어도 항상 만들어지므로 `share` 필드의 함수 여부로 판정한다.
     api: 'engine.share',
     run: () => {
-      if (typeof navigator.share !== 'function') {
+      const nav = navigator as Navigator & Record<symbol, unknown>;
+      const backupKey = Symbol.for('@ait-co/polyfill/share.original');
+      let shareFn: unknown;
+      let polyfillShimmed: boolean;
+      if (backupKey in nav) {
+        polyfillShimmed = true;
+        const backup = nav[backupKey] as { share?: unknown } | undefined;
+        shareFn = backup?.share;
+      } else {
+        polyfillShimmed = false;
+        shareFn = navigator.share;
+      }
+      if (typeof shareFn !== 'function') {
         return { ok: false, errorName: 'WebShareUnsupported' };
       }
-      return { ok: true, value: { available: true } };
+      return { ok: true, value: { available: true, polyfillShimmed } };
     },
   },
   {
     // 5. `navigator.vibrate` 존재 — 존재 확인만, 절대 호출하지 않는다.
+    //    polyfill이 활성(env3)이면 `navigator.vibrate`는 shim이므로, 패치 전에
+    //    백업해 둔 bound 네이티브 함수(또는 `undefined`)에서 진실을 읽는다
+    //    (파일 상단 "polyfill 투명성" 참조). 키 존재 ≠ 지원.
     api: 'engine.vibrate',
     run: () => {
-      if (typeof navigator.vibrate !== 'function') {
+      const nav = navigator as Navigator & Record<symbol, unknown>;
+      const backupKey = Symbol.for('@ait-co/polyfill/vibrate.original');
+      let vibrateFn: unknown;
+      let polyfillShimmed: boolean;
+      if (backupKey in nav) {
+        polyfillShimmed = true;
+        vibrateFn = nav[backupKey];
+      } else {
+        polyfillShimmed = false;
+        vibrateFn = navigator.vibrate;
+      }
+      if (typeof vibrateFn !== 'function') {
         return { ok: false, errorName: 'VibrationUnsupported' };
       }
-      return { ok: true, value: { available: true } };
+      return { ok: true, value: { available: true, polyfillShimmed } };
     },
   },
   {
@@ -160,17 +209,32 @@ export const ENGINE_PROBES: readonly EngineProbe[] = [
   },
   {
     // 8. `navigator.clipboard` 존재 + `readText`/`writeText` 메서드 유무 — 실제 호출 금지.
+    //    polyfill이 활성(env3)이면 `navigator.clipboard`는 shim 객체로 통째로
+    //    교체되므로, 패치 전에 백업해 둔 원본 `Clipboard` 객체(또는 `undefined`)
+    //    에서 진실을 읽는다 (파일 상단 "polyfill 투명성" 참조). 키 존재 ≠ 지원.
     api: 'engine.clipboardApi',
     run: () => {
-      const clipboard = navigator.clipboard;
+      const nav = navigator as Navigator & Record<symbol, unknown>;
+      const backupKey = Symbol.for('@ait-co/polyfill/clipboard.original');
+      let clipboard: unknown;
+      let polyfillShimmed: boolean;
+      if (backupKey in nav) {
+        polyfillShimmed = true;
+        clipboard = nav[backupKey];
+      } else {
+        polyfillShimmed = false;
+        clipboard = navigator.clipboard;
+      }
       if (!clipboard) {
         return { ok: false, errorName: 'ClipboardApiUnsupported' };
       }
+      const c = clipboard as { readText?: unknown; writeText?: unknown };
       return {
         ok: true,
         value: {
-          hasRead: typeof clipboard.readText === 'function',
-          hasWrite: typeof clipboard.writeText === 'function',
+          hasRead: typeof c.readText === 'function',
+          hasWrite: typeof c.writeText === 'function',
+          polyfillShimmed,
         },
       };
     },
