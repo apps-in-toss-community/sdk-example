@@ -28,6 +28,8 @@ export interface CaptureRecord {
   errorCode?: unknown;
   returnType?: unknown;
   valueKeys?: unknown;
+  /** Object.keys(err) — errorName/errorCode가 같아도 오류 shape 발산을 드러낸다. */
+  errorKeys?: unknown;
   sdkLine?: unknown;
   platform?: unknown;
   /** 붙어 있으면 이 (api, scenario) 키를 양쪽 코퍼스에서 제외한다 — nonComparableKeys 참조. */
@@ -35,8 +37,22 @@ export interface CaptureRecord {
   [key: string]: unknown;
 }
 
-/** 비교 대상 필드 — valueKeys는 양쪽 다 존재할 때만 비교(아래 compareRecords 참조). */
-const COMPARE_FIELDS = ['outcome', 'errorName', 'errorCode', 'returnType'] as const;
+/**
+ * 비교 대상 필드 — valueKeys는 양쪽 다 존재할 때만 비교(아래 compareRecords 참조).
+ *
+ * `errorKeys`가 여기 있는 이유: `errorName`/`errorCode`가 같아도 오류 **shape**는
+ * 갈릴 수 있다. 실측(run11 2.x/iOS)에서 이 필드 없이는 키 3개가 완전 동치로
+ * 집계됐다 — env1은 손으로 만든 `{ errorCode }`를, env3는 네이티브 envelope
+ * (`{name,code,userInfo,moduleName,__isError}`)을 던지는데 나머지 필드가 전부
+ * 같아서 계기가 못 봤다. `err.errorCode`를 읽는 코드가 env1에선 값을 얻고
+ * 실기기에선 `undefined`를 얻는, 정확히 이 프로젝트가 잡으려는 종류의 갭이다.
+ *
+ * `errorMessage`는 **의도적으로 제외**한다. iOS CoreLocation native string처럼
+ * 기기·OS별로 갈리는 자유 문자열이라 env1↔env3 대조에 넣으면 오류라는 오류가
+ * 전부 불일치로 뜬다 — 그 축은 env3 내부(ios↔android) 대조에서 쓰라고 캡처하는
+ * 필드지 환경 간 동치 판정용이 아니다.
+ */
+const COMPARE_FIELDS = ['outcome', 'errorName', 'errorCode', 'returnType', 'errorKeys'] as const;
 type CompareField = (typeof COMPARE_FIELDS)[number] | 'valueKeys';
 
 interface FieldMismatch {
@@ -176,9 +192,19 @@ function groupByKey(records: CaptureRecord[]): Map<string, CaptureRecord[]> {
  * `valueKeys`는 순서를 계약으로 보지 않으므로 정렬한다. `includeValueKeys=false`면
  * 서명에서 아예 뺀다 — "양쪽 다 존재할 때만 비교한다"는 계약을 키 단위로 지키기
  * 위해서다(`shapeMultiset` 참조).
+ *
+ * `errorKeys`도 같은 이유로 정렬해 넣되 게이트는 없다 — `valueKeys`와 달리 이
+ * 필드는 슈트 최초 커밋부터 항상 배열이고(성공 시 `[]`) 두 코퍼스 모두 갖고 있다.
+ * 즉 "포맷이 이 필드를 기록하는가"를 물을 필요가 없다.
  */
 function shapeOf(r: CaptureRecord, includeValueKeys: boolean, includeBooleans: boolean): string {
-  const base = [r.outcome ?? null, r.errorName ?? null, r.errorCode ?? null, r.returnType ?? null];
+  const base = [
+    r.outcome ?? null,
+    r.errorName ?? null,
+    r.errorCode ?? null,
+    r.returnType ?? null,
+    Array.isArray(r.errorKeys) ? [...r.errorKeys].sort() : null,
+  ];
   if (includeValueKeys) {
     const valueKeys = Array.isArray(r.valueKeys) ? [...r.valueKeys].sort() : (r.valueKeys ?? null);
     base.push(valueKeys as never);
