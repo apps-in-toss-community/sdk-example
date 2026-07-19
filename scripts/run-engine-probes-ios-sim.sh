@@ -30,7 +30,10 @@ OUT_DIR=".ait-engine-sim"
 mkdir -p "$OUT_DIR"
 
 # 사용 가능한 iPhone 시뮬레이터 하나를 고른다 (이름 지정이 없으면 첫 번째).
-UDID="$(xcrun simctl list devices available -j | python3 -c "
+# DEVICE_NAME 할당은 반드시 python3 앞에 온다 — 뒤에 두면 환경 변수가 아니라
+# sys.argv[1]로 들어가 os.environ.get('DEVICE_NAME')이 None이 되고,
+# AIT_SIM_DEVICE 지정이 조용히 무시된 채 첫 번째 iPhone이 선택된다.
+UDID="$(xcrun simctl list devices available -j | DEVICE_NAME="$DEVICE_NAME" python3 -c "
 import json, sys, os
 want = os.environ.get('DEVICE_NAME') or ''
 devices = json.load(sys.stdin)['devices']
@@ -45,7 +48,7 @@ for runtime, entries in devices.items():
         print(d['udid'], d['name'], sep='\t')
         raise SystemExit(0)
 raise SystemExit('조건에 맞는 iPhone 시뮬레이터를 찾지 못했습니다.')
-" DEVICE_NAME="$DEVICE_NAME")"
+")"
 
 SIM_UDID="$(echo "$UDID" | cut -f1)"
 SIM_NAME="$(echo "$UDID" | cut -f2)"
