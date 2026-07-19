@@ -87,10 +87,14 @@ describe('navigation · 의도적 오류 (확인된 오용 가드)', () => {
     },
   );
 
-  // N2: bare path('/some/path', intoss:// 없음)는 유효한 mini-app 딥링크가 아니다.
-  // 유효 입력(intoss://...)과 결과 shape가 발산하는지 가드 — 두 결과가 같으면
-  // caller가 잘못된 입력을 유효한 링크로 오인할 수 있다.
-  it('[N2] getTossShareLink bare path가 유효 intoss:// 입력과 다른 결과를 낸다', async () => {
+  // N2: bare path('/some/path', scheme 없음)는 유효한 mini-app 딥링크가 아니다.
+  //
+  // 예전에는 이 발산을 **반환값**으로 확인했다 — mock이 bare path에도 링크 문자열을
+  // 돌려줬기 때문에 "두 문자열이 서로 다른가"를 볼 수밖에 없었다. 실기기(env3)는
+  // 이 입력을 `errorCode: EXECUTION_ERROR`로 아예 reject하므로, 그 단언은 mock에서만
+  // 성립하는 형태였다. devtools#781이 mock에 scheme 검증을 넣으면서 이제 두 환경 모두
+  // 거부하므로, 발산을 **outcome**(거부 vs 성공)으로 확인한다 — 훨씬 강한 가드다.
+  it('[N2] getTossShareLink는 scheme 없는 bare path를 거부하고 유효 입력은 통과시킨다', async () => {
     const bare = await captureAsync(
       {
         category: CATEGORY,
@@ -109,12 +113,12 @@ describe('navigation · 의도적 오류 (확인된 오용 가드)', () => {
       },
       () => getTossShareLink('intoss://my-app'),
     );
-    const bareLink = bare.value as string;
-    const validLink = valid.value as string;
-    // bare path 결과는 mini-app 스킴(intoss://)을 담지 않는다 — 유효 링크가 아님.
-    expect(bareLink).not.toContain('intoss://');
-    // 두 결과가 동일하면(= 입력 검증 없음) 회귀 — 반드시 발산해야 한다.
-    expect(bareLink).not.toBe(validLink);
+    // bare path는 거부된다 — 잘못된 입력이 유효한 링크로 오인되지 않는다.
+    expect(bare.outcome).toBe('rejected');
+    expect((bare.error as { errorCode?: unknown } | undefined)?.errorCode).toBe('EXECUTION_ERROR');
+    // scheme이 있는 유효 입력은 계속 통과한다 — 검증이 과도하지 않은지 확인.
+    expect(valid.outcome).toBe('resolved');
+    expect(valid.value).toContain('intoss://');
   });
 });
 
