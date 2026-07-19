@@ -121,7 +121,7 @@ describe('permissions · 값 다양화 (happy path)', () => {
         {
           category: CATEGORY,
           api: 'requestPermission',
-          scenario: 'happy-request',
+          scenario: 'native-request-geolocation',
           input: { name: 'geolocation', access: 'read' },
         },
         () => requestPermission({ name: 'geolocation', access: 'read' }),
@@ -196,7 +196,7 @@ describe('permissions · native shape (mock-only — dialog는 blocking UI)', ()
         {
           category: CATEGORY,
           api: 'openPermissionDialog',
-          scenario: 'native-dialog-denied',
+          scenario: 'native-dialog-camera',
           input: { name: 'camera', access: 'access' },
         },
         () => openPermissionDialog({ name: 'camera', access: 'access' }),
@@ -214,7 +214,7 @@ describe('permissions · native shape (mock-only — dialog는 blocking UI)', ()
         {
           category: CATEGORY,
           api: 'openPermissionDialog',
-          scenario: 'capture-baseline',
+          scenario: 'native-dialog-geolocation',
           input: { name: 'geolocation', access: 'read' },
         },
         () => openPermissionDialog({ name: 'geolocation', access: 'read' }),
