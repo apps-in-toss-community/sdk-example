@@ -570,6 +570,34 @@ export function captureCallback(
 }
 
 /**
+ * `captureSync`가 관측만 하고 **await하지 않는** thenable에 no-op rejection
+ * 핸들러를 달아 "처리됨"으로 표시한다.
+ *
+ * 왜 필요한가: `captureSync`의 계약은 반환값의 *shape*만 보는 것이다(A1 시나리오는
+ * "반환이 thenable인가"를 확인하려는 것이지 결과를 쓰려는 게 아니다). 그런데 그
+ * thenable이 reject하면 아무도 핸들러를 안 달았으므로 Node가 unhandled rejection을
+ * 보고한다 — 관측만 하려던 호출이 러너 전역을 오염시키고, 설정에 따라 무관한
+ * 테스트를 죽인다.
+ *
+ * 이 결함은 원래부터 있었지만 mock이 낙관적이라(항상 resolve) 드러나지 않다가,
+ * 프로비저닝 미러(`provisioningMirror.ts`)가 env1을 실기기 실패 상태로 세우면서
+ * 발화했다. env3에서는 같은 호출이 thenable이 아닌 동기값으로 도착해(#252) 애초에
+ * 이 경로를 안 탄다 — 즉 env1에서만 터지는 종류의 잠복 결함이었다.
+ *
+ * 핸들러를 다는 것은 rejection을 **삼키지 않는다** — 호출자가 반환된 값을 await하면
+ * 그대로 reject를 받는다. `outcome`/`returnType` 기록도 이 호출 전에 이미 끝나
+ * 있으므로 캡처 레코드는 한 글자도 바뀌지 않는다.
+ */
+function markThenableHandled(value: unknown): void {
+  if (
+    typeof (value as { then?: unknown } | null | undefined)?.then === 'function' &&
+    typeof (value as { catch?: unknown }).catch === 'function'
+  ) {
+    (value as Promise<unknown>).catch(() => {});
+  }
+}
+
+/**
  * 동기 호출 버전 — `returned-sync` / `threw-sync`로 분류한다.
  * A1(getIsTossLoginIntegratedService가 boolean인지 Promise인지) 같은 sync 표면용.
  */
@@ -580,6 +608,7 @@ export function captureSync(
   try {
     const value = call();
     const { returnType, valueKeys } = extractValueShape(value);
+    markThenableHandled(value);
     capture({
       ...meta,
       outcome: 'returned-sync',

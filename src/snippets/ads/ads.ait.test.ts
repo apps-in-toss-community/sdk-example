@@ -22,12 +22,20 @@
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import { GoogleAdMob, TossAds, loadFullScreenAd } from '@apps-in-toss/web-framework';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { captureAsync, captureCallback, captureSync, cell, flushCapture } from '../../test/aitCapture';
+import { clearProvisioningMirror, mirrorProvisioning } from '../../test/provisioningMirror';
 
 const CATEGORY = 'ads';
 
+// 31146은 AdMob placement가 발급돼 있지 않다(광고 계약 미체결) — 실기기는 load
+// 단계에서 이미 네이티브 오류로 거부한다. env1을 그 프로비저닝 상태로 맞춘다.
+beforeAll(async () => {
+  await mirrorProvisioning('loadAdMob', 'loadFullScreenAd');
+});
+
 afterAll(async () => {
+  await clearProvisioningMirror('loadAdMob', 'loadFullScreenAd');
   await flushCapture(CATEGORY);
 });
 
@@ -139,13 +147,17 @@ describe('ads · LOAD (captureCallback, env3=terminal-arrived만 단언)', () =>
           options: { adGroupId: 'adGroupId' },
         }),
     );
-    // mock은 200ms 후 무조건 onEvent({type:'loaded'})를 발화한다 — timeout이면 회귀.
-    if (cell.platform === 'mock') {
-      expect(result.outcome).toBe('resolved');
+    // 31146은 광고 계약이 체결돼 있지 않아 실기기는 load 단계에서 거부한다 —
+    // env1도 프로비저닝 미러로 같은 상태에 세워져 있으므로 `mock이면 반드시
+    // resolved` 같은 env1 전용 단언은 두지 않는다(그 단언 자체가 env1↔env3
+    // 발산을 코드로 못박는 것이었다). mock의 낙관적 happy 경로(200ms 후
+    // onEvent `loaded`)는 devtools 자체 슈트(`src/__tests__/ads.test.ts`)가
+    // 게이트하므로 여기서는 두 환경에 함께 성립하는 것만 단언한다.
+    if (result.outcome === 'resolved') {
       expect(result.value).toMatchObject({ type: 'loaded' });
     } else {
-      // env3: 재고 없음(No fill) 또는 응답 없음(timeout) 모두 ENV_EXPECTED.
-      expect(['resolved', 'rejected', 'callback-timeout']).toContain(result.outcome);
+      // 프로비저닝 거부(rejected) 또는 응답 없음(timeout) 모두 ENV_EXPECTED.
+      expect(['rejected', 'callback-timeout']).toContain(result.outcome);
     }
   });
 
@@ -164,14 +176,15 @@ describe('ads · LOAD (captureCallback, env3=terminal-arrived만 단언)', () =>
           options: { adGroupId: 'adGroupId' },
         }),
     );
-    if (cell.platform === 'mock') {
-      expect(result.outcome).toBe('resolved');
+    // 위 loadFullScreenAd와 같은 이유로 수렴 단언 — 31146은 AdMob placement가
+    // 발급돼 있지 않아 양쪽 환경 모두 load 단계에서 거부된다.
+    if (result.outcome === 'resolved') {
       expect(result.value).toMatchObject({
         type: 'loaded',
         data: expect.objectContaining({ responseInfo: expect.any(Object) }),
       });
     } else {
-      expect(['resolved', 'rejected', 'callback-timeout']).toContain(result.outcome);
+      expect(['rejected', 'callback-timeout']).toContain(result.outcome);
     }
   });
 
