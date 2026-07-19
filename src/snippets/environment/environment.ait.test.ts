@@ -111,13 +111,13 @@ describe('environment · 의도적 오류 (확인된 오용 가드)', () => {
     expect(structured.value).toBeTypeOf('object');
     expect(structured.value).toHaveProperty('top');
     // REAL_SDK_FINDING (2.x env3): deprecated getSafeAreaInsets()는 타입 선언상
-    // `: number`(스칼라)지만 실기기 2.x는 object를 반환한다. env1(mock)에서는
-    // number를 반환하므로 typeof 발산 단언이 PASS하고, env3에서는 둘 다 object라
-    // FAIL한다. 이 발산 단언은 mock-only로 게이트해 env3 false-fail을 막되,
-    // 캡처 레코드는 device shape를 그대로 담아 2.x↔3.0 baseline diff에 남긴다.
-    if (cell.platform === 'mock') {
-      expect(typeof structured.value).not.toBe(typeof legacy.value);
-    }
+    // `: number`(스칼라)지만 실기기 2.x는 구조화 accessor와 같은 객체를 반환한다 —
+    // 상류 `.d.ts`가 런타임과 어긋난 타입 버그다. 예전에는 mock만 number를 반환해
+    // 이 단언을 mock-only typeof 발산으로 게이트했으나, devtools#770에서 mock이
+    // 실측 shape로 정렬되며 그 발산이 사라졌다. 이제 두 accessor는 모든 환경에서
+    // 같은 객체 shape를 주므로, 발산이 아니라 **수렴**을 단언한다.
+    expect(legacy.value).toBeTypeOf('object');
+    expect(legacy.value).toHaveProperty('top');
   });
 });
 

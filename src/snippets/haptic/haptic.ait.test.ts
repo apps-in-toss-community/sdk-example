@@ -55,12 +55,16 @@ describe('haptic · 값 다양화 (happy path, fire-and-forget)', () => {
 });
 
 describe('haptic · 의도적 오류 (확인된 오용 가드)', () => {
-  // H1: 존재하지 않는(SDK 타입 밖의) type 문자열을 던져도 예외 없이 resolve해야 한다 —
-  // mock 구현이 알 수 없는 type을 fallback 패턴으로 처리하는 것과 동일하게, 오용이
-  // 진동 자체를 죽이지 않아야 한다는 fire-and-forget 계약을 확인한다.
-  it('[H1] 알 수 없는 type 문자열을 전달해도 예외 없이 resolve된다', async () => {
+  // H1: 존재하지 않는(SDK 타입 밖의) type 문자열은 거부된다.
+  //
+  // 예전 단언은 정반대였다 — "예외 없이 resolve"가 fire-and-forget 계약이라고 봤다.
+  // 그건 mock 구현(알 수 없는 type을 fallback 패턴으로 삼킴)을 계약으로 착각한 것이고,
+  // 실기기(env3)는 이 입력을 `errorCode: EXECUTION_ERROR`로 reject한다. 그래서
+  // mock-only 분기로 발산을 인정하고 있었다. devtools#781이 mock을 실측에 맞추면서
+  // 그 발산이 사라졌으므로 이제 모든 환경에서 **거부**를 단언한다.
+  it('[H1] 알 수 없는 type 문자열은 거부된다', async () => {
     const bogusType = 'not-a-real-haptic-type' as HapticFeedbackType;
-    const { outcome, value } = await captureAsync(
+    const { outcome, error } = await captureAsync(
       {
         category: CATEGORY,
         api: 'generateHapticFeedback',
@@ -69,12 +73,8 @@ describe('haptic · 의도적 오류 (확인된 오용 가드)', () => {
       },
       () => generateHapticFeedback({ type: bogusType }),
     );
-    if (cell.platform === 'mock') {
-      expect(outcome).toBe('resolved');
-      expect(value).toBeUndefined();
-    } else {
-      expect(['resolved', 'rejected']).toContain(outcome);
-    }
+    expect(outcome).toBe('rejected');
+    expect((error as { errorCode?: unknown } | undefined)?.errorCode).toBe('EXECUTION_ERROR');
   });
 });
 
