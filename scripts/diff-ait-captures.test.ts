@@ -69,9 +69,15 @@ describe('diff', () => {
     expect(result.onlyInB).toEqual(['onlyB s1']);
   });
 
-  it('같은 키가 세트 안에 여럿이면 마지막 record를 채택한다(재시도 덮어쓰기)', () => {
+  // 예전 의미론은 "같은 키가 여럿이면 마지막 record 채택"(재시도 덮어쓰기)이었다.
+  // 그 전제는 현 harness에서 성립하지 않는다 — THROTTLED backoff는 `capture()`를
+  // 거치지 않고 `continue`하므로 재시도가 별도 record를 만들지 않고 최종 결과 한
+  // 건의 `throttleRetries` 카운터로 접힌다(`src/test/aitCapture.ts`). 실제로 같은
+  // 키에 record가 쌓이는 건 값 union을 순회하는 반복 시나리오뿐이고, 덮어쓰면 그
+  // 관측이 사라져 거짓 동치가 생긴다(#308). 그래서 멀티셋 대조로 바꿨다.
+  it('같은 키의 record를 전부 모아 shape 멀티셋으로 대조한다', () => {
     const a = [
-      record({ outcome: 'rejected', errorName: 'THROTTLED' }),
+      record({ outcome: 'rejected', errorName: 'Error', errorCode: 'NO_PERMISSION' }),
       record({ outcome: 'resolved', errorName: null }),
     ];
     const b = [record({ outcome: 'resolved', errorName: null })];
@@ -79,8 +85,43 @@ describe('diff', () => {
     const result = diff(a, b);
 
     expect(result.totalKeys).toBe(1);
+    // 마지막 record만 보면 양쪽 다 resolved라 동치로 보인다 — 그게 거짓 동치다.
+    expect(result.equivalentCount).toBe(0);
+    expect(result.mismatches).toHaveLength(1);
+  });
+
+  it('관측 횟수까지 같아야 동치다 — shape 종류만 같고 횟수가 갈리면 불일치', () => {
+    const a = [record({ outcome: 'resolved' }), record({ outcome: 'resolved' })];
+    const b = [record({ outcome: 'resolved' })];
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(0);
+    expect(result.mismatches).toHaveLength(1);
+  });
+
+  it('반복 시나리오라도 멀티셋이 같으면 동치다 — 순서는 계약이 아니다', () => {
+    const a = [record({ outcome: 'resolved' }), record({ outcome: 'timeout' })];
+    const b = [record({ outcome: 'timeout' }), record({ outcome: 'resolved' })];
+
+    const result = diff(a, b);
+
     expect(result.equivalentCount).toBe(1);
     expect(result.mismatches).toHaveLength(0);
+  });
+
+  it('한쪽이라도 shape가 여럿이면 필드별 상세 대신 멀티셋을 보고한다', () => {
+    const a = [record({ outcome: 'resolved' }), record({ outcome: 'timeout' })];
+    const b = [record({ outcome: 'resolved' }), record({ outcome: 'resolved' })];
+
+    const result = diff(a, b);
+
+    const [m] = result.mismatches;
+    expect(m).toBeDefined();
+    expect(m?.fields).toHaveLength(0);
+    expect(m?.shapesA).toHaveLength(2);
+    expect(m?.shapesB).toHaveLength(1);
+    expect(m?.shapesB?.[0]?.count).toBe(2);
   });
 
   it('valueKeys는 양쪽 다 존재할 때만 비교한다', () => {

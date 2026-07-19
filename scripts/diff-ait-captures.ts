@@ -7,8 +7,9 @@
 //
 // 각 디렉토리에서 `<category>.<sdkLine>.<platform>.json` 패턴 파일(예:
 // `ads.2.x.mock.json`)을 전부 읽는다 — 파일 각각은 `AitCaptureRecord`
-// 배열(src/test/aitCapture.ts)이다. 비교 키는 `(api, scenario)`; 같은 키가
-// 한 세트에 여럿이면(재시도 등) 마지막 record를 채택한다.
+// 배열(src/test/aitCapture.ts)이다. 비교 키는 `(api, scenario)`; 같은 키에 record가
+// 여럿이면(값 union을 순회하는 반복 시나리오) 전부 모아 shape 멀티셋으로 대조한다 —
+// 마지막 하나만 채택하면 나머지 관측이 조용히 사라져 거짓 동치가 생긴다(#308).
 //
 // 이 스크립트는 계측 도구지 CI 게이트가 아니다 — exit code는 항상 0.
 //
@@ -42,9 +43,23 @@ interface FieldMismatch {
   b: unknown;
 }
 
+/** 멀티셋의 한 원소 — `shape`는 `shapeOf`가 만든 정규 문자열. */
+interface ShapeCount {
+  shape: string;
+  count: number;
+}
+
 interface KeyMismatch {
   key: string;
+  /**
+   * 필드별 상세 — 양쪽 다 shape가 **한 종류뿐**일 때만 채워진다(대부분의 키).
+   * 반복 시나리오처럼 한쪽이라도 여러 shape를 관측했으면 필드 단위로 짝지을
+   * 대상이 없으므로 비우고 아래 멀티셋으로 보고한다.
+   */
   fields: FieldMismatch[];
+  /** 이 키에서 각 세트가 관측한 shape 멀티셋. */
+  shapesA: ShapeCount[];
+  shapesB: ShapeCount[];
 }
 
 interface DiffResult {
@@ -125,13 +140,86 @@ function loadCaptureDir(dir: string): CaptureRecord[] {
   return records;
 }
 
-/** 비교 키 `(api, scenario)` — 같은 키가 여럿이면 마지막 record가 채택된다(재시도 덮어쓰기 semantics). */
-function indexByKey(records: CaptureRecord[]): Map<string, CaptureRecord> {
-  const map = new Map<string, CaptureRecord>();
+/**
+ * 비교 키 `(api, scenario)`로 record를 **모은다** — 덮어쓰지 않는다.
+ *
+ * 예전에는 같은 키의 record를 `map.set`으로 덮어써 마지막 하나만 남겼다("재시도
+ * 덮어쓰기"). 그런데 슈트에는 재시도가 아니라 **union을 순회하는 반복 시나리오**가
+ * 많다 — `getPermission :: happy-each-name`은 권한 6종을 돌아 record 6건을 같은
+ * 키에 쌓는다. 덮어쓰면 그중 5건이 조용히 사라지고, 지표가 반복 순서에 좌우된다.
+ * 실측(run11 2.x/iOS)에서 서로 다른 shape를 감춘 키가 3개 있었고 그중 하나는
+ * **거짓 동치**였다(#308). 그래서 전부 모아 아래 멀티셋으로 대조한다.
+ *
+ * 재시도가 카운트를 부풀리지 않는가: THROTTLED backoff 재시도는 별도 record가
+ * 아니라 한 record의 `throttleRetries` 카운터로 접힌다(`aitCapture.ts`). 따라서
+ * record 수는 "실제 관측 횟수"와 일치한다.
+ */
+function groupByKey(records: CaptureRecord[]): Map<string, CaptureRecord[]> {
+  const map = new Map<string, CaptureRecord[]>();
   for (const r of records) {
-    map.set(`${r.api} ${r.scenario}`, r);
+    const key = `${r.api} ${r.scenario}`;
+    const bucket = map.get(key);
+    if (bucket) {
+      bucket.push(r);
+    } else {
+      map.set(key, [r]);
+    }
   }
   return map;
+}
+
+/**
+ * 한 record의 비교 대상 shape를 정규 문자열로 인코딩한다 — 멀티셋의 원소.
+ *
+ * `valueKeys`는 순서를 계약으로 보지 않으므로 정렬한다. `includeValueKeys=false`면
+ * 서명에서 아예 뺀다 — "양쪽 다 존재할 때만 비교한다"는 계약을 키 단위로 지키기
+ * 위해서다(`shapeMultiset` 참조).
+ */
+function shapeOf(r: CaptureRecord, includeValueKeys: boolean): string {
+  const base = [r.outcome ?? null, r.errorName ?? null, r.errorCode ?? null, r.returnType ?? null];
+  if (!includeValueKeys) {
+    return JSON.stringify(base);
+  }
+  const valueKeys = Array.isArray(r.valueKeys) ? [...r.valueKeys].sort() : (r.valueKeys ?? null);
+  return JSON.stringify([...base, valueKeys]);
+}
+
+/** record가 비교 가능한 valueKeys를 갖고 있는가. */
+function hasValueKeys(r: CaptureRecord): boolean {
+  return r.valueKeys != null;
+}
+
+/**
+ * shape → 관측 횟수. 키 하나의 멀티셋.
+ *
+ * `valueKeys`는 **양쪽 버킷의 모든 record가 갖고 있을 때만** 서명에 넣는다.
+ * 단일 record 시절의 "양쪽 다 있을 때만 비교" 계약을 버킷으로 일반화한 것 —
+ * 한쪽이라도 null이면(reject·非object 반환, 또는 valueKeys 이전 버전 캡처) 그
+ * 키에서는 valueKeys를 비교 대상에서 뺀다. 다른 필드가 이미 갈렸다면 그쪽에서
+ * 잡히므로 판별력 손실은 없다.
+ */
+function shapeMultiset(records: CaptureRecord[], includeValueKeys: boolean): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const r of records) {
+    const s = shapeOf(r, includeValueKeys);
+    counts.set(s, (counts.get(s) ?? 0) + 1);
+  }
+  return counts;
+}
+
+function multisetsEqual(a: Map<string, number>, b: Map<string, number>): boolean {
+  if (a.size !== b.size) return false;
+  for (const [shape, count] of a) {
+    if (b.get(shape) !== count) return false;
+  }
+  return true;
+}
+
+/** 멀티셋을 사람이 읽는 목록으로 — 관측 많은 shape 먼저. */
+function describeMultiset(counts: Map<string, number>): ShapeCount[] {
+  return [...counts.entries()]
+    .map(([shape, count]) => ({ shape, count }))
+    .sort((x, y) => y.count - x.count || x.shape.localeCompare(y.shape));
 }
 
 function valuesEqual(a: unknown, b: unknown): boolean {
@@ -161,8 +249,8 @@ function compareRecords(a: CaptureRecord, b: CaptureRecord): FieldMismatch[] {
 }
 
 function diff(recordsA: CaptureRecord[], recordsB: CaptureRecord[]): DiffResult {
-  const mapA = indexByKey(recordsA);
-  const mapB = indexByKey(recordsB);
+  const mapA = groupByKey(recordsA);
+  const mapB = groupByKey(recordsB);
 
   const onlyInA: string[] = [];
   const onlyInB: string[] = [];
@@ -187,12 +275,23 @@ function diff(recordsA: CaptureRecord[], recordsB: CaptureRecord[]): DiffResult 
       continue;
     }
     totalKeys++;
-    const fields = compareRecords(a, b);
-    if (fields.length === 0) {
+    const includeValueKeys = a.every(hasValueKeys) && b.every(hasValueKeys);
+    const countsA = shapeMultiset(a, includeValueKeys);
+    const countsB = shapeMultiset(b, includeValueKeys);
+    if (multisetsEqual(countsA, countsB)) {
       equivalentCount++;
-    } else {
-      mismatches.push({ key, fields });
+      continue;
     }
+    // 양쪽 다 단일 shape면 필드별 상세가 읽기 좋다 — 그때만 채운다.
+    const first = (bucket: CaptureRecord[]) => bucket[0] as CaptureRecord;
+    const fields =
+      countsA.size === 1 && countsB.size === 1 ? compareRecords(first(a), first(b)) : [];
+    mismatches.push({
+      key,
+      fields,
+      shapesA: describeMultiset(countsA),
+      shapesB: describeMultiset(countsB),
+    });
   }
 
   mismatches.sort((x, y) => x.key.localeCompare(y.key));
@@ -221,8 +320,21 @@ function printHuman(result: DiffResult, aDir: string, bDir: string): void {
     console.log('불일치 목록:');
     for (const m of mismatches) {
       console.log(`  - ${keyLabel(m.key)}`);
-      for (const f of m.fields) {
-        console.log(`      ${f.field}: A=${JSON.stringify(f.a)}  B=${JSON.stringify(f.b)}`);
+      if (m.fields.length > 0) {
+        for (const f of m.fields) {
+          console.log(`      ${f.field}: A=${JSON.stringify(f.a)}  B=${JSON.stringify(f.b)}`);
+        }
+        continue;
+      }
+      // 한쪽이라도 여러 shape를 관측했거나(반복 시나리오), shape는 같은데 관측
+      // 횟수가 갈린 경우 — 멀티셋을 그대로 보여준다.
+      console.log(`      A (${m.shapesA.reduce((n, s) => n + s.count, 0)}회 관측):`);
+      for (const s of m.shapesA) {
+        console.log(`        x${s.count} ${s.shape}`);
+      }
+      console.log(`      B (${m.shapesB.reduce((n, s) => n + s.count, 0)}회 관측):`);
+      for (const s of m.shapesB) {
+        console.log(`        x${s.count} ${s.shape}`);
       }
     }
   }
@@ -252,6 +364,8 @@ function toJson(result: DiffResult): unknown {
       api: m.key.split(' ')[0],
       scenario: m.key.split(' ')[1],
       fields: m.fields,
+      shapesA: m.shapesA,
+      shapesB: m.shapesB,
     })),
     coverageGap: {
       onlyInA: result.onlyInA.map((key) => ({
@@ -287,7 +401,7 @@ function main(): void {
 }
 
 // 단위 테스트에서 diff()/compareRecords() 로직만 import할 수 있도록 named export로도 노출.
-export { compareRecords, diff, indexByKey, loadCaptureDir };
+export { compareRecords, diff, groupByKey, loadCaptureDir, shapeMultiset, shapeOf };
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   main();
