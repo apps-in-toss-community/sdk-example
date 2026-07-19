@@ -23,8 +23,11 @@
  * "env1이 env2를 재현 못 함"으로 오보고하게 된다.
  *
  * 그래서 이 파일은 `declareSubstrate('jsdom')`로 자기 축을 **`jsdom`으로 분리**
- * 선언한다(`.ait-capture/engine.<sdkLine>.jsdom.json`). 이 축은 env1↔env2/env3
- * 대조에 쓰지 않는다 — 남겨두는 목적은 둘이다:
+ * 선언한다. 이 축은 env1↔env2/env3 대조에 쓰지 않으므로 캡처도 diff corpus인
+ * `.ait-capture/`가 아니라 `.ait-capture-substrate/engine.<sdkLine>.jsdom.json`
+ * 으로 떨어진다 — diff 도구는 디렉토리의 `*.json`을 전부 읽고 platform 축을 보지
+ * 않으므로, 같은 디렉토리에 두면 파일명이 갈려 있어도 커버리지 갭을 부풀린다
+ * (`aitCapture.ts`의 `SUBSTRATE_ONLY_PLATFORMS` 참조). 남겨두는 목적은 둘이다:
  *   1. CI 회귀 게이트 — `pnpm test`가 CI에서 도는 유일한 계층이라, 프로브가
  *      던지거나(오타·API 오용) 캡처를 못 남기는 회귀를 여기서 잡는다.
  *   2. jsdom 기질 회귀 감시 — jsdom 업그레이드로 capability 표면이 바뀌면 보인다.

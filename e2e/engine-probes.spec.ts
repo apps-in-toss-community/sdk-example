@@ -33,6 +33,9 @@
  * webkit 프로젝트는 `AIT_ENGINE_WEBKIT=1`일 때만 켜진다(바이너리 설치가 필요해
  * 기본 `pnpm test:e2e`를 깨뜨리지 않기 위함). 산출물은
  * `.ait-capture/engine.<sdkLine>.<chromium|webkit>.json` (gitignored, per-run).
+ * chromium/webkit은 비교 대상 축이라 diff corpus인 `.ait-capture/`에 그대로
+ * 떨어진다 — 비교에 참여하지 않는 jsdom 실행분만 `.ait-capture-substrate/`로
+ * 격리된다(`aitCapture.ts`의 `SUBSTRATE_ONLY_PLATFORMS`).
  *
  * 데스크톱 webkit은 env2(실기기 WebKit)의 **근사치일 뿐 대체물이 아니다** —
  * 실기기는 실 뷰포트·실 터치·PWA 셸을 추가로 가지며 그 축은 폰이 있어야 한다.

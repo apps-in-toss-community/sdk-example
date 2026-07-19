@@ -16,7 +16,9 @@
  * 기존 컴포넌트 smoke 테스트는 SDK를 직접 import하지 않아 alias 영향이 없다.
  *
  * ─ 환경 적응 (env1 Node / env3 브라우저) ─────────────────────────────────────
- * env1(vitest/Node): Node builtins(fs/path)로 `.ait-capture/<cat>.<sdk>.<platform>.json` 기록.
+ * env1(vitest/Node): Node builtins(fs/path)로 `<dir>/<cat>.<sdk>.<platform>.json` 기록.
+ *   `<dir>`은 기질에 따라 갈린다 — 비교 대상 축은 `.ait-capture/`, 비교에
+ *   참여하지 않는 기질(jsdom)은 `.ait-capture-substrate/`(`captureDirFor` 참조).
  * env3(run_tests 브라우저 주입): 파일시스템 없음 → globalThis.__AIT_CAPTURE__ 배열 + console.log.
  * 분기는 `isNode` 런타임 가드로. Node builtins는 동적 import로만 로드(top-level 금지 —
  * esbuild iife 번들이 static import를 resolve할 수 없어 빌드 실패).
@@ -62,6 +64,38 @@ const PLATFORMS: readonly Platform[] = ['mock', 'jsdom', 'chromium', 'webkit', '
 
 function isPlatform(value: unknown): value is Platform {
   return typeof value === 'string' && (PLATFORMS as readonly string[]).includes(value);
+}
+
+/**
+ * 환경 간 비교에 **참여하지 않는** 기질. 캡처를 별도 디렉토리로 격리한다.
+ *
+ * ─ 왜 라벨 분리만으로는 부족한가 ────────────────────────────────────────────
+ * diff 도구(`scripts/diff-ait-captures.ts`)는 레코드를 `api::scenario` 키로만
+ * 짝짓고 **platform 축을 보지 않는다** — 주어진 디렉토리의 `*.json`을 전부 읽어
+ * 한 덩어리로 합친다. 즉 계약상 **디렉토리 자체가 비교 대상 집합(corpus)**이고,
+ * 파일명의 platform 세그먼트는 사람이 읽는 라벨일 뿐 도구의 필터가 아니다.
+ *
+ * 그래서 `jsdom` 캡처를 `.ait-capture/`에 두면, 파일명이 `jsdom`으로 갈려 있어도
+ * env1↔env3 diff에서 engine 프로브 9건이 "A에만 있는 키"로 잡혀 **커버리지 갭을
+ * 부풀린다**(A에만 10 → 19). 라벨 분리가 막으려던 오보고와 같은 종류의 오염이
+ * 방향만 바꿔 새는 것이다.
+ *
+ * 격리를 디렉토리로 하면 그 불변식이 **파일 배치로 강제**된다 —
+ * `.ait-capture/`에는 비교 가능한 축만 놓이고, 앞으로 축이 더 늘어도
+ * (ios-pwa 등) 같은 규칙이 계속 통한다. diff 도구를 고치는 대안도 있었지만
+ * 그 스크립트는 아직 머지 안 된 브랜치에 있어 브랜치 간 결합이 생긴다.
+ */
+const SUBSTRATE_ONLY_PLATFORMS: readonly Platform[] = ['jsdom'];
+
+/** 환경 간 비교 대상 축이 쌓이는 디렉토리 — diff 도구가 읽는 corpus. */
+const CAPTURE_DIR = '.ait-capture';
+
+/** 비교에 참여하지 않는 기질 감시용 디렉토리 — diff corpus 밖. */
+const SUBSTRATE_CAPTURE_DIR = '.ait-capture-substrate';
+
+/** 기질에 따라 캡처가 떨어질 디렉토리를 고른다. */
+function captureDirFor(platform: Platform): string {
+  return SUBSTRATE_ONLY_PLATFORMS.includes(platform) ? SUBSTRATE_CAPTURE_DIR : CAPTURE_DIR;
 }
 
 /**
@@ -704,7 +738,8 @@ export async function flushCapture(category: string): Promise<void> {
     const { mkdirSync, writeFileSync } = await import(/* @vite-ignore */ fsMod);
     const { resolve } = await import(/* @vite-ignore */ pathMod);
     // process는 isNode 가드 안에서만 접근.
-    const captureDir = resolve(process.cwd(), '.ait-capture');
+    // 비교 대상이 아닌 기질(jsdom)은 diff corpus 밖 디렉토리로 격리한다.
+    const captureDir = resolve(process.cwd(), captureDirFor(cell.platform));
     mkdirSync(captureDir, { recursive: true });
     const file = resolve(captureDir, `${category}.${CELL_SDK_LINE}.${cell.platform}.json`);
     writeFileSync(file, `${JSON.stringify(forCategory, null, 2)}\n`, 'utf8');
