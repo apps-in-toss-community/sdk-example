@@ -10,14 +10,23 @@
  * `fetchContacts()` 실호출은 `it.skipIf(cell.platform !== 'mock')`로 mock에서만
  * 돌리고, env3에서는 skip한다(camera.ait.test.ts와 동일 패턴).
  *
- * `fetchContacts.getPermission()`은 다르다 — 순수 조회이고 다이얼로그를 열지
- * 않는다(SDK 문서: "권한의 현재 상태를 반환"). 두 플랫폼 모두 무인 실행 안전.
+ * `fetchContacts.getPermission()`은 다르다 — 상류 SDK 타입은 `fetchContacts`에
+ * 부착된 메서드로 선언하지만, 실기기(2.x×iOS)에는 그 메서드가 **부착돼 있지
+ * 않다**(devtools#795 — 호출 시 `fetchContacts.getPermission is not a function`
+ * native `TypeError`). 상류 타입↔런타임 불일치이고, standalone `getPermission({
+ * name: 'contacts', access: 'access' })`는 영향받지 않는다(부재는 `fetchContacts`에
+ * 부착된 메서드에만 해당 — `../permissions.ts` 참고). devtools#796에서 mock이 이
+ * 부재를 실측대로 재현하므로, `getPermission()`은 이제 두 플랫폼 모두에서 권한
+ * 상태를 조회하는 대신 즉시 native `TypeError`로 reject한다(무인 실행 자체는
+ * 여전히 안전 — 다이얼로그를 열지 않고 곧바로 throw한다).
  *
- * 거부-shape는 `fetchContacts()`를 거부 상태에서 실행하는 대신(피커 hang 위험),
- * devtools mock의 `aitState.patch('permissions', { contacts: 'denied' })`로
- * 권한을 강제한 뒤 `getPermission()`으로 상태만 관측하고, `fetchContacts()` 자체는
- * 여전히 mock-only skipIf 안에서 거부 경로를 확인한다 — mock은 permission 체크가
- * UI 없이 동기 판정이라 hang 위험이 없다(clipboard.ait.test.ts 패턴, PR #266).
+ * 거부-shape 확인은 더 이상 `getPermission()`을 경유하지 않는다 — 그 메서드가
+ * 부재라 강제한 permission과 무관하게 항상 TypeError이기 때문이다. 대신
+ * `fetchContacts()` 자체를 거부 상태에서 직접 실행해 shape을 확인한다: devtools
+ * mock의 `aitState.patch('permissions', { contacts: 'denied' })`로 권한을 강제한
+ * 뒤 `fetchContacts()`를 mock-only skipIf 안에서 실행하는 [C1] 경로가 이 계약을
+ * 확인한다 — mock은 permission 체크가 UI 없이 동기 판정이라 hang 위험이 없다
+ * (clipboard.ait.test.ts 패턴, PR #266).
  *
  * ─ #265: env3 denied 실행 추가 (camera rescue와 동일 패턴) ──────────────────
  * mock-only 경로와 별개로, `getAitPerms().contacts`(devtools#744 preflight)가
@@ -40,8 +49,6 @@ afterAll(async () => {
   await flushCapture(CATEGORY);
 });
 
-const PERMISSION_STATUSES = ['notDetermined', 'denied', 'allowed'];
-
 /** env1(mock) 전용 — devtools mock의 contacts 권한 상태를 강제한다. clipboard.ait.test.ts와 동일 패턴. */
 async function forceContactsPermission(status: 'denied' | 'allowed' | 'notDetermined'): Promise<void> {
   const mod: unknown = await import('@apps-in-toss/web-framework');
@@ -60,21 +67,24 @@ afterEach(async () => {
   await resetContactsPermission();
 });
 
-describe('contacts · getPermission (무인, 비-blocking 조회)', () => {
-  it('fetchContacts.getPermission()이 PermissionStatus union 멤버를 반환한다', async () => {
-    const { outcome, value } = await captureAsync(
+describe('contacts · getPermission (부착 메서드 실기기 부재 — native TypeError)', () => {
+  it('fetchContacts.getPermission()이 native TypeError로 reject된다 (devtools#795/#796)', async () => {
+    const { outcome, error } = await captureAsync(
       { category: CATEGORY, api: 'fetchContacts.getPermission', scenario: 'happy-query', input: null },
       () => fetchContacts.getPermission(),
     );
-    expect(outcome).toBe('resolved');
-    expect(PERMISSION_STATUSES).toContain(value);
+    expect(outcome).toBe('rejected');
+    expect(error).toBeInstanceOf(TypeError);
   });
 
-  it('denied로 강제한 뒤 getPermission()이 denied를 반환한다 (mock)', async () => {
+  it('denied로 강제해도 getPermission()은 여전히 native TypeError로 reject된다 (devtools#795/#796)', async () => {
+    // getPermission 자체가 부재이므로 강제한 권한 상태와 무관하게 결과는 항상 같은
+    // TypeError다 — 강제 호출은 harmless하게 유지해 시나리오 의도(denied 상태에서의
+    // 조회)만 보존한다(mock 전용 no-op, env3에서는 aitState 부재로 이미 no-op).
     if (cell.platform === 'mock') {
       await forceContactsPermission('denied');
     }
-    const { outcome, value } = await captureAsync(
+    const { outcome, error } = await captureAsync(
       {
         category: CATEGORY,
         api: 'fetchContacts.getPermission',
@@ -83,14 +93,8 @@ describe('contacts · getPermission (무인, 비-blocking 조회)', () => {
       },
       () => fetchContacts.getPermission(),
     );
-    expect(outcome).toBe('resolved');
-    if (cell.platform === 'mock') {
-      // mock 권한을 강제로 denied했으므로 조회 결과가 반드시 denied여야 한다.
-      expect(value).toBe('denied');
-    } else {
-      // env3: 강제 불가 — union 멤버라는 shape만 관측.
-      expect(PERMISSION_STATUSES).toContain(value);
-    }
+    expect(outcome).toBe('rejected');
+    expect(error).toBeInstanceOf(TypeError);
   });
 });
 
