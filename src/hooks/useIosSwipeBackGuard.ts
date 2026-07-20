@@ -38,9 +38,12 @@ export function decideGestureEnabled(idx: number | null): boolean {
   return idx === 0;
 }
 
-function isTossWebView(): boolean {
+export async function isTossWebView(): Promise<boolean> {
   try {
-    return getOperationalEnvironment() === 'toss';
+    // 상류 SDK 타입은 동기(string)지만 실기기 런타임은 Promise를 반환한다(devtools#795/#796,
+    // env3 실측). await는 동기 반환·Promise 반환 양쪽에서 동작하는 version-agnostic 경로다.
+    // await 없이 비교하면 Promise === 'toss'가 항상 false라 가드가 무력화된다(#136 회귀).
+    return (await getOperationalEnvironment()) === 'toss';
   } catch {
     // __CONSTANT_HANDLER_MAP 미초기화 시 RN 브리지 마커로 fallback.
     // throw가 effect를 early-return 시키지 않게 흡수 (#84 원인 차단).
@@ -72,16 +75,27 @@ export function useIosSwipeBackGuard(): void {
     // 실제 값은 사용하지 않는다 — deps에 두어 매 navigation마다 effect를 재실행하는 것이 목적.
     void location.key;
 
-    if (!isTossWebView()) return;
-    if (isNoSwipeGuard()) return;
+    let cancelled = false;
 
-    const enabled = decideGestureEnabled(readRouterIdx(window.history.state));
-    setIosSwipeGestureEnabled({ isEnabled: enabled }).catch(() => {});
+    void (async () => {
+      if (!(await isTossWebView())) return;
+      // isTossWebView()가 await를 거치는 동안 다음 navigation의 effect가 먼저 시작될 수
+      // 있다 — cancelled 체크로 stale한 in-flight 결과가 최신 상태를 덮어쓰지 않게 막는다.
+      if (cancelled) return;
+      if (isNoSwipeGuard()) return;
 
-    // cleanup 없음 — 의도적. granite 정본은 cleanup에서 {isEnabled:true}로 복원하지만
-    // 그건 다음 effect가 곧 올바른 값을 set한다는 전제다. deep→deep 이동 시
-    // cleanup(true)→effect(false) 사이 native flip 지연 동안 deep에서 순간 enabled가
-    // 노출돼 swipe 종료 가능. cleanup을 제거하면 deep→deep는 둘 다 false라 토글 자체가
-    // 없다. SwipeBackGuard 언마운트(전체 teardown)는 미니앱이 사라지는 시점이라 무해.
+      const enabled = decideGestureEnabled(readRouterIdx(window.history.state));
+      setIosSwipeGestureEnabled({ isEnabled: enabled }).catch(() => {});
+    })();
+
+    // cleanup은 cancelled 플래그만 세운다 — 의도적으로 gesture를 복원하지 않는다.
+    // granite 정본은 cleanup에서 {isEnabled:true}로 복원하지만 그건 다음 effect가 곧
+    // 올바른 값을 set한다는 전제다. deep→deep 이동 시 cleanup(true)→effect(false) 사이
+    // native flip 지연 동안 deep에서 순간 enabled가 노출돼 swipe 종료 가능. cleanup에서
+    // 값을 되돌리지 않으면 deep→deep는 둘 다 false라 토글 자체가 없다. SwipeBackGuard
+    // 언마운트(전체 teardown)는 미니앱이 사라지는 시점이라 무해.
+    return () => {
+      cancelled = true;
+    };
   }, [location.key]);
 }
