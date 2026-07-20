@@ -379,3 +379,172 @@ describe('booleanValues (값 축 지문)', () => {
     expect(result.mismatches).toHaveLength(1);
   });
 });
+
+// #329 item 1 — captureAsync의 rejected 경로에서 동기 throw(threwSync=true)와 비동기
+// reject(false)를 구분하는 축. 양쪽 다 기록했을 때만 비교하고, 구 스키마(필드 없음)와
+// 대조할 땐 not-comparable로 둔다.
+describe('threwSync (sync-throw vs async-reject, #329 item 1)', () => {
+  const rej = (over = {}) =>
+    record({
+      outcome: 'rejected',
+      errorName: 'E',
+      returnType: 'undefined',
+      valueKeys: null,
+      ...over,
+    });
+
+  it('threwSync가 갈리면(true↔false) 불일치로 잡는다 — 나머지가 전부 같아도', () => {
+    const a = [rej({ threwSync: true })];
+    const b = [rej({ threwSync: false })];
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(0);
+    expect(result.mismatches).toHaveLength(1);
+    expect(result.mismatches[0]?.fields.map((f) => f.field)).toContain('threwSync');
+  });
+
+  it('한쪽에 threwSync가 없으면(구 스키마) 비교에서 빼고 불일치로 세지 않는다', () => {
+    const a = [rej({ threwSync: true })];
+    const b = [rej()]; // 필드 없음 — 재캡처 전 코퍼스
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(1);
+    expect(result.mismatches).toHaveLength(0);
+  });
+
+  it('양쪽 다 같은 threwSync면 동치다', () => {
+    expect(diff([rej({ threwSync: true })], [rej({ threwSync: true })]).equivalentCount).toBe(1);
+  });
+});
+
+// #329 item 4 — 네이티브 브리지 오류 지문. mock synthetic(false) vs 실 브리지(true).
+describe('isNativeShape (네이티브 오류 지문, #329 item 4)', () => {
+  const rej = (over = {}) =>
+    record({
+      outcome: 'rejected',
+      errorName: 'Error',
+      errorKeys: ['errorCode'],
+      returnType: 'undefined',
+      valueKeys: null,
+      ...over,
+    });
+
+  it('isNativeShape가 갈리면 불일치로 잡는다 — 나머지가 전부 같아도', () => {
+    const a = [rej({ isNativeShape: false })];
+    const b = [rej({ isNativeShape: true })];
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(0);
+    expect(result.mismatches).toHaveLength(1);
+    expect(result.mismatches[0]?.fields.map((f) => f.field)).toContain('isNativeShape');
+  });
+
+  it('한쪽에 isNativeShape가 없으면(구 스키마) 비교에서 뺀다', () => {
+    const a = [rej({ isNativeShape: true })];
+    const b = [rej({ isNativeShape: undefined })]; // 필드 없음
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(1);
+    expect(result.mismatches).toHaveLength(0);
+  });
+});
+
+// #329 item 3 — 배열 원소 스키마는 서명에 접되 length는 뺀다(런타임 변량).
+describe('arrayShape (배열 원소 스키마, #329 item 3)', () => {
+  const arr = (arrayShape: unknown) =>
+    record({
+      api: 'fetchAlbumPhotos',
+      scenario: 'happy',
+      outcome: 'resolved',
+      returnType: 'array',
+      valueKeys: null,
+      arrayShape,
+    });
+
+  it('원소 키가 갈리면 불일치로 잡는다 (length가 달라도 원인은 원소 스키마)', () => {
+    const a = [arr({ length: 2, elementType: 'object', elementKeys: ['uri', 'width'] })];
+    const b = [arr({ length: 5, elementType: 'object', elementKeys: ['uri', 'width', 'height'] })];
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(0);
+    expect(result.mismatches).toHaveLength(1);
+    expect(result.mismatches[0]?.fields.map((f) => f.field)).toContain('arrayElementKeys');
+  });
+
+  it('length만 다르고 원소 스키마가 같으면 동치다 — length는 서명 밖', () => {
+    const a = [arr({ length: 1, elementType: 'object', elementKeys: ['uri'] })];
+    const b = [arr({ length: 10, elementType: 'object', elementKeys: ['uri'] })];
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(1);
+    expect(result.mismatches).toHaveLength(0);
+  });
+
+  it('빈 배열 vs non-empty는 원소 스키마 축을 빼서 거짓 불일치를 안 만든다', () => {
+    // 기기 앨범이 비었을 때(env3) mock의 합성 사진(env1)과 대조 — 기기 상태 아티팩트지
+    // fidelity 실패가 아니다. 게이트가 양쪽 non-empty일 때만 원소 스키마를 켠다.
+    const a = [arr({ length: 3, elementType: 'object', elementKeys: ['uri'] })];
+    const b = [arr({ length: 0, elementType: 'empty', elementKeys: null })];
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(1);
+    expect(result.mismatches).toHaveLength(0);
+  });
+
+  it('한쪽에 arrayShape가 없으면(구 스키마) 비교에서 뺀다', () => {
+    const a = [arr({ length: 2, elementType: 'object', elementKeys: ['uri'] })];
+    const b = [arr(undefined)]; // 필드 없음
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(1);
+    expect(result.mismatches).toHaveLength(0);
+  });
+});
+
+// #329 item 2 — 기기 불변 enum getter(getPlatformOS)의 실제 값 비교. allowlist에 오른
+// API만 enumValue를 갖는다. shape만 같고 값이 틀린 enum이 동치로 통과하는 걸 막는다.
+describe('enumValue (기기 불변 enum 값, #329 item 2)', () => {
+  const en = (over = {}) =>
+    record({
+      api: 'getPlatformOS',
+      scenario: 'happy',
+      outcome: 'returned-sync',
+      returnType: 'Promise',
+      valueKeys: null,
+      ...over,
+    });
+
+  it('enum 값이 갈리면 불일치로 잡는다 — shape(Promise)가 같아도', () => {
+    const a = [en({ enumValue: 'ios' })];
+    const b = [en({ enumValue: 'android' })];
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(0);
+    expect(result.mismatches).toHaveLength(1);
+    expect(result.mismatches[0]?.fields.map((f) => f.field)).toContain('enumValue');
+  });
+
+  it('한쪽에 enumValue가 없으면(구 스키마 env3) 비교에서 빼고 불일치로 세지 않는다', () => {
+    // 값-체크는 #330 env3 재캡처 후에야 완전 활성화된다 — 그 전까진 not-comparable.
+    const a = [en({ enumValue: 'ios' })];
+    const b = [en()]; // enumValue 없음
+
+    const result = diff(a, b);
+
+    expect(result.equivalentCount).toBe(1);
+    expect(result.mismatches).toHaveLength(0);
+  });
+
+  it('양쪽 다 같은 enum 값이면 동치다', () => {
+    expect(diff([en({ enumValue: 'ios' })], [en({ enumValue: 'ios' })]).equivalentCount).toBe(1);
+  });
+});

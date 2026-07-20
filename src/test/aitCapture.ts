@@ -149,6 +149,25 @@ export type Outcome =
   | 'timeout';
 
 /**
+ * 배열 반환의 shape 요약(#329 item 3). 배열은 예전에 `returnType:'array'`로만
+ * 잡혀 원소 스키마가 통째로 blind spot이었다 — mock이 `{uri}` 원소를, 실기기가
+ * `{uri,mediaType}` 원소를 줘도 계기가 못 봤다.
+ *
+ * - `length`      — 관측 길이. **동치 서명에는 넣지 않는다**(diff-ait-captures.ts):
+ *                   앨범 사진·연락처·광고 같은 컬렉션의 길이는 입력(maxCount)·기기
+ *                   상태에 좌우되는 런타임 변량이라, 서명에 넣으면 거짓 불일치가 난다.
+ *                   기록·표시만 하는 관측 필드다.
+ * - `elementType` — 첫 원소의 typeof(빈 배열이면 `'empty'`). 원소 스키마 축의 일부.
+ * - `elementKeys` — 첫 원소가 객체면 그 `Object.keys`(정렬), 아니면 null. 기기 불변
+ *                   스키마라 diff 서명에 접힌다(양쪽 다 non-empty 관측이 있을 때만).
+ */
+export interface ArrayShape {
+  length: number;
+  elementType: string;
+  elementKeys: string[] | null;
+}
+
+/**
  * 4-cell 대조용 정규화 레코드. 필드명은 12개 파일 전체에서 고정 —
  * 하네스가 `<cat>.<sdkLine>.<platform>.json` 4개를 diff해 2×2 매트릭스를 채운다.
  */
@@ -170,11 +189,36 @@ export interface AitCaptureRecord {
   errorKeys: string[];
   /** isNativeErrorShape — location native string 또는 알려진 native errorCode 매치. */
   isNativeShape: boolean;
+  /**
+   * `rejected` 경로에서만 존재(#329 item 1) — 오류가 **동기 throw**(`call()`이 Promise를
+   * 반환하기 전에 던짐)였으면 `true`, **비동기 reject**(반환된 Promise가 reject)였으면
+   * `false`. `captureAsync`는 예전에 둘을 똑같이 `outcome:'rejected'`로 접어 구분이
+   * 불가능했다 — devtools#796이 6개 env-getter를 sync-return→Promise-return으로 바꾼
+   * 뒤로, REJECTED 경로에서 Promise↔sync-throw가 뒤집히는 회귀가 계기에 안 보였다.
+   * resolved 경로의 async 축은 `returnType:'Promise'`(A1 잡음)가 이미 잡으므로 그쪽엔
+   * 두지 않는다. resolved/timeout/callback 경로에는 필드 자체가 없다(양쪽 다 있을
+   * 때만 diff가 비교 — 표식 이전 코퍼스를 붉게 만들지 않는다).
+   */
+  threwSync?: boolean;
   // --- value shape (오류 시 null) ---
   /** typeof result, 또는 thenable이 새면 'Promise' (A1 잡음). */
   returnType: string;
   /** object 반환의 Object.keys(result) — { success, reason } vs { top,bottom,... }. */
   valueKeys: string[] | null;
+  /**
+   * 배열 반환의 shape 요약(#329 item 3) — 배열일 때만 존재한다(`ArrayShape` 참조).
+   * `length`는 관측용이고, `elementType`+`elementKeys`(원소 스키마)만 diff 서명에
+   * 접힌다. 배열 아닌 반환에는 필드 자체가 없다(양쪽 다 있을 때만 비교).
+   */
+  arrayShape?: ArrayShape | null;
+  /**
+   * 기기 불변 enum-string getter의 **실제 값**(#329 item 2) — allowlist에 오른 API에서만
+   * 채워진다(`DEVICE_INVARIANT_ENUM_VALUE_APIS`). shape만 같고 값이 틀린 enum이 동치로
+   * 통과하는 걸 막는다. **어느 값을 실을지 allowlist로 고른다**(어느 값을 가릴지가
+   * 아니라) — `deviceId`·`locale`·토큰 등 시크릿/변량은 애초에 실리지 않는다. 배열 아닌
+   * 스칼라 반환에만 의미가 있고, 그 외에는 필드 자체가 없다(양쪽 다 있을 때만 비교).
+   */
+  enumValue?: string | number | null;
   /**
    * 값 축 최소 지문 — 반환 객체의 boolean 필드만 값째로. boolean이 없으면 null.
    *
@@ -407,10 +451,78 @@ export const cell: { sdkLine: SdkLine; readonly platform: Platform } = {
 /** module-level sink. afterAll에서 카테고리별로 파일에 flush한다. */
 const records: AitCaptureRecord[] = [];
 
-/** 테스트가 부른다 — cell 축을 붙여 sink에 append. */
-export function capture(input: CaptureInput): void {
+/**
+ * 테스트가 부른다 — cell 축을 붙여 sink에 append하고 **push된 레코드를 돌려준다**.
+ * 반환값은 `recordEnumValue`가 allowlist enum의 resolved 스칼라를 push 후에
+ * back-fill할 때 쓴다(#329 item 2). 대부분의 호출부는 반환을 무시한다.
+ */
+export function capture(input: CaptureInput): AitCaptureRecord {
   // fix #3: platform을 호출 시점에 재읽기 — 모듈 로드 시 frozen하지 않는다.
-  records.push({ ...input, sdkLine: CELL_SDK_LINE, platform: cell.platform });
+  const record: AitCaptureRecord = { ...input, sdkLine: CELL_SDK_LINE, platform: cell.platform };
+  records.push(record);
+  return record;
+}
+
+/**
+ * enum-값 비교 allowlist(#329 item 2) — 이 API들만 `enumValue`에 실제 문자열 값이
+ * 실린다. **"어느 값을 실을지"를 명시적으로 고른다**(어느 값을 가릴지가 아니라):
+ * allowlist에 없는 getter는 값이 아예 안 실리므로 시크릿/변량이 새는 실패 방식이 없다.
+ *
+ * ─ 왜 `getPlatformOS`만인가 (기존 env1 mock ↔ env3 실기기 코퍼스 실측) ────────────
+ * 규칙: **기존 코퍼스에서 값이 경험적으로 같은 getter만** 넣는다. 환경에 따라 값이
+ * 정당하게 갈리는 getter는 shape-only로 남기고 아래에 사유를 남긴다.
+ *
+ *  - `getPlatformOS`         ✅ 포함. mock 기본값 `"ios"`, 실기기 코퍼스도 iOS
+ *        (`*.2.x.ios.json`) → 값이 같다. **같은 OS 코퍼스 짝**에 한해 유효한 값-비교다
+ *        (mock을 android로 세팅하지 않는 한, 서로 다른 OS를 대조하면 그건 거짓이 아니라
+ *        진짜 OS 차이를 드러낸다). devtools#796 이후 이 getter는 Promise를 반환하므로
+ *        `captureSync`가 보는 건 Promise다 — resolved 스칼라는 `recordEnumValue`가
+ *        thenable에서 back-fill한다.
+ *  - `getOperationalEnvironment` ❌ 제외. mock=`"sandbox"`, 실기기=실제 토스 환경
+ *        (sandbox 아님). **환경 그 자체를 반환**하므로 fidelity 경계를 넘어 값-비교하면
+ *        영구 거짓 불일치가 된다. shape-only.
+ *  - `getNetworkStatus`      ❌ 제외. mock=`"WIFI"`, 실기기=런타임 변량(wifi/cellular/
+ *        offline). 브라우저 캡처와 기기 캡처가 안정적으로 같지 않다. shape-only.
+ *  - `getLocale`             ❌ 제외. 시크릿-안전 규칙상 locale은 값-비교 금지 대상이고
+ *        기기 설정에 따라 갈리기도 한다. shape-only.
+ *  - `getDeviceId`           ❌ 제외. credential 성격의 기기 식별자 — 시크릿-안전상 값을
+ *        절대 싣거나 출력하지 않는다. shape-only.
+ *
+ * env3 코퍼스는 이 필드 도입 전(#330 재캡처 전)이라 `enumValue`가 없다 — diff는
+ * **양쪽 다 있을 때만** 비교하므로 재캡처 전까지 이 축은 not-comparable로 남는다
+ * (거짓 결과 없음). 재캡처 후 완전 활성화된다.
+ */
+const DEVICE_INVARIANT_ENUM_VALUE_APIS: ReadonlySet<string> = new Set(['getPlatformOS']);
+
+/**
+ * allowlist enum getter의 resolved 스칼라 값을 레코드에 실는다(#329 item 2).
+ *
+ * 값이 이미 스칼라(string/number)면 동기로 실고, Promise(devtools#796 이후 env-getter)면
+ * `.then`으로 back-fill한다 — push된 레코드 객체를 참조로 잡고 있으므로, 테스트가
+ * 그 Promise를 await하는 사이(그리고 늦어도 `afterAll` flush 전에) microtask가 돌아
+ * `enumValue`가 채워진다. back-fill이 어떤 이유로 못 돌면 필드는 그냥 비고, diff는
+ * 양쪽-존재 게이트로 그 축을 뺀다 — **거짓 결과가 아니라 관측 누락으로 degrade**한다
+ * (certainty 우선). rejection 핸들러는 no-op이라 관측만 하려던 Promise가 unhandled
+ * rejection을 내지 않는다.
+ */
+function recordEnumValue(record: AitCaptureRecord, api: string, value: unknown): void {
+  if (!DEVICE_INVARIANT_ENUM_VALUE_APIS.has(api)) {
+    return;
+  }
+  if (typeof value === 'string' || typeof value === 'number') {
+    record.enumValue = value;
+    return;
+  }
+  if (value !== null && typeof (value as { then?: unknown } | undefined)?.then === 'function') {
+    (value as Promise<unknown>).then(
+      (resolved) => {
+        if (typeof resolved === 'string' || typeof resolved === 'number') {
+          record.enumValue = resolved;
+        }
+      },
+      () => {},
+    );
+  }
 }
 
 /**
@@ -486,6 +598,8 @@ interface ValueShape {
   returnType: string;
   valueKeys: string[] | null;
   booleanValues: Record<string, boolean> | null;
+  /** 배열 반환일 때만 존재(#329 item 3). 그 외 경로에는 키 자체를 안 만든다. */
+  arrayShape?: ArrayShape | null;
 }
 
 /**
@@ -529,7 +643,12 @@ function extractValueShape(value: unknown): ValueShape {
     return { returnType: 'Promise', valueKeys: null, booleanValues: null };
   }
   if (Array.isArray(value)) {
-    return { returnType: 'array', valueKeys: null, booleanValues: null };
+    return {
+      returnType: 'array',
+      valueKeys: null,
+      booleanValues: null,
+      arrayShape: summarizeArray(value),
+    };
   }
   if (value !== null && typeof value === 'object') {
     return {
@@ -558,6 +677,30 @@ function extractBooleanValues(value: object): Record<string, boolean> | null {
     }
   }
   return Object.keys(booleans).length > 0 ? booleans : null;
+}
+
+/**
+ * 배열 반환의 shape 요약(#329 item 3). `length`(관측용) + 첫 원소 스키마
+ * (`elementType`/`elementKeys`)를 뽑는다 — 원소가 객체면 그 키만 싣고 값은 싣지
+ * 않는다(시크릿 안전: `booleanValues`와 같은 "무엇만 실을까" 원칙). 이질 배열은
+ * 첫 원소를 대표로 삼는다. 값 자체(예: 사진 uri 문자열)는 절대 싣지 않는다.
+ */
+function summarizeArray(value: readonly unknown[]): ArrayShape {
+  if (value.length === 0) {
+    return { length: 0, elementType: 'empty', elementKeys: null };
+  }
+  const first = value[0];
+  if (Array.isArray(first)) {
+    return { length: value.length, elementType: 'array', elementKeys: null };
+  }
+  if (first !== null && typeof first === 'object') {
+    return { length: value.length, elementType: 'object', elementKeys: Object.keys(first) };
+  }
+  return {
+    length: value.length,
+    elementType: first === null ? 'null' : typeof first,
+    elementKeys: null,
+  };
 }
 
 /**
@@ -594,9 +737,28 @@ export async function captureAsync(
   const raceTimeoutMs = options?.raceTimeoutMs;
   let throttleRetries = 0;
   for (;;) {
+    // #329 item 1: `call()` 자체가 **동기로 throw**하는 경우를 반환된 Promise의
+    // **비동기 reject**와 분리한다. `raceWithTimeout(call(), …)`는 인자 평가 시점에
+    // `call()`을 부르므로, 여기서 먼저 호출해 sync-throw를 잡아야 그 축이 안 섞인다.
+    let promise: Promise<unknown>;
+    try {
+      promise = call();
+    } catch (syncError) {
+      // 동기 throw — Promise를 반환하기도 전에 던졌다. THROTTLED는 브리지가 내는
+      // async rejection이라 이 경로로 오지 않으므로 재시도 없이 즉시 기록한다.
+      capture({
+        ...meta,
+        outcome: 'rejected',
+        threwSync: true,
+        ...extractErrorShape(syncError),
+        ...NO_VALUE_SHAPE,
+        ...(throttleRetries > 0 ? { throttleRetries } : {}),
+      });
+      return { outcome: 'rejected', error: syncError };
+    }
     try {
       const value =
-        raceTimeoutMs === undefined ? await call() : await raceWithTimeout(call(), raceTimeoutMs);
+        raceTimeoutMs === undefined ? await promise : await raceWithTimeout(promise, raceTimeoutMs);
       if (value === TIMEOUT_SENTINEL) {
         capture({
           ...meta,
@@ -612,7 +774,7 @@ export async function captureAsync(
         return { outcome: 'timeout' };
       }
       const valueShape = extractValueShape(value);
-      capture({
+      const record = capture({
         ...meta,
         outcome: 'resolved',
         errorName: null,
@@ -623,6 +785,8 @@ export async function captureAsync(
         ...valueShape,
         ...(throttleRetries > 0 ? { throttleRetries } : {}),
       });
+      // #329 item 2: allowlist enum이 captureAsync로 캡처되면 resolved 스칼라를 실는다.
+      recordEnumValue(record, meta.api, value);
       return { outcome: 'resolved', value };
     } catch (error) {
       if (isThrottledError(error) && throttleRetries < THROTTLE_BACKOFF_MS.length) {
@@ -633,9 +797,11 @@ export async function captureAsync(
         await delay(waitMs);
         continue;
       }
+      // #329 item 1: 반환된 Promise가 reject된 **비동기 reject** 경로.
       capture({
         ...meta,
         outcome: 'rejected',
+        threwSync: false,
         ...extractErrorShape(error),
         ...NO_VALUE_SHAPE,
         ...(throttleRetries > 0 ? { throttleRetries } : {}),
@@ -878,7 +1044,7 @@ export function captureSync(
     const value = call();
     const valueShape = extractValueShape(value);
     markThenableHandled(value);
-    capture({
+    const record = capture({
       ...meta,
       outcome: 'returned-sync',
       errorName: null,
@@ -888,6 +1054,10 @@ export function captureSync(
       isNativeShape: false,
       ...valueShape,
     });
+    // #329 item 2: allowlist enum(getPlatformOS 등)의 값을 실는다. devtools#796 이후
+    // 이 getter들은 Promise를 반환하므로 `value`는 thenable — `recordEnumValue`가
+    // `.then`으로 resolved 스칼라를 back-fill한다(테스트의 await와 flush 사이에 완료).
+    recordEnumValue(record, meta.api, value);
     return { outcome: 'returned-sync', value };
   } catch (error) {
     capture({

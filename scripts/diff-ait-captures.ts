@@ -30,6 +30,14 @@ export interface CaptureRecord {
   valueKeys?: unknown;
   /** Object.keys(err) — errorName/errorCode가 같아도 오류 shape 발산을 드러낸다. */
   errorKeys?: unknown;
+  /** 네이티브 브리지 오류 지문(#329 item 4) — mock synthetic 오류 vs 실 브리지 오류를 가른다. */
+  isNativeShape?: unknown;
+  /** rejected 경로: 동기 throw(true) vs 비동기 reject(false)(#329 item 1). 그 외 경로엔 없음. */
+  threwSync?: unknown;
+  /** 배열 반환의 shape 요약 `{ length, elementType, elementKeys }`(#329 item 3). 배열일 때만. */
+  arrayShape?: unknown;
+  /** 기기 불변 enum getter의 실제 값(#329 item 2). allowlist API에만 존재. */
+  enumValue?: unknown;
   sdkLine?: unknown;
   platform?: unknown;
   /** 붙어 있으면 이 (api, scenario) 키를 양쪽 코퍼스에서 제외한다 — nonComparableKeys 참조. */
@@ -51,9 +59,38 @@ export interface CaptureRecord {
  * 기기·OS별로 갈리는 자유 문자열이라 env1↔env3 대조에 넣으면 오류라는 오류가
  * 전부 불일치로 뜬다 — 그 축은 env3 내부(ios↔android) 대조에서 쓰라고 캡처하는
  * 필드지 환경 간 동치 판정용이 아니다.
+ *
+ * `COMPARE_FIELDS`(무조건 비교) 외에, 값-충실도 축(#329)은 전부 **양쪽-존재 게이트**
+ * (`signatureFlagsFor`)를 거쳐 서명에 접힌다 — 신 스키마 필드가 구 코퍼스에 없을 때
+ * 스키마-스큐가 거짓 불일치가 되지 않게 하기 위해서다:
+ *   - `valueKeys`/`booleanValues` — 객체 반환의 키/boolean 값 축(기존).
+ *   - `threwSync`(item 1)   — rejected 경로의 sync-throw↔async-reject 축.
+ *   - `isNativeShape`(item 4) — 네이티브 브리지 오류 지문(mock synthetic vs 실 브리지).
+ *   - `arrayShape`(item 3)  — 배열 **원소 스키마**(length는 변량이라 제외).
+ *   - `enumValue`(item 2)   — 기기 불변 enum getter의 실제 값(allowlist API에만).
  */
 const COMPARE_FIELDS = ['outcome', 'errorName', 'errorCode', 'returnType', 'errorKeys'] as const;
-type CompareField = (typeof COMPARE_FIELDS)[number] | 'valueKeys';
+type CompareField =
+  | (typeof COMPARE_FIELDS)[number]
+  | 'valueKeys'
+  | 'threwSync'
+  | 'isNativeShape'
+  | 'arrayElementKeys'
+  | 'enumValue';
+
+/**
+ * shapeOf/shapeMultiset에 어떤 스키마-스큐 게이트 필드를 서명에 접을지 — 키마다
+ * **양쪽 버킷을 함께 봐서** 정한다(양쪽 다 그 필드를 기록할 때만 true). positional
+ * boolean이 6개까지 늘어 순서 착오가 위험하므로 객체로 넘긴다.
+ */
+interface SignatureFlags {
+  valueKeys: boolean;
+  booleans: boolean;
+  threwSync: boolean;
+  nativeShape: boolean;
+  arrayShape: boolean;
+  enumValue: boolean;
+}
 
 interface FieldMismatch {
   field: CompareField;
@@ -197,28 +234,45 @@ function groupByKey(records: CaptureRecord[]): Map<string, CaptureRecord[]> {
 /**
  * 한 record의 비교 대상 shape를 정규 문자열로 인코딩한다 — 멀티셋의 원소.
  *
- * `valueKeys`는 순서를 계약으로 보지 않으므로 정렬한다. `includeValueKeys=false`면
+ * `valueKeys`는 순서를 계약으로 보지 않으므로 정렬한다. `flags.valueKeys`가 false면
  * 서명에서 아예 뺀다 — "양쪽 다 존재할 때만 비교한다"는 계약을 키 단위로 지키기
- * 위해서다(`shapeMultiset` 참조).
+ * 위해서다(`signatureFlagsFor` 참조). `flags`의 나머지 게이트 필드(#329)도 같은 계약.
  *
  * `errorKeys`도 같은 이유로 정렬해 넣되 게이트는 없다 — `valueKeys`와 달리 이
  * 필드는 슈트 최초 커밋부터 항상 배열이고(성공 시 `[]`) 두 코퍼스 모두 갖고 있다.
  * 즉 "포맷이 이 필드를 기록하는가"를 물을 필요가 없다.
  */
-function shapeOf(r: CaptureRecord, includeValueKeys: boolean, includeBooleans: boolean): string {
-  const base = [
+function shapeOf(r: CaptureRecord, flags: SignatureFlags): string {
+  const base: unknown[] = [
     r.outcome ?? null,
     r.errorName ?? null,
     r.errorCode ?? null,
     r.returnType ?? null,
     Array.isArray(r.errorKeys) ? [...r.errorKeys].sort() : null,
   ];
-  if (includeValueKeys) {
+  if (flags.valueKeys) {
     const valueKeys = Array.isArray(r.valueKeys) ? [...r.valueKeys].sort() : (r.valueKeys ?? null);
-    base.push(valueKeys as never);
+    base.push(valueKeys);
   }
-  if (includeBooleans) {
-    base.push(canonicalBooleans(r) as never);
+  if (flags.booleans) {
+    base.push(canonicalBooleans(r));
+  }
+  if (flags.threwSync) {
+    // #329 item 1: rejected 경로에만 있는 필드 — 다른 경로/구 스키마엔 없으므로 null.
+    // 양쪽 다 null이면 그대로 일치, sync-throw↔async-reject가 뒤집히면 true↔false로 발산.
+    base.push(typeof r.threwSync === 'boolean' ? r.threwSync : null);
+  }
+  if (flags.nativeShape) {
+    // #329 item 4: 네이티브 브리지 오류 지문. mock synthetic(false) vs 실 브리지(true).
+    base.push(typeof r.isNativeShape === 'boolean' ? r.isNativeShape : null);
+  }
+  if (flags.arrayShape) {
+    // #329 item 3: **원소 스키마만** 접는다 — length는 런타임 변량이라 서명에서 뺀다.
+    base.push(arrayElementSignature(r));
+  }
+  if (flags.enumValue) {
+    // #329 item 2: 기기 불변 enum getter의 실제 값(allowlist API에만 존재).
+    base.push(r.enumValue ?? null);
   }
   return JSON.stringify(base);
 }
@@ -232,9 +286,53 @@ function canonicalBooleans(r: CaptureRecord): [string, boolean][] | null {
   return Object.entries(bv).sort(([a], [b]) => a.localeCompare(b));
 }
 
+/**
+ * 배열 반환의 **원소 스키마** 서명(#329 item 3) — `[elementType, sorted(elementKeys)]`.
+ * `length`는 넣지 않는다(앨범 사진·연락처 등 컬렉션 길이는 런타임 변량 → 거짓 불일치).
+ * 빈 배열/비객체 원소는 비교할 스키마가 없으므로 null — 게이트(`hasArrayElementSchema`)가
+ * 양쪽 다 non-empty 관측이 있을 때만 이 축을 켜므로 empty↔non-empty가 거짓 불일치를
+ * 만들지 않는다.
+ */
+function arrayElementSignature(r: CaptureRecord): unknown {
+  const shape = r.arrayShape;
+  if (shape == null || typeof shape !== 'object') {
+    return null;
+  }
+  const s = shape as { elementType?: unknown; elementKeys?: unknown };
+  if (!Array.isArray(s.elementKeys)) {
+    return null;
+  }
+  return [s.elementType ?? null, [...s.elementKeys].sort()];
+}
+
 /** record가 비교 가능한 valueKeys를 갖고 있는가. */
 function hasValueKeys(r: CaptureRecord): boolean {
   return r.valueKeys != null;
+}
+
+/** record가 rejected 경로의 threwSync(#329 item 1)를 기록했는가 — 양쪽-존재 게이트용. */
+function hasThrewSync(r: CaptureRecord): boolean {
+  return typeof r.threwSync === 'boolean';
+}
+
+/** record가 isNativeShape(#329 item 4)를 기록했는가 — 구 스키마 코퍼스엔 없을 수 있다. */
+function hasNativeShape(r: CaptureRecord): boolean {
+  return typeof r.isNativeShape === 'boolean';
+}
+
+/** record가 **비교 가능한 배열 원소 스키마**(non-empty 배열)를 기록했는가(#329 item 3). */
+function hasArrayElementSchema(r: CaptureRecord): boolean {
+  const shape = r.arrayShape;
+  return (
+    shape != null &&
+    typeof shape === 'object' &&
+    Array.isArray((shape as { elementKeys?: unknown }).elementKeys)
+  );
+}
+
+/** record가 enum 값(#329 item 2)을 기록했는가 — allowlist API + 신 스키마에만 존재. */
+function hasEnumValue(r: CaptureRecord): boolean {
+  return r.enumValue != null;
 }
 
 /**
@@ -269,17 +367,31 @@ function hasBooleans(r: CaptureRecord): boolean {
  * 안 잡힌다). `getPermission :: happy-each-name`처럼 한 키에서 resolved/rejected가
  * 재현성 있게 섞이는 시나리오가 실제로 있으므로 가상의 경우가 아니다.
  */
-function shapeMultiset(
-  records: CaptureRecord[],
-  includeValueKeys: boolean,
-  includeBooleans: boolean,
-): Map<string, number> {
+function shapeMultiset(records: CaptureRecord[], flags: SignatureFlags): Map<string, number> {
   const counts = new Map<string, number>();
   for (const r of records) {
-    const s = shapeOf(r, includeValueKeys, includeBooleans);
+    const s = shapeOf(r, flags);
     counts.set(s, (counts.get(s) ?? 0) + 1);
   }
   return counts;
+}
+
+/**
+ * 키 하나의 양쪽 버킷을 함께 보고 서명 게이트 플래그를 정한다 — 모든 게이트가 같은
+ * 계약을 따른다: **양쪽 버킷 다 그 필드를 기록한 record가 하나라도 있을 때만** 켠다
+ * (`some`, `hasBooleans` 주석 참조). 신 스키마 필드(threwSync/arrayShape/enumValue)는
+ * 구 env3 코퍼스(#330 재캡처 전)에 없으므로, 이 게이트가 재캡처 전까지 그 축을 자동으로
+ * not-comparable로 두어 스키마-스큐가 거짓 불일치가 되지 않게 한다.
+ */
+function signatureFlagsFor(a: CaptureRecord[], b: CaptureRecord[]): SignatureFlags {
+  return {
+    valueKeys: a.some(hasValueKeys) && b.some(hasValueKeys),
+    booleans: a.some(hasBooleans) && b.some(hasBooleans),
+    threwSync: a.some(hasThrewSync) && b.some(hasThrewSync),
+    nativeShape: a.some(hasNativeShape) && b.some(hasNativeShape),
+    arrayShape: a.some(hasArrayElementSchema) && b.some(hasArrayElementSchema),
+    enumValue: a.some(hasEnumValue) && b.some(hasEnumValue),
+  };
 }
 
 function multisetsEqual(a: Map<string, number>, b: Map<string, number>): boolean {
@@ -324,7 +436,14 @@ function valuesEqual(a: unknown, b: unknown): boolean {
   return a === b;
 }
 
-/** 두 record 사이 필드별 mismatch를 계산한다. valueKeys는 양쪽 다 있을 때만 비교. */
+/**
+ * 두 record 사이 필드별 mismatch를 계산한다(단일-shape 키의 읽기 좋은 상세용).
+ *
+ * `COMPARE_FIELDS`는 무조건 비교하고, 게이트 필드(valueKeys/threwSync/isNativeShape/
+ * arrayElementKeys/enumValue)는 **양쪽 다 그 필드를 가질 때만** 비교한다 — 서명 게이트
+ * (`signatureFlagsFor`)와 같은 계약이라, 스키마-스큐(한쪽만 있는 필드)가 상세에서도
+ * 거짓 발산으로 보이지 않는다.
+ */
 function compareRecords(a: CaptureRecord, b: CaptureRecord): FieldMismatch[] {
   const mismatches: FieldMismatch[] = [];
   for (const field of COMPARE_FIELDS) {
@@ -336,6 +455,22 @@ function compareRecords(a: CaptureRecord, b: CaptureRecord): FieldMismatch[] {
     if (!valuesEqual(a.valueKeys, b.valueKeys)) {
       mismatches.push({ field: 'valueKeys', a: a.valueKeys, b: b.valueKeys });
     }
+  }
+  if (hasThrewSync(a) && hasThrewSync(b) && a.threwSync !== b.threwSync) {
+    mismatches.push({ field: 'threwSync', a: a.threwSync, b: b.threwSync });
+  }
+  if (hasNativeShape(a) && hasNativeShape(b) && a.isNativeShape !== b.isNativeShape) {
+    mismatches.push({ field: 'isNativeShape', a: a.isNativeShape, b: b.isNativeShape });
+  }
+  if (hasArrayElementSchema(a) && hasArrayElementSchema(b)) {
+    const ea = arrayElementSignature(a);
+    const eb = arrayElementSignature(b);
+    if (JSON.stringify(ea) !== JSON.stringify(eb)) {
+      mismatches.push({ field: 'arrayElementKeys', a: ea, b: eb });
+    }
+  }
+  if (hasEnumValue(a) && hasEnumValue(b) && !valuesEqual(a.enumValue, b.enumValue)) {
+    mismatches.push({ field: 'enumValue', a: a.enumValue, b: b.enumValue });
   }
   return mismatches;
 }
@@ -395,10 +530,10 @@ function diff(recordsA: CaptureRecord[], recordsB: CaptureRecord[]): DiffResult 
       continue;
     }
     totalKeys++;
-    const includeValueKeys = a.some(hasValueKeys) && b.some(hasValueKeys);
-    const includeBooleans = a.some(hasBooleans) && b.some(hasBooleans);
-    const countsA = shapeMultiset(a, includeValueKeys, includeBooleans);
-    const countsB = shapeMultiset(b, includeValueKeys, includeBooleans);
+    // 게이트 플래그는 양쪽 버킷을 함께 봐서 한 번만 정하고 A·B 서명에 똑같이 적용한다.
+    const flags = signatureFlagsFor(a, b);
+    const countsA = shapeMultiset(a, flags);
+    const countsB = shapeMultiset(b, flags);
     if (multisetsEqual(countsA, countsB)) {
       equivalentCount++;
       continue;
