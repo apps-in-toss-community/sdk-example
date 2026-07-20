@@ -8,12 +8,23 @@
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import { IAP, checkoutPayment } from '@apps-in-toss/web-framework';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { captureAsync, flushCapture } from '../../test/aitCapture';
+import { clearSoftResolveMirror, mirrorSoftResolve } from '../../test/provisioningMirror';
 
 const CATEGORY = 'iap';
 
+beforeAll(async () => {
+  // 31146엔 조회한 orderId에 활성 구독이 없어 실기기(env3)는 getSubscriptionInfo를
+  // reject가 아니라 빈 객체 {}(valueKeys=[])로 resolve한다(run11 2.x/iOS 실측). env1(mock)도
+  // 같은 shape로 맞춰 capture diff가 동치를 보게 한다(devtools#789). 아래 getSubscriptionInfo
+  // 단언은 이미 `'subscription' in value`일 때만 shape를 보므로 {} resolve에서 통과한다.
+  // (checkoutPayment는 값 수준 재확인이 폰-gated라 아직 다이얼에 없다 — #303.)
+  await mirrorSoftResolve('getSubscriptionInfo');
+});
+
 afterAll(async () => {
+  await clearSoftResolveMirror();
   await flushCapture(CATEGORY);
 });
 

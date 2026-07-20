@@ -116,3 +116,51 @@ export async function clearProvisioningMirror(...surfaces: ProvisioningSurface[]
   }
   aitState.patch('failureModes', partial);
 }
+
+/**
+ * soft-resolve 미러 — reject가 아니라 "다른 shape로 resolve"하는 env3 관측을
+ * 재현한다(devtools#789의 `failureModes.softResolve` 다이얼). reject 축(위
+ * `PROVISIONING_31146`)과 다이얼 축이 갈리므로 함수도 분리한다.
+ *
+ * 31146은 promotion이 등록돼 있지 않고 조회한 orderId에 활성 구독이 없어, 실기기는
+ * 아래 API를 reject가 아니라 "성공했지만 내용이 빈/오류 본문" shape로 resolve한다
+ * (env3 run11 2.x/iOS 실측):
+ *   - grantPromotionReward / grantPromotionRewardForGame → `{ errorCode, message }`
+ *   - IAP.getSubscriptionInfo → `{}` (빈 객체)
+ * 미러를 켜면 env1(mock)도 같은 shape로 resolve해 capture diff가 동치를 본다. shape
+ * 자체는 devtools mock에 고정돼 있고 여기선 어느 API를 켤지만 고른다.
+ *
+ * (payment `checkoutPayment`/`requestTossPayPaysBilling`은 값 수준 재확인이 폰-gated라
+ *  아직 다이얼에 없다 — sdk-example#303 / devtools#789.)
+ */
+export type SoftResolveSurface =
+  | 'grantPromotionReward'
+  | 'grantPromotionRewardForGame'
+  | 'getSubscriptionInfo';
+
+/** 지정한 API를 31146의 soft-resolve 상태로 맞춘다. env3에서는 no-op. */
+export async function mirrorSoftResolve(...surfaces: SoftResolveSurface[]): Promise<void> {
+  const aitState = await loadAitState();
+  if (!aitState) {
+    return; // env3(real SDK) — 실기기가 이미 진짜 프로비저닝 상태다.
+  }
+  const softResolve: Record<string, boolean> = {};
+  for (const surface of surfaces) {
+    softResolve[surface] = true;
+  }
+  // `softResolve`는 nested 서브맵이라 patch가 통째로 교체한다(shallow merge) —
+  // 이 파일이 켠 것만 담긴다. reject 키(failureModes 최상위)는 건드리지 않는다.
+  aitState.patch('failureModes', { softResolve });
+}
+
+/**
+ * soft-resolve 미러를 걷어낸다 — 같은 run의 뒤따르는 파일로 새지 않게. 서브맵을
+ * 통째로 비운다(mirrorSoftResolve가 통째로 교체하는 것과 대칭).
+ */
+export async function clearSoftResolveMirror(): Promise<void> {
+  const aitState = await loadAitState();
+  if (!aitState) {
+    return;
+  }
+  aitState.patch('failureModes', { softResolve: undefined });
+}
