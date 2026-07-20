@@ -91,9 +91,11 @@ describe('navigation · 의도적 오류 (확인된 오용 가드)', () => {
   //
   // 예전에는 이 발산을 **반환값**으로 확인했다 — mock이 bare path에도 링크 문자열을
   // 돌려줬기 때문에 "두 문자열이 서로 다른가"를 볼 수밖에 없었다. 실기기(env3)는
-  // 이 입력을 `errorCode: EXECUTION_ERROR`로 아예 reject하므로, 그 단언은 mock에서만
-  // 성립하는 형태였다. devtools#781이 mock에 scheme 검증을 넣으면서 이제 두 환경 모두
-  // 거부하므로, 발산을 **outcome**(거부 vs 성공)으로 확인한다 — 훨씬 강한 가드다.
+  // 이 입력을 네이티브 오류 envelope(`code: EXECUTION_ERROR`)로 아예 reject하므로, 그
+  // 단언은 mock에서만 성립하는 형태였다. devtools#781이 mock에 scheme 검증을 넣으면서
+  // 이제 두 환경 모두 거부하므로, 발산을 **outcome**(거부 vs 성공)으로 확인한다 —
+  // 훨씬 강한 가드다. 오류 코드는 네이티브 envelope의 `.code` 필드에서 읽는다
+  // (devtools#790이 손수 만든 `.errorCode` 대신 실기기 envelope으로 정렬).
   it('[N2] getTossShareLink는 scheme 없는 bare path를 거부하고 유효 입력은 통과시킨다', async () => {
     const bare = await captureAsync(
       {
@@ -115,7 +117,7 @@ describe('navigation · 의도적 오류 (확인된 오용 가드)', () => {
     );
     // bare path는 거부된다 — 잘못된 입력이 유효한 링크로 오인되지 않는다.
     expect(bare.outcome).toBe('rejected');
-    expect((bare.error as { errorCode?: unknown } | undefined)?.errorCode).toBe('EXECUTION_ERROR');
+    expect((bare.error as { code?: unknown } | undefined)?.code).toBe('EXECUTION_ERROR');
     // scheme이 있는 유효 입력은 계속 통과한다 — 검증이 과도하지 않은지 확인.
     // 반환 문자열의 내용은 단언하지 않는다: env3는 verbatim intoss:// 스킴이 아니라
     // Toss 단축 링크를 돌려주므로(위 happy-intoss-uri 주석 참조) toContain('intoss://')는

@@ -59,9 +59,10 @@ describe('haptic · 의도적 오류 (확인된 오용 가드)', () => {
   //
   // 예전 단언은 정반대였다 — "예외 없이 resolve"가 fire-and-forget 계약이라고 봤다.
   // 그건 mock 구현(알 수 없는 type을 fallback 패턴으로 삼킴)을 계약으로 착각한 것이고,
-  // 실기기(env3)는 이 입력을 `errorCode: EXECUTION_ERROR`로 reject한다. 그래서
-  // mock-only 분기로 발산을 인정하고 있었다. devtools#781이 mock을 실측에 맞추면서
-  // 그 발산이 사라졌으므로 이제 모든 환경에서 **거부**를 단언한다.
+  // 실기기(env3)는 이 입력을 네이티브 오류 envelope(`code: EXECUTION_ERROR`)로 reject한다.
+  // 그래서 mock-only 분기로 발산을 인정하고 있었다. devtools#781이 mock을 실측에 맞추면서
+  // 그 발산이 사라졌으므로 이제 모든 환경에서 **거부**를 단언한다. 오류 코드는 네이티브
+  // envelope의 `.code`에서 읽는다(devtools#790이 `.errorCode` 대신 실기기 envelope으로 정렬).
   it('[H1] 알 수 없는 type 문자열은 거부된다', async () => {
     const bogusType = 'not-a-real-haptic-type' as HapticFeedbackType;
     const { outcome, error } = await captureAsync(
@@ -74,7 +75,7 @@ describe('haptic · 의도적 오류 (확인된 오용 가드)', () => {
       () => generateHapticFeedback({ type: bogusType }),
     );
     expect(outcome).toBe('rejected');
-    expect((error as { errorCode?: unknown } | undefined)?.errorCode).toBe('EXECUTION_ERROR');
+    expect((error as { code?: unknown } | undefined)?.code).toBe('EXECUTION_ERROR');
   });
 });
 

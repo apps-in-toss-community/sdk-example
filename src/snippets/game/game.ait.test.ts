@@ -14,12 +14,22 @@ import {
   grantPromotionRewardForGame,
   submitGameCenterLeaderBoardScore,
 } from '@apps-in-toss/web-framework';
-import { afterAll, describe, expect, it } from 'vitest';
-import { captureAsync, cell, flushCapture } from '../../test/aitCapture';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { captureAsync, flushCapture } from '../../test/aitCapture';
+import { clearSoftResolveMirror, mirrorSoftResolve } from '../../test/provisioningMirror';
 
 const CATEGORY = 'game';
 
+beforeAll(async () => {
+  // 31146엔 promotion이 등록돼 있지 않아 실기기(env3)는 grantPromotionReward*를 reject가
+  // 아니라 { errorCode, message } soft-resolve로 돌려준다(run11 2.x/iOS 실측). env1(mock)도
+  // 같은 shape로 맞춰 capture diff가 동치를 보게 한다(devtools#789). getGameCenterGameProfile·
+  // submitGameCenterLeaderBoardScore는 다이얼 대상이 아니라 영향받지 않는다.
+  await mirrorSoftResolve('grantPromotionReward', 'grantPromotionRewardForGame');
+});
+
 afterAll(async () => {
+  await clearSoftResolveMirror();
   await flushCapture(CATEGORY);
 });
 
@@ -68,12 +78,11 @@ describe('game · 값 다양화 (happy path)', () => {
       );
       // env3에서 날조된 promotionCode는 workspace 3095/app 31146에 미등록이지만
       // **reject되지 않는다** — 실기기는 `{ errorCode, message }` 본문을 담아
-      // resolve하는 soft-resolve다(실기기 캡처 관측: outcome=resolved,
-      // valueKeys=['errorCode','message']). 즉 outcome만 보면 성공과 구분되지 않는다.
-      // mock(env1)은 `{ key }`를 반환하므로 shape 단언은 mock + resolved 조합에서만
-      // 하고, env3에서는 캡처만 수행한다.
-      if (outcome === 'resolved' && cell.platform === 'mock') {
-        expect(value).toMatchObject({ key: expect.any(String) });
+      // resolve하는 soft-resolve다(run11 실측: outcome=resolved,
+      // valueKeys=['errorCode','message']). 위 beforeAll의 mirrorSoftResolve가 env1(mock)도
+      // 같은 shape로 맞추므로, resolved 분기에서 두 환경 모두 { errorCode, message }를 단언한다.
+      if (outcome === 'resolved') {
+        expect(value).toMatchObject({ errorCode: expect.anything(), message: expect.anything() });
       }
     }
   });
@@ -105,10 +114,11 @@ describe('game · 의도적 오류 (확인된 오용 가드)', () => {
     // env3에서 미등록 promotionCode 'PC'도 reject가 아니라 `{ errorCode, message }`
     // soft-resolve다(위 happy-varied-promotion 주석과 같은 관측). 아래 outcome 단언이
     // 'rejected'를 함께 허용하는 건 향후 계약 변화를 견디기 위한 여유지, 실기기가
-    // reject한다는 뜻이 아니다. `{ key }` 단언은 mock(env1) + resolved 조합일 때만.
+    // reject한다는 뜻이 아니다. mirrorSoftResolve로 env1(mock)도 soft-resolve하므로
+    // resolved 분기에서 두 환경 모두 { errorCode, message }를 단언한다.
     expect(['resolved', 'rejected']).toContain(forGame.outcome);
-    if (forGame.outcome === 'resolved' && cell.platform === 'mock') {
-      expect(forGame.value).toMatchObject({ key: expect.any(String) });
+    if (forGame.outcome === 'resolved') {
+      expect(forGame.value).toMatchObject({ errorCode: expect.anything(), message: expect.anything() });
     }
   });
 });
