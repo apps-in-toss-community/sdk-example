@@ -84,6 +84,14 @@ interface DiffResult {
   totalKeys: number;
   equivalentCount: number;
   mismatches: KeyMismatch[];
+  /**
+   * shape 집합(distinct shape의 SET)은 양쪽이 동일하지만 shape별 관측 **횟수**만
+   * 갈리는 키 — `multisetsEqual`은 실패하지만 `shapeSetsEqual`은 성립하는 경우다.
+   * shape/contract 차이가 없으므로 진짜 불일치가 아니다(#328). 단, `equivalentCount`
+   * 에는 절대 합산하지 않는다 — 관측 횟수가 다르다는 사실 자체는 disclose해야
+   * 하는 정보다(count-drift ≠ 동치, count-drift ≠ 불일치, 셋은 서로 배타적이다).
+   */
+  countDrift: KeyMismatch[];
   onlyInA: string[];
   onlyInB: string[];
 }
@@ -282,6 +290,23 @@ function multisetsEqual(a: Map<string, number>, b: Map<string, number>): boolean
   return true;
 }
 
+/**
+ * 두 shape 멀티셋의 **키 집합**(count 무시)이 동일한가 — count-drift 판정의 핵심 가드.
+ *
+ * `multisetsEqual`이 count까지 요구하는 것과 달리, 이건 "어떤 distinct shape가
+ * 관측됐는가"만 묻는다. `count-drift` 분류는 이 함수가 true일 때만 허용되므로,
+ * 한쪽에만 있는 shape이 있으면(#308이 막으려던 바로 그 실패 모드 — 조용히 누락된
+ * 관측이 거짓 동치를 만드는 것) 여전히 false를 반환해 진짜 불일치로 남는다.
+ * 즉 이 가드가 #308 안전성을 지킨다: set이 다르면 count-drift 후보조차 되지 못한다.
+ */
+function shapeSetsEqual(a: Map<string, number>, b: Map<string, number>): boolean {
+  if (a.size !== b.size) return false;
+  for (const shape of a.keys()) {
+    if (!b.has(shape)) return false;
+  }
+  return true;
+}
+
 /** 멀티셋을 사람이 읽는 목록으로 — 관측 많은 shape 먼저. */
 function describeMultiset(counts: Map<string, number>): ShapeCount[] {
   return [...counts.entries()]
@@ -349,6 +374,7 @@ function diff(recordsA: CaptureRecord[], recordsB: CaptureRecord[]): DiffResult 
   const onlyInA: string[] = [];
   const onlyInB: string[] = [];
   const mismatches: KeyMismatch[] = [];
+  const countDrift: KeyMismatch[] = [];
   let equivalentCount = 0;
 
   const allKeys = new Set<string>([...mapA.keys(), ...mapB.keys()]);
@@ -381,19 +407,28 @@ function diff(recordsA: CaptureRecord[], recordsB: CaptureRecord[]): DiffResult 
     const first = (bucket: CaptureRecord[]) => bucket[0] as CaptureRecord;
     const fields =
       countsA.size === 1 && countsB.size === 1 ? compareRecords(first(a), first(b)) : [];
-    mismatches.push({
+    const entry: KeyMismatch = {
       key,
       fields,
       shapesA: describeMultiset(countsA),
       shapesB: describeMultiset(countsB),
-    });
+    };
+    // multisetsEqual은 실패했지만 distinct-shape 집합은 동일하다 — shape/contract
+    // 차이가 아니라 순수 관측-횟수 아티팩트다(#328). shapeSetsEqual이 false라면
+    // (한쪽에만 있는 shape이 존재 — #308의 실패 모드) 절대 이 분기로 오지 않는다.
+    if (shapeSetsEqual(countsA, countsB)) {
+      countDrift.push(entry);
+      continue;
+    }
+    mismatches.push(entry);
   }
 
   mismatches.sort((x, y) => x.key.localeCompare(y.key));
+  countDrift.sort((x, y) => x.key.localeCompare(y.key));
   onlyInA.sort();
   onlyInB.sort();
 
-  return { totalKeys, equivalentCount, mismatches, onlyInA, onlyInB };
+  return { totalKeys, equivalentCount, mismatches, countDrift, onlyInA, onlyInB };
 }
 
 function keyLabel(key: string): string {
@@ -401,36 +436,51 @@ function keyLabel(key: string): string {
   return `${api} :: ${scenario}`;
 }
 
+/** `불일치 목록`/`count-drift 목록` 공통 항목 출력 — 필드별 상세 또는 멀티셋 breakdown. */
+function printKeyBreakdown(m: KeyMismatch): void {
+  console.log(`  - ${keyLabel(m.key)}`);
+  if (m.fields.length > 0) {
+    for (const f of m.fields) {
+      console.log(`      ${f.field}: A=${JSON.stringify(f.a)}  B=${JSON.stringify(f.b)}`);
+    }
+    return;
+  }
+  // 한쪽이라도 여러 shape를 관측했거나(반복 시나리오), shape는 같은데 관측
+  // 횟수가 갈린 경우 — 멀티셋을 그대로 보여준다.
+  console.log(`      A (${m.shapesA.reduce((n, s) => n + s.count, 0)}회 관측):`);
+  for (const s of m.shapesA) {
+    console.log(`        x${s.count} ${s.shape}`);
+  }
+  console.log(`      B (${m.shapesB.reduce((n, s) => n + s.count, 0)}회 관측):`);
+  for (const s of m.shapesB) {
+    console.log(`        x${s.count} ${s.shape}`);
+  }
+}
+
 function printHuman(result: DiffResult, aDir: string, bDir: string): void {
-  const { totalKeys, equivalentCount, mismatches, onlyInA, onlyInB } = result;
+  const { totalKeys, equivalentCount, mismatches, countDrift, onlyInA, onlyInB } = result;
 
   console.log(`capture diff — A: ${aDir}  B: ${bDir}`);
   console.log('');
   console.log(
-    `동치 ${equivalentCount}/${totalKeys}  |  불일치 ${mismatches.length}  |  커버리지 갭: A에만 ${onlyInA.length}, B에만 ${onlyInB.length}`,
+    `동치 ${equivalentCount}/${totalKeys}  |  count-drift ${countDrift.length}  |  불일치 ${mismatches.length}  |  커버리지 갭: A에만 ${onlyInA.length}, B에만 ${onlyInB.length}`,
   );
+
+  if (countDrift.length > 0) {
+    console.log('');
+    console.log(
+      'count-drift 목록: (shape-equal, 관측 횟수만 다름 — 불일치 아님, 동치에도 합산 안 함)',
+    );
+    for (const m of countDrift) {
+      printKeyBreakdown(m);
+    }
+  }
 
   if (mismatches.length > 0) {
     console.log('');
     console.log('불일치 목록:');
     for (const m of mismatches) {
-      console.log(`  - ${keyLabel(m.key)}`);
-      if (m.fields.length > 0) {
-        for (const f of m.fields) {
-          console.log(`      ${f.field}: A=${JSON.stringify(f.a)}  B=${JSON.stringify(f.b)}`);
-        }
-        continue;
-      }
-      // 한쪽이라도 여러 shape를 관측했거나(반복 시나리오), shape는 같은데 관측
-      // 횟수가 갈린 경우 — 멀티셋을 그대로 보여준다.
-      console.log(`      A (${m.shapesA.reduce((n, s) => n + s.count, 0)}회 관측):`);
-      for (const s of m.shapesA) {
-        console.log(`        x${s.count} ${s.shape}`);
-      }
-      console.log(`      B (${m.shapesB.reduce((n, s) => n + s.count, 0)}회 관측):`);
-      for (const s of m.shapesB) {
-        console.log(`        x${s.count} ${s.shape}`);
-      }
+      printKeyBreakdown(m);
     }
   }
 
@@ -451,17 +501,25 @@ function printHuman(result: DiffResult, aDir: string, bDir: string): void {
   }
 }
 
+/** `mismatches`/`countDrift` 공통 JSON shape — api/scenario로 key를 분해한다. */
+function keyMismatchToJson(m: KeyMismatch) {
+  return {
+    api: m.key.split(' ')[0],
+    scenario: m.key.split(' ')[1],
+    fields: m.fields,
+    shapesA: m.shapesA,
+    shapesB: m.shapesB,
+  };
+}
+
 function toJson(result: DiffResult): unknown {
   return {
     equivalentCount: result.equivalentCount,
     totalKeys: result.totalKeys,
-    mismatches: result.mismatches.map((m) => ({
-      api: m.key.split(' ')[0],
-      scenario: m.key.split(' ')[1],
-      fields: m.fields,
-      shapesA: m.shapesA,
-      shapesB: m.shapesB,
-    })),
+    // shape 집합은 동일, 관측 횟수만 갈리는 키 — mismatches와 분리 disclose(#328).
+    // equivalentCount에는 절대 포함되지 않는다.
+    countDrift: result.countDrift.map(keyMismatchToJson),
+    mismatches: result.mismatches.map(keyMismatchToJson),
     coverageGap: {
       onlyInA: result.onlyInA.map((key) => ({
         api: key.split(' ')[0],

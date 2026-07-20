@@ -90,14 +90,18 @@ describe('diff', () => {
     expect(result.mismatches).toHaveLength(1);
   });
 
-  it('관측 횟수까지 같아야 동치다 — shape 종류만 같고 횟수가 갈리면 불일치', () => {
+  it('관측 횟수까지 같아야 동치다 — shape 종류만 같고 횟수가 갈리면 동치가 아니다(count-drift, #328)', () => {
     const a = [record({ outcome: 'resolved' }), record({ outcome: 'resolved' })];
     const b = [record({ outcome: 'resolved' })];
 
     const result = diff(a, b);
 
+    // shape 집합은 동일(양쪽 다 "resolved" 하나뿐)하니 count-drift로 분류된다 —
+    // #328 이전에는 이 경우를 `불일치`로 뭉쳤지만, shape/contract 차이가 없으므로
+    // 불일치도 아니다. 단 `동치`에도 절대 합산하지 않는다(관측 횟수 차이는 disclose).
     expect(result.equivalentCount).toBe(0);
-    expect(result.mismatches).toHaveLength(1);
+    expect(result.mismatches).toHaveLength(0);
+    expect(result.countDrift).toHaveLength(1);
   });
 
   it('반복 시나리오라도 멀티셋이 같으면 동치다 — 순서는 계약이 아니다', () => {
@@ -253,6 +257,56 @@ describe('diff', () => {
     const b = [record({ outcome: 'rejected', errorMessage: 'Location permission denied' })];
 
     expect(diff(a, b).equivalentCount).toBe(1);
+  });
+
+  // count-drift — shape 집합은 동일, 관측 횟수만 갈리는 키(#328). 진짜 shape/contract
+  // 차이가 없으므로 `불일치`에 넣지 않되, `동치`에도 절대 합산하지 않는다(관측 횟수
+  // 차이 자체는 disclose해야 하는 정보라서).
+  describe('count-drift (#328)', () => {
+    it('같은 distinct shape, 다른 관측 횟수(A x3, B x1)는 count-drift로 분류하고 불일치·동치 어디에도 넣지 않는다', () => {
+      const a = [
+        record({ outcome: 'resolved' }),
+        record({ outcome: 'resolved' }),
+        record({ outcome: 'resolved' }),
+      ];
+      const b = [record({ outcome: 'resolved' })];
+
+      const result = diff(a, b);
+
+      expect(result.equivalentCount).toBe(0);
+      expect(result.mismatches).toHaveLength(0);
+      expect(result.countDrift).toHaveLength(1);
+      expect(result.countDrift[0]?.key).toBe('getCurrentLocation happy');
+      expect(result.countDrift[0]?.shapesA[0]?.count).toBe(3);
+      expect(result.countDrift[0]?.shapesB[0]?.count).toBe(1);
+    });
+
+    it('진짜 shape 차이(A에만 있는 shape)는 shapeSetsEqual 가드에 의해 여전히 불일치다 — count-drift로 새지 않는다', () => {
+      // #308이 막으려던 실패 모드: 한쪽에만 있는 distinct shape이 조용히 사라지면
+      // 안 된다. shapeSetsEqual은 이 경우 false이므로 count-drift 후보조차 안 된다.
+      const a = [
+        record({ outcome: 'rejected', errorName: 'Error', errorCode: 'NO_PERMISSION' }),
+        record({ outcome: 'resolved' }),
+      ];
+      const b = [record({ outcome: 'resolved' })];
+
+      const result = diff(a, b);
+
+      expect(result.countDrift).toHaveLength(0);
+      expect(result.mismatches).toHaveLength(1);
+      expect(result.equivalentCount).toBe(0);
+    });
+
+    it('shape와 관측 횟수가 모두 같으면 여전히 동치다 — count-drift 도입으로 기존 동치 판정이 바뀌지 않는다', () => {
+      const a = [record({ outcome: 'resolved' }), record({ outcome: 'resolved' })];
+      const b = [record({ outcome: 'resolved' }), record({ outcome: 'resolved' })];
+
+      const result = diff(a, b);
+
+      expect(result.equivalentCount).toBe(1);
+      expect(result.mismatches).toHaveLength(0);
+      expect(result.countDrift).toHaveLength(0);
+    });
   });
 });
 
