@@ -7,6 +7,15 @@ name: Deploy .ait bundle
 # the AITCC_API_KEY secret (the CLI flag itself is --api-key for upstream
 # compatibility; in our docs we call it "Deploy Key").
 #
+# The scheme-only URL above has no `host` param, which the 3.0 runtime
+# entry requires (#289) — the console test-link (`aitcc app bundles
+# test-links`) carries it instead. That command authenticates via a
+# session cookie (aitcc), a different, KR-IP-bound auth surface from the
+# AITCC_API_KEY Deploy Key used for the deploy step. The "Fetch console
+# test-link" step below is therefore best-effort (see its inline comment)
+# and, when it succeeds, attaches a second, clearly-labeled URL/QR
+# alongside the original 2.x one rather than replacing it.
+#
 # The `channel` input selects the build channel. `release` (default, also
 # used for v* tag pushes) builds a normal bundle. `dogfood` sets
 # AIT_DEBUG_BUILD=1 (via the bundle:ait:dogfood script) so vite.config.ts
@@ -120,9 +129,78 @@ jobs:
           echo "url=$url" >> "$GITHUB_OUTPUT"
           echo "::add-mask::$url"
 
+      - name: Fetch console test-link (3.x host param)
+        id: testlink
+        continue-on-error: true
+        env:
+          AITCC_SESSION: ${{ secrets.AITCC_SESSION }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+        run: |
+          set -euo pipefail
+          # The 3.0 runtime entry URL requires a `host` param
+          # (host=appsInTossHost) that `ait deploy --scheme-only` above does
+          # not emit (2.x-era contract — #289). The console test-link
+          # (`aitcc app bundles test-links`) carries it, but aitcc
+          # (console-cli) authenticates via a session cookie (`aitcc login` /
+          # AITCC_SESSION) — NOT the AITCC_API_KEY Deploy Key that
+          # `ait deploy --api-key` consumes above. Those are two different
+          # auth surfaces on two different CLIs (`ait` vs `aitcc`). That
+          # session cookie is also KR-IP-bound (console-cli
+          # docs/api/auth-session.md), and this job runs on a GitHub-hosted
+          # (non-KR) runner. No AITCC_SESSION secret exists yet, and even
+          # once one does, non-KR runner egress sees 401/errorCode 4010 —
+          # so this step is best-effort and must never fail the release: on
+          # any problem it just omits the 3.x host-param link, and the
+          # existing 2.x scheme URL is still attached as before.
+          if [ -z "${AITCC_SESSION:-}" ]; then
+            echo "No AITCC_SESSION secret configured — skipping 3.x host-param test-link (2.x scheme URL still attached)."
+            echo "url=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          deployment_id=$(printf '%s' "$DEPLOY_URL" | sed -n 's/.*_deploymentId=\([^&]*\).*/\1/p')
+          if [ -z "$deployment_id" ]; then
+            echo "Could not extract _deploymentId from the scheme URL — skipping test-link fetch."
+            echo "url=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          set +e
+          pnpm dlx @ait-co/console-cli@latest app bundles test-links \
+            --workspace 3095 \
+            --app 31146 \
+            --deployment-id "$deployment_id" \
+            --json \
+            > test-links-output.json 2>test-links-stderr.txt
+          aitcc_exit=$?
+          set -e
+
+          if [ "$aitcc_exit" -ne 0 ]; then
+            echo "aitcc app bundles test-links exited $aitcc_exit — skipping 3.x host-param link (likely missing/expired session or non-KR runner egress)."
+            cat test-links-stderr.txt
+            rm -f test-links-output.json test-links-stderr.txt
+            echo "url=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Extract only the URL(s) carrying host= — never print the raw
+          # response; parse-and-extract only (SECRET-HANDLING).
+          host_url=$(jq -r '[.. | strings | select(contains("host="))] | .[0] // empty' test-links-output.json)
+          rm -f test-links-output.json test-links-stderr.txt
+
+          if [ -z "$host_url" ]; then
+            echo "test-links response had no host= URL — skipping 3.x host-param link."
+            echo "url=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "url=$host_url" >> "$GITHUB_OUTPUT"
+          echo "::add-mask::$host_url"
+
       - name: Render QR + release body
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.url }}
+          HOST_URL: ${{ steps.testlink.outputs.url }}
           TAG: ${{ steps.ref.outputs.tag }}
           COMMIT_SHA: ${{ github.sha }}
           CHANNEL: ${{ steps.ref.outputs.channel }}
@@ -139,6 +217,16 @@ jobs:
           # under a channel-suffixed pre-release tag (e.g. v0.1.5-dogfood)
           # to avoid colliding with the release. The git tag stays the same;
           # gh creates the release object on the suffixed name.
+          # qr-host.png (3.x host-param test-link) only exists when the
+          # "Fetch console test-link" step above actually resolved a URL
+          # (AITCC_SESSION configured + KR runner egress + valid session).
+          # Absent that, we fall back to attaching only the 2.x scheme QR,
+          # same as before this change.
+          assets=("$BUNDLE_PATH" "$RELEASE_DIR/qr.png")
+          if [ -f "$RELEASE_DIR/qr-host.png" ]; then
+            assets+=("$RELEASE_DIR/qr-host.png")
+          fi
+
           if [ "$CHANNEL" = "dogfood" ]; then
             RELEASE_TAG="${TAG}-dogfood"
             gh release create "$RELEASE_TAG" \
@@ -146,12 +234,10 @@ jobs:
               --notes-file "$RELEASE_DIR/release-body.md" \
               --prerelease \
               --target "${{ github.sha }}" \
-              "$BUNDLE_PATH" \
-              "$RELEASE_DIR/qr.png"
+              "${assets[@]}"
           else
             gh release create "$TAG" \
               --title "$TAG" \
               --notes-file "$RELEASE_DIR/release-body.md" \
-              "$BUNDLE_PATH" \
-              "$RELEASE_DIR/qr.png"
+              "${assets[@]}"
           fi
