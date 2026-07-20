@@ -35,6 +35,9 @@ aitcc/submit-*.json
 # .ait.test 4-cell 오류-shape 캡처 산출물 (per-run, fixture 아님)
 .ait-capture/
 
+# env2(ios-sim) engine replay corpus — AIT_CAPTURE_DIR override 출력 (per-run, fixture 아님)
+.ait-capture-env2/
+
 # 비교 대상이 아닌 기질(jsdom) 캡처 — diff corpus 밖으로 격리 (per-run, fixture 아님)
 .ait-capture-substrate/
 
