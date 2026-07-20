@@ -14,20 +14,33 @@ import {
   Analytics,
   appLogin,
   appsInTossEvent,
+  appsInTossSignTossCert,
   checkoutPayment,
   closeView,
+  contactsViral,
+  createAsyncBridge,
+  createConstantBridge,
+  createEventBridge,
   env,
   eventLog,
+  FetchAlbumPhotosPermissionError,
+  FetchContactsPermissionError,
   fetchAlbumItems,
   fetchAlbumPhotos,
   fetchContacts,
+  GetClipboardTextPermissionError,
+  GetCurrentLocationPermissionError,
   GoogleAdMob,
   generateHapticFeedback,
+  getAnonymousKey,
   getAppsInTossGlobals,
   getClipboardText,
+  getConsentedUserData,
   getCurrentLocation,
   getDeviceId,
+  getGameCenterGameProfile,
   getGroupId,
+  getIsTossLoginIntegratedService,
   getLocale,
   getNetworkStatus,
   getOperationalEnvironment,
@@ -38,11 +51,17 @@ import {
   getServerTime,
   getTossAppVersion,
   getTossShareLink,
+  getUserKeyForGame,
   graniteEvent,
+  grantPromotionReward,
+  grantPromotionRewardForGame,
   IAP,
   isMinVersionSupported,
   loadFullScreenAd,
+  OpenCameraPermissionError,
+  onVisibilityChangedByTransparentServiceWeb,
   openCamera,
+  openGameCenterLeaderboard,
   openPDFViewer,
   openPermissionDialog,
   openURL,
@@ -52,7 +71,10 @@ import {
   requestReview,
   requestTossPayPaysBilling,
   SafeAreaInsets,
+  SetClipboardTextPermissionError,
+  StartUpdateLocationPermissionError,
   Storage,
+  saveBase64Data,
   setClipboardText,
   setDeviceOrientation,
   setIosSwipeGestureEnabled,
@@ -61,6 +83,7 @@ import {
   share,
   showFullScreenAd,
   startUpdateLocation,
+  submitGameCenterLeaderBoardScore,
   TossAds,
   tdsEvent,
 } from '@apps-in-toss/web-framework';
@@ -69,19 +92,32 @@ export type _Accuracy = typeof Accuracy;
 export type _Analytics = typeof Analytics;
 export type _appLogin = typeof appLogin;
 export type _appsInTossEvent = typeof appsInTossEvent;
+export type _appsInTossSignTossCert = typeof appsInTossSignTossCert;
 export type _checkoutPayment = typeof checkoutPayment;
 export type _closeView = typeof closeView;
+export type _contactsViral = typeof contactsViral;
+export type _createAsyncBridge = typeof createAsyncBridge;
+export type _createConstantBridge = typeof createConstantBridge;
+export type _createEventBridge = typeof createEventBridge;
 export type _env = typeof env;
 export type _eventLog = typeof eventLog;
 export type _fetchAlbumItems = typeof fetchAlbumItems;
 export type _fetchAlbumPhotos = typeof fetchAlbumPhotos;
+export type _FetchAlbumPhotosPermissionError = typeof FetchAlbumPhotosPermissionError;
 export type _fetchContacts = typeof fetchContacts;
+export type _FetchContactsPermissionError = typeof FetchContactsPermissionError;
 export type _generateHapticFeedback = typeof generateHapticFeedback;
+export type _getAnonymousKey = typeof getAnonymousKey;
 export type _getAppsInTossGlobals = typeof getAppsInTossGlobals;
 export type _getClipboardText = typeof getClipboardText;
+export type _GetClipboardTextPermissionError = typeof GetClipboardTextPermissionError;
+export type _getConsentedUserData = typeof getConsentedUserData;
 export type _getCurrentLocation = typeof getCurrentLocation;
+export type _GetCurrentLocationPermissionError = typeof GetCurrentLocationPermissionError;
 export type _getDeviceId = typeof getDeviceId;
+export type _getGameCenterGameProfile = typeof getGameCenterGameProfile;
 export type _getGroupId = typeof getGroupId;
+export type _getIsTossLoginIntegratedService = typeof getIsTossLoginIntegratedService;
 export type _getLocale = typeof getLocale;
 export type _getNetworkStatus = typeof getNetworkStatus;
 export type _getOperationalEnvironment = typeof getOperationalEnvironment;
@@ -92,12 +128,19 @@ export type _getSchemeUri = typeof getSchemeUri;
 export type _getServerTime = typeof getServerTime;
 export type _getTossAppVersion = typeof getTossAppVersion;
 export type _getTossShareLink = typeof getTossShareLink;
+export type _getUserKeyForGame = typeof getUserKeyForGame;
 export type _GoogleAdMob = typeof GoogleAdMob;
 export type _graniteEvent = typeof graniteEvent;
+export type _grantPromotionReward = typeof grantPromotionReward;
+export type _grantPromotionRewardForGame = typeof grantPromotionRewardForGame;
 export type _IAP = typeof IAP;
 export type _isMinVersionSupported = typeof isMinVersionSupported;
 export type _loadFullScreenAd = typeof loadFullScreenAd;
+export type _onVisibilityChangedByTransparentServiceWeb =
+  typeof onVisibilityChangedByTransparentServiceWeb;
 export type _openCamera = typeof openCamera;
+export type _OpenCameraPermissionError = typeof OpenCameraPermissionError;
+export type _openGameCenterLeaderboard = typeof openGameCenterLeaderboard;
 export type _openPDFViewer = typeof openPDFViewer;
 export type _openPermissionDialog = typeof openPermissionDialog;
 export type _openURL = typeof openURL;
@@ -107,7 +150,9 @@ export type _requestPermission = typeof requestPermission;
 export type _requestReview = typeof requestReview;
 export type _requestTossPayPaysBilling = typeof requestTossPayPaysBilling;
 export type _SafeAreaInsets = typeof SafeAreaInsets;
+export type _saveBase64Data = typeof saveBase64Data;
 export type _setClipboardText = typeof setClipboardText;
+export type _SetClipboardTextPermissionError = typeof SetClipboardTextPermissionError;
 export type _setDeviceOrientation = typeof setDeviceOrientation;
 export type _setIosSwipeGestureEnabled = typeof setIosSwipeGestureEnabled;
 export type _setScreenAwakeMode = typeof setScreenAwakeMode;
@@ -115,7 +160,9 @@ export type _setSecureScreen = typeof setSecureScreen;
 export type _share = typeof share;
 export type _showFullScreenAd = typeof showFullScreenAd;
 export type _startUpdateLocation = typeof startUpdateLocation;
+export type _StartUpdateLocationPermissionError = typeof StartUpdateLocationPermissionError;
 export type _Storage = typeof Storage;
+export type _submitGameCenterLeaderBoardScore = typeof submitGameCenterLeaderBoardScore;
 export type _tdsEvent = typeof tdsEvent;
 export type _TossAds = typeof TossAds;
 
