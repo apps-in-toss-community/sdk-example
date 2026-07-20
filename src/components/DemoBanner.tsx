@@ -18,11 +18,21 @@ export function DemoBanner() {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    try {
-      setIsTossEnv(getOperationalEnvironment() === 'toss');
-    } catch {
-      setIsTossEnv(false);
-    }
+    // 상류 SDK 타입은 동기(string)지만 실기기 런타임은 Promise를 반환한다(devtools#795/#796,
+    // env3 실측). await는 동기 반환·Promise 반환 양쪽에서 동작하는 version-agnostic 경로다 —
+    // await 없이 비교하면 Promise === 'toss'가 항상 false라 실기기에서 배너가 숨지 않는다.
+    let cancelled = false;
+    void (async () => {
+      try {
+        const isToss = (await getOperationalEnvironment()) === 'toss';
+        if (!cancelled) setIsTossEnv(isToss);
+      } catch {
+        if (!cancelled) setIsTossEnv(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
