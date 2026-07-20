@@ -55,11 +55,26 @@ export type SdkLine = '2.x' | '3.x';
  * - `chromium` — 실 Chromium 브라우저. `engine.*`의 **진짜 env1 축**.
  * - `webkit`   — 데스크톱 WebKit. env2(실기기 WebKit)의 근사치일 뿐 대체물이
  *                아니다 — 실기기는 실 뷰포트·실 터치·PWA 셸을 추가로 가진다.
+ * - `ios-sim`  — iOS Simulator의 실 iOS WebKit(AppleWebKit/605.1.15 계열). 데스크톱
+ *                `webkit`보다 실기기에 가깝고(실 iOS 엔진 빌드·실 뷰포트·coarse
+ *                포인터·maxTouchPoints) `ios-pwa`(실기기 PWA)·`ios`(실기기 토스
+ *                WebView)와는 구별되는 **별도 substrate**다 — Sim은 실 하드웨어가
+ *                아니므로 GPS·햅틱 등 하드웨어 감응 축은 대표하지 않고 **엔진
+ *                감응 축(`engine.*`)만** 대표한다. `engine.*` verdict를 canonical
+ *                capture로 replay할 때 이 축으로 떨어진다(`scripts/replay-engine-sim-capture.ts`).
  * - `ios-pwa`  — env2(AITC Sandbox PWA) 축: mock이 서빙하되 실기기 WebKit 위에서
  *                돈다. 러너(devtools#776)가 `__AIT_CELL__.platform`으로 주입한다.
  * - `ios` / `android` — env3 실기기 토스 앱 WebView.
  */
-export type Platform = 'mock' | 'jsdom' | 'chromium' | 'webkit' | 'ios-pwa' | 'ios' | 'android';
+export type Platform =
+  | 'mock'
+  | 'jsdom'
+  | 'chromium'
+  | 'webkit'
+  | 'ios-sim'
+  | 'ios-pwa'
+  | 'ios'
+  | 'android';
 
 /** `Platform` 런타임 검증용 — 러너가 주입하는 문자열을 좁힌다. */
 const PLATFORMS: readonly Platform[] = [
@@ -67,6 +82,7 @@ const PLATFORMS: readonly Platform[] = [
   'jsdom',
   'chromium',
   'webkit',
+  'ios-sim',
   'ios-pwa',
   'ios',
   'android',
@@ -923,7 +939,20 @@ export async function flushCapture(category: string): Promise<void> {
     const { resolve } = await import(/* @vite-ignore */ pathMod);
     // process는 isNode 가드 안에서만 접근.
     // 비교 대상이 아닌 기질(jsdom)은 diff corpus 밖 디렉토리로 격리한다.
-    const captureDir = resolve(process.cwd(), captureDirFor(cell.platform));
+    //
+    // `AIT_CAPTURE_DIR` override — env3 러너의 `--report-dir`와 대칭. 한 실행분의
+    // 캡처를 **자기 report dir**로 떨어뜨려 다른 축의 corpus를 오염시키지 않게 한다.
+    // env2(ios-sim/ios-pwa) 캡처를 env1 corpus(`.ait-capture/`)에 섞으면 engine 키가
+    // chromium+ios-sim 2관측이 돼 env1↔env3 diff가 깨지므로, replay 경로가 이 override로
+    // 자기 dir을 지정한다(`scripts/replay-engine-sim-capture.ts`). substrate-only 기질
+    // (jsdom)은 이 override가 있어도 여전히 `.ait-capture-substrate/`로 격리한다 —
+    // "비교에 참여하지 않는다"는 성질이 report dir 선택보다 우선한다.
+    const overrideDir = process.env.AIT_CAPTURE_DIR;
+    const baseDir =
+      overrideDir && !SUBSTRATE_ONLY_PLATFORMS.includes(cell.platform)
+        ? overrideDir
+        : captureDirFor(cell.platform);
+    const captureDir = resolve(process.cwd(), baseDir);
     mkdirSync(captureDir, { recursive: true });
     const file = resolve(captureDir, `${category}.${CELL_SDK_LINE}.${cell.platform}.json`);
     writeFileSync(file, `${JSON.stringify(forCategory, null, 2)}\n`, 'utf8');
