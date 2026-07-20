@@ -257,3 +257,101 @@ describe('booleanValues (값 축 지문)', () => {
     expect(booleansOf('bv-reject')).toBeNull();
   });
 });
+
+function recordOf(api: string) {
+  return __getPendingRecordsForTest().find((r) => r.api === api && r.scenario === meta.scenario);
+}
+
+describe('threwSync — 동기 throw vs 비동기 reject (#329 item 1)', () => {
+  it('call()이 동기로 throw하면 rejected + threwSync=true', async () => {
+    const result = await captureAsync({ ...meta, api: 'ts-sync' }, () => {
+      throw new Error('sync boom');
+    });
+
+    expect(result.outcome).toBe('rejected');
+    expect(recordOf('ts-sync')?.threwSync).toBe(true);
+  });
+
+  it('반환한 Promise가 reject하면 rejected + threwSync=false', async () => {
+    const result = await captureAsync({ ...meta, api: 'ts-async' }, async () => {
+      throw new Error('async boom');
+    });
+
+    expect(result.outcome).toBe('rejected');
+    expect(recordOf('ts-async')?.threwSync).toBe(false);
+  });
+
+  it('resolved 경로에는 threwSync를 두지 않는다 — async 축은 returnType이 잡는다', async () => {
+    await captureAsync({ ...meta, api: 'ts-resolved' }, async () => ({ ok: true }));
+
+    expect(recordOf('ts-resolved')?.threwSync).toBeUndefined();
+  });
+});
+
+describe('arrayShape — 배열 원소 스키마 (#329 item 3)', () => {
+  it('객체 원소 배열은 length + 첫 원소 키를 싣는다 (값은 안 싣는다)', async () => {
+    await captureAsync({ ...meta, api: 'arr-obj' }, async () => [
+      { uri: 'photo-a.jpg', width: 1 },
+      { uri: 'photo-b.jpg', width: 2 },
+    ]);
+
+    expect(recordOf('arr-obj')?.arrayShape).toEqual({
+      length: 2,
+      elementType: 'object',
+      elementKeys: ['uri', 'width'],
+    });
+  });
+
+  it('빈 배열은 elementType=empty, elementKeys=null', async () => {
+    await captureAsync({ ...meta, api: 'arr-empty' }, async () => []);
+
+    expect(recordOf('arr-empty')?.arrayShape).toEqual({
+      length: 0,
+      elementType: 'empty',
+      elementKeys: null,
+    });
+  });
+
+  it('스칼라 원소 배열은 elementType만 싣고 elementKeys=null', async () => {
+    await captureAsync({ ...meta, api: 'arr-scalar' }, async () => [1, 2, 3]);
+
+    expect(recordOf('arr-scalar')?.arrayShape).toEqual({
+      length: 3,
+      elementType: 'number',
+      elementKeys: null,
+    });
+  });
+
+  it('배열 아닌 반환에는 arrayShape 필드가 없다', async () => {
+    await captureAsync({ ...meta, api: 'arr-none' }, async () => ({ ok: true }));
+
+    expect(recordOf('arr-none')?.arrayShape).toBeUndefined();
+  });
+});
+
+describe('enumValue — 기기 불변 enum 값 (#329 item 2, allowlist)', () => {
+  it('allowlist getter(getPlatformOS)가 Promise를 반환해도 resolved 스칼라를 back-fill한다', async () => {
+    // devtools#796 이후 getPlatformOS는 Promise<string> — captureSync가 보는 건 thenable.
+    const { value } = captureSync({ ...meta, api: 'getPlatformOS' }, () => Promise.resolve('ios'));
+    // 반환된 thenable을 await해 back-fill microtask가 돌게 한다(테스트가 flush를 대신).
+    await value;
+
+    const rec = recordOf('getPlatformOS');
+    expect(rec?.returnType).toBe('Promise'); // sync/async 축은 그대로 보존
+    expect(rec?.enumValue).toBe('ios');
+  });
+
+  it('allowlist에 없는 getter는 스칼라를 반환해도 값을 싣지 않는다 — 시크릿-안전(포함 방식)', async () => {
+    // getNetworkStatus는 변량이라 allowlist 밖 → 값 미기록.
+    await captureAsync({ ...meta, api: 'getNetworkStatus' }, async () => 'WIFI');
+    expect(recordOf('getNetworkStatus')?.enumValue).toBeUndefined();
+  });
+
+  it('시크릿 성격 getter(getDeviceId/getLocale)는 절대 값을 싣지 않는다', async () => {
+    await captureAsync({ ...meta, api: 'getDeviceId' }, async () => 'device-abc-123');
+    await captureAsync({ ...meta, api: 'getLocale' }, async () => 'ko-KR');
+
+    expect(recordOf('getDeviceId')?.enumValue).toBeUndefined();
+    expect(recordOf('getLocale')?.enumValue).toBeUndefined();
+  });
+});
