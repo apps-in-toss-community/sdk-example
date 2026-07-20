@@ -7,12 +7,23 @@
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import { requestTossPayPaysBilling } from '@apps-in-toss/web-framework';
-import { afterAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { captureAsync, cell, flushCapture } from '../../test/aitCapture';
+import { clearSoftResolveMirror, mirrorSoftResolve } from '../../test/provisioningMirror';
 
 const CATEGORY = 'payment';
 
+beforeAll(async () => {
+  // 31146은 결제가 미프로비저닝이라 실기기(env3)는 requestTossPayPaysBilling을 reject가
+  // 아니라 { false, reason }(valueKeys=['false','reason'])로 resolve한다(run11 2.x/iOS 실측).
+  // env1(mock)도 같은 shape로 맞춰 capture diff가 동치를 보게 한다(devtools#789/#793). 아래
+  // 단언들은 `'success' in result` 가드가 이미 있어 이 shape에서 통과한다. 리터럴 `false`
+  // 키는 하네스 artifact가 아니라 실기기 WebView 관측값으로 확정(#303, capture.ts).
+  await mirrorSoftResolve('requestTossPayPaysBilling');
+});
+
 afterAll(async () => {
+  await clearSoftResolveMirror();
   await flushCapture(CATEGORY);
 });
 

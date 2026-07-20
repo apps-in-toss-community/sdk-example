@@ -122,21 +122,25 @@ export async function clearProvisioningMirror(...surfaces: ProvisioningSurface[]
  * 재현한다(devtools#789의 `failureModes.softResolve` 다이얼). reject 축(위
  * `PROVISIONING_31146`)과 다이얼 축이 갈리므로 함수도 분리한다.
  *
- * 31146은 promotion이 등록돼 있지 않고 조회한 orderId에 활성 구독이 없어, 실기기는
- * 아래 API를 reject가 아니라 "성공했지만 내용이 빈/오류 본문" shape로 resolve한다
- * (env3 run11 2.x/iOS 실측):
+ * 31146은 promotion이 등록돼 있지 않고, 조회한 orderId에 활성 구독이 없고, 결제도
+ * 미프로비저닝이라, 실기기는 아래 API를 reject가 아니라 "성공했지만 내용이 빈/오류
+ * 본문" shape로 resolve한다 (env3 run11 2.x/iOS 실측):
  *   - grantPromotionReward / grantPromotionRewardForGame → `{ errorCode, message }`
  *   - IAP.getSubscriptionInfo → `{}` (빈 객체)
+ *   - checkoutPayment / requestTossPayPaysBilling → `{ false, reason }` (valueKeys=['false','reason'])
  * 미러를 켜면 env1(mock)도 같은 shape로 resolve해 capture diff가 동치를 본다. shape
  * 자체는 devtools mock에 고정돼 있고 여기선 어느 API를 켤지만 고른다.
  *
- * (payment `checkoutPayment`/`requestTossPayPaysBilling`은 값 수준 재확인이 폰-gated라
- *  아직 다이얼에 없다 — sdk-example#303 / devtools#789.)
+ * payment shape의 리터럴 `false` 키는 하네스 artifact가 아니라 실기기 WebView 관측값으로
+ * 확정됐다(sdk-example#303: capture는 relay 개입 전 WebView 안 `Object.keys`로 계산 —
+ * devtools capture.ts). 따라서 폰 재측정 없이 재현 가능하다(devtools#793, @0.1.140).
  */
 export type SoftResolveSurface =
   | 'grantPromotionReward'
   | 'grantPromotionRewardForGame'
-  | 'getSubscriptionInfo';
+  | 'getSubscriptionInfo'
+  | 'checkoutPayment'
+  | 'requestTossPayPaysBilling';
 
 /** 지정한 API를 31146의 soft-resolve 상태로 맞춘다. env3에서는 no-op. */
 export async function mirrorSoftResolve(...surfaces: SoftResolveSurface[]): Promise<void> {

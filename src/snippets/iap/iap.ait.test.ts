@@ -15,12 +15,14 @@ import { clearSoftResolveMirror, mirrorSoftResolve } from '../../test/provisioni
 const CATEGORY = 'iap';
 
 beforeAll(async () => {
-  // 31146엔 조회한 orderId에 활성 구독이 없어 실기기(env3)는 getSubscriptionInfo를
-  // reject가 아니라 빈 객체 {}(valueKeys=[])로 resolve한다(run11 2.x/iOS 실측). env1(mock)도
-  // 같은 shape로 맞춰 capture diff가 동치를 보게 한다(devtools#789). 아래 getSubscriptionInfo
-  // 단언은 이미 `'subscription' in value`일 때만 shape를 보므로 {} resolve에서 통과한다.
-  // (checkoutPayment는 값 수준 재확인이 폰-gated라 아직 다이얼에 없다 — #303.)
-  await mirrorSoftResolve('getSubscriptionInfo');
+  // 31146엔 조회한 orderId에 활성 구독이 없고 결제도 미프로비저닝이라, 실기기(env3)는
+  // 아래 둘을 reject가 아니라 대체 shape로 resolve한다(run11 2.x/iOS 실측):
+  //   - getSubscriptionInfo → 빈 객체 {} (valueKeys=[])
+  //   - checkoutPayment → { false, reason } (valueKeys=['false','reason'])
+  // env1(mock)도 같은 shape로 맞춰 capture diff가 동치를 보게 한다(devtools#789/#793).
+  // 아래 단언들은 `'success' in`/`'subscription' in` 가드가 이미 있어 이 shape에서 통과한다.
+  // payment shape의 리터럴 `false` 키는 실기기 WebView 관측값으로 확정(#303, capture.ts).
+  await mirrorSoftResolve('getSubscriptionInfo', 'checkoutPayment');
 });
 
 afterAll(async () => {
