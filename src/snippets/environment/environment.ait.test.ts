@@ -10,12 +10,18 @@
  */
 import {
   SafeAreaInsets,
+  env,
+  getAppsInTossGlobals,
   getDeviceId,
+  getGroupId,
   getLocale,
   getNetworkStatus,
   getOperationalEnvironment,
   getPlatformOS,
   getSafeAreaInsets,
+  getSchemeUri,
+  getServerTime,
+  getTossAppVersion,
   isMinVersionSupported,
 } from '@apps-in-toss/web-framework';
 import { afterAll, describe, expect, it } from 'vitest';
@@ -115,6 +121,62 @@ describe('environment · 값 다양화 (happy path)', () => {
       () => Promise.resolve(getNetworkStatus()),
     );
     expect(outcome).toBe('resolved');
+  });
+
+  // #296: 스니펫(src/snippets/environment/)엔 있으나 이 슈트가 지금껏 호출하지 않던
+  // 5개 API — EnvironmentPage.tsx가 렌더하는 카드와 짝이지만 캡처 커버리지 밖이었다.
+  // 위 4종 accessor·isMinVersionSupported와 달리 devtools#795/#796의 Promise-wrap
+  // 대상이 **아니다** — 상류 `.d.ts`(web-bridge)가 전부 동기 `(): string`/객체로
+  // 선언하고, mock(0.1.141) 실측도 그 선언과 일치한다(각주 호출로 직접 확인,
+  // thenable 아님). 그래서 여기선 `captureSyncWithShape`가 아니라 평범한
+  // `captureSync`로 충분하다 — returnType이 이미 `outcome`으로 sync/async를 가른다.
+  it('신규 environment accessor 5종 — getSchemeUri/getGroupId/getTossAppVersion/getAppsInTossGlobals/env.getDeploymentId (#296)', () => {
+    const schemeUri = captureSync(
+      { category: CATEGORY, api: 'getSchemeUri', scenario: 'happy-default', input: null },
+      () => getSchemeUri(),
+    );
+    expect(schemeUri.outcome).toBe('returned-sync');
+    expect(typeof schemeUri.value).toBe('string');
+
+    const groupId = captureSync(
+      { category: CATEGORY, api: 'getGroupId', scenario: 'happy-default', input: null },
+      () => getGroupId(),
+    );
+    expect(groupId.outcome).toBe('returned-sync');
+    expect(typeof groupId.value).toBe('string');
+
+    const tossAppVersion = captureSync(
+      { category: CATEGORY, api: 'getTossAppVersion', scenario: 'happy-default', input: null },
+      () => getTossAppVersion(),
+    );
+    expect(tossAppVersion.outcome).toBe('returned-sync');
+    expect(typeof tossAppVersion.value).toBe('string');
+
+    const appsInTossGlobals = captureSync(
+      { category: CATEGORY, api: 'getAppsInTossGlobals', scenario: 'happy-default', input: null },
+      () => getAppsInTossGlobals(),
+    );
+    expect(appsInTossGlobals.outcome).toBe('returned-sync');
+    expect(appsInTossGlobals.value).toBeTypeOf('object');
+    expect(appsInTossGlobals.value).toHaveProperty('deploymentId');
+
+    const envDeploymentId = captureSync(
+      { category: CATEGORY, api: 'env.getDeploymentId', scenario: 'happy-default', input: null },
+      () => env.getDeploymentId(),
+    );
+    expect(envDeploymentId.outcome).toBe('returned-sync');
+    expect(typeof envDeploymentId.value).toBe('string');
+  });
+
+  // getServerTime만은 위 5종과 달리 선언부터 `Promise<number | undefined>`다(비교 대상
+  // 문서화된 async — #795/#796 sync-declared-but-Promise-runtime 발산과는 별개 축).
+  it('getServerTime이 resolve — epoch ms 숫자 (#296)', async () => {
+    const { outcome, value } = await captureAsync(
+      { category: CATEGORY, api: 'getServerTime', scenario: 'happy-default', input: null },
+      () => getServerTime(),
+    );
+    expect(outcome).toBe('resolved');
+    expect(typeof value).toBe('number');
   });
 });
 

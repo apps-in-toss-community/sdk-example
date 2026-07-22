@@ -35,19 +35,27 @@ const HAPTIC_TYPES: HapticFeedbackType[] = [
 ];
 
 describe('haptic · 값 다양화 (happy path, fire-and-forget)', () => {
+  // #296: env3(2.x/iOS) 캡처(`haptic.2.x.ios.json`)가 10종 HapticFeedbackType 전부에서
+  // `resolved`+`value:undefined`를 실측했다 — mock과 동일 계약이다(H1의 EXECUTION_ERROR
+  // reject는 이 happy 시나리오가 아니라 별도 [H1] 오용 케이스에서만 관측됨). 그래서 이제
+  // mock·ios 두 셀 모두 하드 단언으로 승격한다. android는 아직 이 시나리오를 실측한
+  // 코퍼스가 없으므로(#330 재캡처 대상 밖 — haptic은 애초에 stale 목록에도 없었을 만큼
+  // 시나리오 자체가 android에서 전무하다) 관용 단언을 그대로 남겨 미측정 셀을 하드
+  // 단언으로 성급히 덮지 않는다.
   it('generateHapticFeedback이 10종 HapticFeedbackType 전부에서 void로 resolve된다', async () => {
     for (const type of HAPTIC_TYPES) {
       const { outcome, value } = await captureAsync(
         { category: CATEGORY, api: 'generateHapticFeedback', scenario: 'happy-varied-type', input: { type } },
         () => generateHapticFeedback({ type }),
       );
-      if (cell.platform === 'mock') {
-        // mock은 하드웨어 진동 성공 여부와 무관하게 항상 resolve — 실계약 하드 단언.
+      if (cell.platform === 'mock' || cell.platform === 'ios') {
+        // mock: 하드웨어 진동 성공 여부와 무관하게 항상 resolve.
+        // ios(2.x, #296 실측): 10종 전부 resolved+undefined — mock과 수렴하는
+        // 계약이라 회귀 가드로 하드 단언한다.
         expect(outcome).toBe('resolved');
         expect(value).toBeUndefined();
       } else {
-        // env3: 기기가 진동 하드웨어를 지원하지 않거나 브리지가 실패해도 SDK 계약상
-        // reject 경로가 없다 — 그래도 native 특이 shape를 캡처하기 위해 관측만 한다.
+        // android 등 아직 이 시나리오를 실측하지 않은 셀 — 계약 확정 전까지 관용 단언.
         expect(['resolved', 'rejected']).toContain(outcome);
       }
     }
