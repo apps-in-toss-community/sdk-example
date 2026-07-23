@@ -32,6 +32,7 @@ import {
   FetchAlbumPhotosPermissionError,
   fetchAlbumItems,
   fetchAlbumPhotos,
+  openCamera,
 } from '@apps-in-toss/web-framework';
 import { afterAll, describe, expect, it } from 'vitest';
 import { captureAsync, cell, flushCapture } from '../../test/aitCapture';
@@ -112,6 +113,21 @@ describe('camera · native shape (오류-shape 검증)', () => {
     const isKnownShape = error instanceof FetchAlbumPhotosPermissionError || isNativeErrorShape(error);
     expect(isKnownShape).toBe(true);
     expect(error).toBeInstanceOf(Error);
+  });
+});
+
+describe('camera · OOS: openCamera (자동 device diff 구조적 불가, #331)', () => {
+  // openCamera는 네이티브 카메라 촬영 UI를 띄운다. 사진을 찍거나 취소하는
+  // 판단은 사람만 할 수 있어 그 판단 전엔 Promise가 낙착되지 않고, 매 세션
+  // 사람이 고르는 사진(또는 취소)이 달라 재현 가능한 diff 대상도 아니다.
+  // fetchAlbumPhotos/fetchAlbumItems(위 describe)와 달리 권한 거부 시 자동
+  // reject하는 무인 안전 분기도 없다 — 권한이 allowed면 무조건 뷰파인더가
+  // 뜬다. GPS·해프틱류 하드웨어 감응 축과 같은 원칙으로 자동 캡처 대상에서
+  // 제외하고, human-in-loop임을 명시적으로 문서화한다(silent omission 금지 —
+  // 조용히 빠진 게 아니라 의도된 스코프 결정이다). 실기기 검증은 사람이 직접
+  // 실행하는 별도 세션의 몫이다(이 슈트의 스코프 밖).
+  it('openCamera — human-in-loop, 자동 diff 불가 (OOS, #331)', () => {
+    expect(typeof openCamera).toBe('function');
   });
 });
 

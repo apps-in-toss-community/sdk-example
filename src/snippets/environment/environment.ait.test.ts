@@ -201,6 +201,30 @@ describe('environment · 값 다양화 (happy path)', () => {
     expect(outcome).toBe('resolved');
     expect(typeof value).toBe('number');
   });
+
+  // #331: 미측정 API 캡처 확장 — SafeAreaInsets.subscribe. GPS·햅틱류 하드웨어
+  // 감응 축과 달리 순수 상태 구독이라 device 상호작용 없이 mock에서도 자동
+  // 캡처 가능하다. mock 구현(aitState.subscribe)은 내부 상태가 바뀔 때만
+  // onEvent를 발화하므로, 구독 직후에는 아무 이벤트도 오지 않는다 — 이 it은
+  // "구독이 예외 없이 성립하고 cleanup 함수를 동기 반환한다"는 생명주기 shape만
+  // 캡처한다(events.ait.test.ts의 onVisibilityChangedByTransparentServiceWeb과
+  // 같은 원칙). 실기기 측정은 아직 없다 — 다음 env3 세션이 ground truth를 채운다.
+  it('SafeAreaInsets.subscribe가 예외 없이 구독되고 cleanup 함수를 동기 반환한다 (#331)', () => {
+    const received: unknown[] = [];
+    const sub = captureSync(
+      {
+        category: CATEGORY,
+        api: 'SafeAreaInsets.subscribe',
+        scenario: 'happy-subscribe-lifecycle',
+        input: null,
+      },
+      () => SafeAreaInsets.subscribe({ onEvent: (insets) => received.push(insets) }),
+    );
+    expect(sub.outcome).toBe('returned-sync');
+    expect(typeof sub.value).toBe('function');
+    // cleanup — 다음 테스트로 리스너가 새지 않도록 즉시 해제.
+    (sub.value as () => void)();
+  });
 });
 
 describe('environment · 의도적 오류 (확인된 오용 가드)', () => {
