@@ -5,14 +5,57 @@
  *  - I1: completeProductGrant의 boolean|undefined 반환 계약을 caller가 검사.
  *  - I2: checkoutPayment의 { success } 를 caller가 검사 (success===false를 성공으로 안 봄).
  *
+ * ─ #351: createOneTimePurchaseOrder/createSubscriptionPurchaseOrder onError 경로 ──
+ * devtools mock의 `aitState.state.iap.nextResult` 다이얼(코드 확인 완료 —
+ * `@ait-co/devtools/dist/mock/index.js`의 `handlePurchase`)은 `'success'`가
+ * 아니면 300ms 뒤 **onError({ code: nextResult })만** 호출하고 onEvent는 절대
+ * 부르지 않는다 — 결정적 계약이라 mock 분기에서 hard-assert한다.
+ *
+ * env3(non-mock)에서는 이 다이얼 자체가 devtools mock 전용 상태라 없을뿐더러,
+ * 두 API는 실제 주문서 페이지를 여는 UI-launching 호출이라
+ * `iap.manual.ait.test.ts`가 이미 human-in-loop로 분리해뒀다 — 이 무인 자동
+ * 슈트에서 실기기 호출을 반복하면 사람 없이 네이티브 UI만 띄우고 방치된다.
+ * 그래서 non-mock 분기는 호출 자체를 하지 않고 export-surface만 가드한다.
+ *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import { IAP, checkoutPayment } from '@apps-in-toss/web-framework';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { captureAsync, flushCapture } from '../../test/aitCapture';
+import { afterAll, afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { captureAsync, captureCallback, cell, flushCapture } from '../../test/aitCapture';
 import { clearSoftResolveMirror, mirrorSoftResolve } from '../../test/provisioningMirror';
 
 const CATEGORY = 'iap';
+
+/** mock의 `IapNextResult` — devtools `dist/mock/index.d.ts`의 선언과 동일. */
+type IapNextResult =
+  | 'success'
+  | 'USER_CANCELED'
+  | 'INVALID_PRODUCT_ID'
+  | 'PAYMENT_PENDING'
+  | 'NETWORK_ERROR'
+  | 'ITEM_ALREADY_OWNED'
+  | 'INTERNAL_ERROR';
+
+/**
+ * env1(mock) 전용 — devtools mock의 다음 IAP 주문 생성 결과를 강제로 지정한다.
+ * `@apps-in-toss/web-framework`가 vitest alias로 `@ait-co/devtools/mock`을
+ * 가리킬 때만 `aitState`가 존재하므로, 동적 import + optional 접근으로
+ * env3(real SDK)에서 안전하게 no-op이 되게 한다(notification.ait.test.ts의
+ * `forceNotificationNextResult`와 동일 패턴).
+ */
+async function forceIapNextResult(nextResult: IapNextResult): Promise<void> {
+  const mod: unknown = await import('@apps-in-toss/web-framework');
+  const aitState = (mod as { aitState?: { patch: (key: string, partial: unknown) => void } })
+    .aitState;
+  aitState?.patch('iap', { nextResult });
+}
+
+/** 다음 테스트/파일로 다이얼이 새지 않도록 매 테스트 후 기본값(success)으로 복구한다. */
+afterEach(async () => {
+  if (cell.platform === 'mock') {
+    await forceIapNextResult('success');
+  }
+});
 
 beforeAll(async () => {
   // 31146엔 조회한 orderId에 활성 구독이 없고 결제도 미프로비저닝이라, 실기기(env3)는
@@ -136,6 +179,62 @@ describe('iap · 의도적 오류 (확인된 오용 가드)', () => {
     if (outcome === 'resolved') {
       expect(['boolean', 'undefined']).toContain(typeof value);
     }
+  });
+});
+
+describe('iap · 실패 분기 — onError 경로 (env1 전용, #351)', () => {
+  it('[F1] createOneTimePurchaseOrder — nextResult 실패 시 onError만 호출되고 onEvent는 호출되지 않는다', async () => {
+    if (cell.platform !== 'mock') {
+      // 위 파일 헤더 rationale — 실기기에서 이 다이얼은 존재하지 않고, 무인
+      // 자동 슈트에서 UI-launching 호출을 반복하면 안 되므로 export-surface만
+      // 가드한다.
+      expect(typeof IAP.createOneTimePurchaseOrder).toBe('function');
+      return;
+    }
+    await forceIapNextResult('NETWORK_ERROR');
+    const result = await captureCallback(
+      {
+        category: CATEGORY,
+        api: 'IAP.createOneTimePurchaseOrder',
+        scenario: 'F1-onError-nextResult-NETWORK_ERROR',
+        input: { sku: 'mock-gem-100', nextResult: 'NETWORK_ERROR' },
+      },
+      ({ onEvent, onError }) =>
+        IAP.createOneTimePurchaseOrder({
+          options: { sku: 'mock-gem-100', processProductGrant: async () => true },
+          onEvent,
+          onError,
+        }),
+    );
+    // mock 결정적 계약(코드 확인): nextResult !== 'success'면 onError({ code })만
+    // 불린다 — captureCallback은 onError 호출을 outcome:'rejected'로 정규화하므로
+    // onEvent 미호출은 outcome !== 'resolved'로 이미 보장된다.
+    expect(result.outcome).toBe('rejected');
+    expect(result.error).toMatchObject({ code: 'NETWORK_ERROR' });
+  });
+
+  it('[F2] createSubscriptionPurchaseOrder — nextResult 실패 시 onError만 호출되고 onEvent는 호출되지 않는다', async () => {
+    if (cell.platform !== 'mock') {
+      expect(typeof IAP.createSubscriptionPurchaseOrder).toBe('function');
+      return;
+    }
+    await forceIapNextResult('ITEM_ALREADY_OWNED');
+    const result = await captureCallback(
+      {
+        category: CATEGORY,
+        api: 'IAP.createSubscriptionPurchaseOrder',
+        scenario: 'F2-onError-nextResult-ITEM_ALREADY_OWNED',
+        input: { sku: 'mock-gem-100', nextResult: 'ITEM_ALREADY_OWNED' },
+      },
+      ({ onEvent, onError }) =>
+        IAP.createSubscriptionPurchaseOrder({
+          options: { sku: 'mock-gem-100', processProductGrant: async () => true },
+          onEvent,
+          onError,
+        }),
+    );
+    expect(result.outcome).toBe('rejected');
+    expect(result.error).toMatchObject({ code: 'ITEM_ALREADY_OWNED' });
   });
 });
 
