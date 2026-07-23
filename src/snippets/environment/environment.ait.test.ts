@@ -125,47 +125,60 @@ describe('environment · 값 다양화 (happy path)', () => {
 
   // #296: 스니펫(src/snippets/environment/)엔 있으나 이 슈트가 지금껏 호출하지 않던
   // 5개 API — EnvironmentPage.tsx가 렌더하는 카드와 짝이지만 캡처 커버리지 밖이었다.
-  // 위 4종 accessor·isMinVersionSupported와 달리 devtools#795/#796의 Promise-wrap
-  // 대상이 **아니다** — 상류 `.d.ts`(web-bridge)가 전부 동기 `(): string`/객체로
-  // 선언하고, mock(0.1.141) 실측도 그 선언과 일치한다(각주 호출로 직접 확인,
-  // thenable 아님). 그래서 여기선 `captureSyncWithShape`가 아니라 평범한
-  // `captureSync`로 충분하다 — returnType이 이미 `outcome`으로 sync/async를 가른다.
-  it('신규 environment accessor 5종 — getSchemeUri/getGroupId/getTossAppVersion/getAppsInTossGlobals/env.getDeploymentId (#296)', () => {
-    const schemeUri = captureSync(
+  // 도입 당시엔 위 4종 accessor·isMinVersionSupported와 달리 devtools#795/#796의
+  // Promise-wrap 대상이 아니라고 봤다(mock 0.1.141 실측이 동기 반환과 일치했다).
+  //
+  // REAL_SDK_FINDING (2.x env3, #344): 그런데 2026-07-23 env3(2.x·iOS) 재캡처는
+  // getSchemeUri가 선언(동기 `(): string`)과 달리 Promise를 반환함을 확인했다 — 상류
+  // `.d.ts`가 런타임과 어긋난 타입 버그다. 예전 구조(accessor마다 캡처 직후 즉시
+  // 단언을 반복)는 그 첫 단언(`typeof schemeUri.value === 'string'`)이 여기서
+  // 조기 실패해, 이후 4개 accessor(getGroupId/getTossAppVersion/getAppsInTossGlobals/
+  // env.getDeploymentId)는 캡처 자체가 실행되지 못했다 — 이번 사고의 재발 방지가
+  // 이 정렬의 핵심이다. 그래서:
+  //  - 5개를 전부 먼저 캡처한다(어떤 단언도 그 사이에 끼우지 않는다) — 한 accessor의
+  //    단언 실패가 나머지 캡처를 막지 못하게.
+  //  - 값 단언은 `await-tolerant`(위 4종·isMinVersionSupported와 같은 패턴)로 —
+  //    sync 값(mock)과 Promise(device) 양쪽에서 통과한다.
+  //  - outcome(`'returned-sync'`)을 하드 단정하던 부분은 cell-conditional로 —
+  //    mock 셀만 하드 단정하고 ios 셀은 미단정한다(haptic.ait.test.ts 선례).
+  it('신규 environment accessor 5종 — getSchemeUri/getGroupId/getTossAppVersion/getAppsInTossGlobals/env.getDeploymentId (#296)', async () => {
+    const schemeUri = captureSyncWithShape(
       { category: CATEGORY, api: 'getSchemeUri', scenario: 'happy-default', input: null },
       () => getSchemeUri(),
     );
-    expect(schemeUri.outcome).toBe('returned-sync');
-    expect(typeof schemeUri.value).toBe('string');
-
-    const groupId = captureSync(
+    const groupId = captureSyncWithShape(
       { category: CATEGORY, api: 'getGroupId', scenario: 'happy-default', input: null },
       () => getGroupId(),
     );
-    expect(groupId.outcome).toBe('returned-sync');
-    expect(typeof groupId.value).toBe('string');
-
-    const tossAppVersion = captureSync(
+    const tossAppVersion = captureSyncWithShape(
       { category: CATEGORY, api: 'getTossAppVersion', scenario: 'happy-default', input: null },
       () => getTossAppVersion(),
     );
-    expect(tossAppVersion.outcome).toBe('returned-sync');
-    expect(typeof tossAppVersion.value).toBe('string');
-
-    const appsInTossGlobals = captureSync(
+    const appsInTossGlobals = captureSyncWithShape(
       { category: CATEGORY, api: 'getAppsInTossGlobals', scenario: 'happy-default', input: null },
       () => getAppsInTossGlobals(),
     );
-    expect(appsInTossGlobals.outcome).toBe('returned-sync');
-    expect(appsInTossGlobals.value).toBeTypeOf('object');
-    expect(appsInTossGlobals.value).toHaveProperty('deploymentId');
-
-    const envDeploymentId = captureSync(
+    const envDeploymentId = captureSyncWithShape(
       { category: CATEGORY, api: 'env.getDeploymentId', scenario: 'happy-default', input: null },
       () => env.getDeploymentId(),
     );
-    expect(envDeploymentId.outcome).toBe('returned-sync');
-    expect(typeof envDeploymentId.value).toBe('string');
+
+    if (cell.platform === 'mock') {
+      // mock 계약 — 5개 모두 동기 반환.
+      for (const rec of [schemeUri, groupId, tossAppVersion, appsInTossGlobals, envDeploymentId]) {
+        expect(rec.outcome).toBe('returned-sync');
+      }
+    }
+    // ios(device) 셀은 outcome을 단정하지 않는다 — getSchemeUri가 이미 Promise-leak을
+    // 실측했고, 나머지 4개는 이번 정렬 전까지 미측정이었다(다음 재캡처에서 shape을 잰다).
+
+    expect(typeof (await schemeUri.value)).toBe('string');
+    expect(typeof (await groupId.value)).toBe('string');
+    expect(typeof (await tossAppVersion.value)).toBe('string');
+    const appsInTossGlobalsValue = await appsInTossGlobals.value;
+    expect(appsInTossGlobalsValue).toBeTypeOf('object');
+    expect(appsInTossGlobalsValue).toHaveProperty('deploymentId');
+    expect(typeof (await envDeploymentId.value)).toBe('string');
   });
 
   // getServerTime만은 위 5종과 달리 선언부터 `Promise<number | undefined>`다(비교 대상
