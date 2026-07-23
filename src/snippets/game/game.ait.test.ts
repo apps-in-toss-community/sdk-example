@@ -9,9 +9,11 @@
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import {
+  contactsViral,
   getGameCenterGameProfile,
   grantPromotionReward,
   grantPromotionRewardForGame,
+  openGameCenterLeaderboard,
   submitGameCenterLeaderBoardScore,
 } from '@apps-in-toss/web-framework';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -120,6 +122,27 @@ describe('game · 의도적 오류 (확인된 오용 가드)', () => {
     if (forGame.outcome === 'resolved') {
       expect(forGame.value).toMatchObject({ errorCode: expect.anything(), message: expect.anything() });
     }
+  });
+});
+
+describe('game · OOS: native-UI side-effect (자동 device diff 구조적 불가, #331)', () => {
+  // 아래 2개는 사람이 화면을 보고 진행·종료해야 낙착되는 native-UI side-effect라
+  // 자동 device diff가 구조적으로 불가능하다 — GPS·해프틱류 하드웨어 감응 축과
+  // 같은 원칙으로 명시적으로 out-of-scope 문서화한다(silent omission 금지).
+  // 실기기 검증은 사람이 직접 실행하는 별도 세션의 몫이다(이 슈트의 스코프 밖).
+
+  it('openGameCenterLeaderboard — human-in-loop, 자동 diff 불가 (OOS, #331)', () => {
+    // 네이티브 게임센터 리더보드 웹뷰를 연다 — 사람이 보고 닫아야 하고, 닫는
+    // 시점은 전적으로 사람에게 달려 있다. 앱 버전이 낮으면 조용히 no-op이라
+    // 그 자체로도 재현 가능한 shape이 아니다.
+    expect(typeof openGameCenterLeaderboard).toBe('function');
+  });
+
+  it('contactsViral — human-in-loop, 자동 diff 불가 (OOS, #331)', () => {
+    // 네이티브 친구초대 화면을 연다 — onEvent는 사람이 실제로 친구에게
+    // 공유하거나 뒤로가기로 나가야만 발화한다. 지급 리워드/종료 사유가
+    // 사람의 선택에 달려 있어 재현 가능한 baseline이 없다.
+    expect(typeof contactsViral).toBe('function');
   });
 });
 

@@ -6,12 +6,27 @@
  *  - N2: getTossShareLink('/some/path') (intoss:// 없는 bare path)가 조용히
  *        "유효한" mini-app 딥링크를 만들지 않는다 — 유효 입력과 shape가 발산한다.
  *
+ * ─ #331: 미측정 API 캡처 확장 + native-UI side-effect OOS 선언 ────────────────
+ * setIosSwipeGestureEnabled/setScreenAwakeMode/setSecureScreen은 네이티브 UI를
+ * 열지 않는 순수 상태 setter라 device 상호작용 없이 자동 캡처 대상에 추가한다.
+ * 반대로 share/requestReview/closeView/openPDFViewer는 사람이 화면을 보고
+ * 선택·완료·종료해야 낙착되는 native-UI side-effect라 자동 device diff가
+ * 구조적으로 불가능하다 — 맨 아래 OOS describe에서 명시적으로 문서화한다
+ * (silent omission 금지).
+ *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
 import {
+  closeView,
   getTossShareLink,
+  openPDFViewer,
   openURL,
+  requestReview,
   setDeviceOrientation,
+  setIosSwipeGestureEnabled,
+  setScreenAwakeMode,
+  setSecureScreen,
+  share,
 } from '@apps-in-toss/web-framework';
 import { afterAll, afterEach, describe, expect, it, vi } from 'vitest';
 import { captureAsync, captureSync, cell, flushCapture } from '../../test/aitCapture';
@@ -56,6 +71,56 @@ describe('navigation · 값 다양화 (happy path)', () => {
     // env3(실기기 2.x)는 verbatim intoss:// 스킴이 아니라 유효한 Toss 단축 링크
     // (e.g. https://minion.toss.im/...)를 반환한다 — toContain('intoss://my-app')은
     // env3에서 ENV_EXPECTED 실패다. string 계약(typeof)만 가드한다.
+  });
+
+  // #331: 미측정 API 캡처 확장. 아래 3개는 네이티브 UI를 열지 않는 순수 상태
+  // setter라 device 상호작용 없이 자동 캡처 가능하다(closeView/share 등
+  // native-UI side-effect와는 다른 축 — 파일 하단 OOS describe 참조).
+  it('setIosSwipeGestureEnabled를 true/false로 호출 (#331)', async () => {
+    for (const isEnabled of [true, false]) {
+      const { outcome } = await captureAsync(
+        {
+          category: CATEGORY,
+          api: 'setIosSwipeGestureEnabled',
+          scenario: 'happy-varied-isEnabled',
+          input: { isEnabled },
+        },
+        () => setIosSwipeGestureEnabled({ isEnabled }),
+      );
+      expect(outcome).toBe('resolved');
+    }
+  });
+
+  it('setScreenAwakeMode를 true/false로 호출 — 설정한 값을 echo (#331)', async () => {
+    for (const enabled of [true, false]) {
+      const { outcome, value } = await captureAsync(
+        {
+          category: CATEGORY,
+          api: 'setScreenAwakeMode',
+          scenario: 'happy-varied-enabled',
+          input: { enabled },
+        },
+        () => setScreenAwakeMode({ enabled }),
+      );
+      expect(outcome).toBe('resolved');
+      expect(value).toMatchObject({ enabled });
+    }
+  });
+
+  it('setSecureScreen을 true/false로 호출 — 설정한 값을 echo (#331)', async () => {
+    for (const enabled of [true, false]) {
+      const { outcome, value } = await captureAsync(
+        {
+          category: CATEGORY,
+          api: 'setSecureScreen',
+          scenario: 'happy-varied-enabled',
+          input: { enabled },
+        },
+        () => setSecureScreen({ enabled }),
+      );
+      expect(outcome).toBe('resolved');
+      expect(value).toMatchObject({ enabled });
+    }
   });
 });
 
@@ -125,6 +190,40 @@ describe('navigation · 의도적 오류 (확인된 오용 가드)', () => {
     // N2가 가드하려는 건 "과도한 검증이 유효 입력까지 막지 않는다"이고, outcome만으로 충분하다.
     expect(valid.outcome).toBe('resolved');
     expect(typeof valid.value).toBe('string');
+  });
+});
+
+describe('navigation · OOS: native-UI side-effect (자동 device diff 구조적 불가, #331)', () => {
+  // 아래 4개는 자동 device diff가 구조적으로 불가능해 명시적으로 out-of-scope로
+  // 문서화한다(silent omission 금지 — 조용히 빠진 게 아니라 의도된 스코프
+  // 결정이다). GPS·해프틱류 하드웨어 감응 축과 같은 원칙 — 자동 캡처 대상은
+  // 아니지만 export surface 존재는 계속 가드해 SDK 쪽 rename/제거는 잡는다.
+  // 실기기 검증은 사람이 직접 실행하는 별도 세션의 몫이다(이 슈트의 스코프 밖).
+
+  it('share — human-in-loop, 자동 diff 불가 (OOS, #331)', () => {
+    // 네이티브 OS 공유 시트를 띄운다. 사용자가 어떤 앱으로 공유했는지(또는
+    // 취소했는지)는 반환값(Promise<void>)에 실리지 않고, 시트가 닫혀야 비로소
+    // Promise가 낙착된다 — 완료 신호 자체가 사람의 선택에 달려 있다.
+    expect(typeof share).toBe('function');
+  });
+
+  it('requestReview — human-in-loop, 자동 diff 불가 (OOS, #331)', () => {
+    // 네이티브 앱스토어 리뷰 프롬프트. OS가 자체 쿼터(연간 노출 횟수 제한)로
+    // 프롬프트를 아예 안 띄울 수도 있어, 사람이 매번 응답해도 재현 가능한
+    // capture 대상이 아니다.
+    expect(typeof requestReview).toBe('function');
+  });
+
+  it('closeView — 세션 종료 부작용, 자동 diff 불가 (OOS, #331)', () => {
+    // 현재 미니앱 화면을 닫는 호출 자체가 실행 중인 WebView 세션을 끝낸다 —
+    // 자동 하네스 안에서 호출하면 그 뒤에 이어질 캡처/flush가 전부 유실된다.
+    expect(typeof closeView).toBe('function');
+  });
+
+  it('openPDFViewer — human-in-loop, 자동 diff 불가 (OOS, #331)', () => {
+    // 네이티브 PDF 뷰어를 연다 — 사람이 뷰어를 닫아야('CLOSE') Promise가
+    // 낙착된다. 닫는 시점·행동을 자동으로 합성할 수단이 없다.
+    expect(typeof openPDFViewer).toBe('function');
   });
 });
 

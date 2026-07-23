@@ -43,9 +43,14 @@
  *
  * 커뮤니티 오픈소스 프로젝트입니다.
  */
-import { Accuracy, GetCurrentLocationPermissionError, getCurrentLocation } from '@apps-in-toss/web-framework';
+import {
+  Accuracy,
+  GetCurrentLocationPermissionError,
+  getCurrentLocation,
+  startUpdateLocation,
+} from '@apps-in-toss/web-framework';
 import { afterAll, describe, expect, it } from 'vitest';
-import { captureAsync, cell, flushCapture } from '../../test/aitCapture';
+import { captureAsync, captureSync, cell, flushCapture } from '../../test/aitCapture';
 import { getAitPerms } from '../../test/aitPerms';
 import { isNativeErrorShape } from '../../test/isNativeError';
 
@@ -89,6 +94,35 @@ describe('location · 값 다양화 (happy path)', () => {
         expect(value).toMatchObject({ coords: expect.any(Object) });
       }
     }
+  });
+
+  // #331: 미측정 API 캡처 확장 — startUpdateLocation. getCurrentLocation과 달리
+  // Promise가 아니라 구독 즉시 cleanup 함수를 동기 반환한다(위치 갱신은 onEvent
+  // 콜백으로 비동기 전달). mock(startUpdateLocationMock)은 setInterval로 합성
+  // 좌표를 흘리므로, 이 it은 "구독이 예외 없이 성립하고 cleanup 함수를 동기
+  // 반환한다"는 생명주기 shape만 캡처하고 즉시 해제한다 — 해제하지 않으면 mock의
+  // setInterval이 프로세스에 계속 남는다. 실기기 측정(권한 상태별 분기 포함)은
+  // 아직 없다 — 다음 env3 세션이 ground truth를 채운다.
+  it('startUpdateLocation이 예외 없이 구독되고 cleanup 함수를 동기 반환한다 (#331)', () => {
+    const events: unknown[] = [];
+    const sub = captureSync(
+      {
+        category: CATEGORY,
+        api: 'startUpdateLocation',
+        scenario: 'happy-subscribe-lifecycle',
+        input: { accuracy: Accuracy.Balanced, timeInterval: 3000, distanceInterval: 10 },
+      },
+      () =>
+        startUpdateLocation({
+          options: { accuracy: Accuracy.Balanced, timeInterval: 3000, distanceInterval: 10 },
+          onEvent: (loc) => events.push(loc),
+          onError: () => {},
+        }),
+    );
+    expect(sub.outcome).toBe('returned-sync');
+    expect(typeof sub.value).toBe('function');
+    // cleanup — mock의 setInterval을 즉시 해제해 다음 테스트/프로세스 종료로 새지 않게 한다.
+    (sub.value as () => void)();
   });
 });
 

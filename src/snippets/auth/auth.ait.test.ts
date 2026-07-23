@@ -12,6 +12,7 @@
  */
 import {
   appLogin,
+  appsInTossSignTossCert,
   getAnonymousKey,
   getIsTossLoginIntegratedService,
   getUserKeyForGame,
@@ -149,6 +150,17 @@ describe('auth · 의도적 오류 (확인된 오용 가드)', () => {
       const looksLikeError = error instanceof Error;
       expect(looksNative || looksLikeError).toBe(true);
     }
+  });
+});
+
+describe('auth · OOS: appsInTossSignTossCert (자동 device diff 구조적 불가, #331)', () => {
+  // 토스 인증서 서명 — 사람이 토스 앱의 생체인증/PIN 확인을 완료해야 resolve된다.
+  // 보안 민감 확인 단계라 자동화 대상이 아니고, GPS·해프틱류 하드웨어 감응
+  // 축과 같은 원칙으로 명시적으로 out-of-scope 문서화한다(silent omission
+  // 금지). 실기기 검증은 사람이 직접 실행하는 별도 세션의 몫이다(이 슈트의
+  // 스코프 밖).
+  it('appsInTossSignTossCert — human-in-loop, 자동 diff 불가 (OOS, #331)', () => {
+    expect(typeof appsInTossSignTossCert).toBe('function');
   });
 });
 
