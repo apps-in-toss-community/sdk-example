@@ -18,7 +18,7 @@ import { PageHeader } from '../components/PageHeader';
 import { ParamInput } from '../components/ParamInput';
 import { ResultView } from '../components/ResultView';
 import { WorkflowStepper } from '../components/WorkflowStepper';
-import { t } from '../i18n';
+import { type StringKey, t } from '../i18n';
 import { docsLink } from '../lib/docs';
 import isAppsInTossAdMobLoadedSnippet from '../snippets/ads/isAppsInTossAdMobLoaded.ts?raw';
 import loadAppsInTossAdMobSnippet from '../snippets/ads/loadAppsInTossAdMob.ts?raw';
@@ -30,6 +30,21 @@ import tossAdsAttachBannerSnippet from '../snippets/ads/tossAdsAttachBanner.ts?r
 import tossAdsDestroySnippet from '../snippets/ads/tossAdsDestroy.ts?raw';
 import tossAdsDestroyAllSnippet from '../snippets/ads/tossAdsDestroyAll.ts?raw';
 import tossAdsInitializeSnippet from '../snippets/ads/tossAdsInitialize.ts?raw';
+
+// Official development test ad IDs (developers-apps-in-toss.toss.im/ads/develop.html,
+// 규명 2026-07-24). Toss's dev guide requires these while developing — testing
+// with a production adGroupId is treated as a policy violation. Our own
+// adGroupId is still pending business/settlement approval, so these are the
+// only IDs that resolve on-device today. They only serve a *real* ad on-device
+// (env3, cold-loaded via the intoss-private deep-link, #353) — here in the
+// browser/mock dev environment (this page, `pnpm dev`), load/show always
+// simulate the event regardless of which adGroupId is set.
+const AD_TEST_ID_PRESETS = [
+  { labelKey: 'pages.ads.testIdPresets.interstitial', value: 'ait-ad-test-interstitial-id' },
+  { labelKey: 'pages.ads.testIdPresets.rewarded', value: 'ait-ad-test-rewarded-id' },
+  { labelKey: 'pages.ads.testIdPresets.banner', value: 'ait-ad-test-banner-id' },
+  { labelKey: 'pages.ads.testIdPresets.nativeImage', value: 'ait-ad-test-native-image-id' },
+] as const satisfies { labelKey: StringKey; value: string }[];
 
 export function AdsPage() {
   // --- GoogleAdMob state ---
@@ -230,6 +245,30 @@ export function AdsPage() {
             />
             <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
               {t('pages.ads.adGroupIdHint')}
+            </p>
+
+            <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">
+              {t('pages.ads.testIdPresets.heading')}
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {AD_TEST_ID_PRESETS.map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  onClick={() => setAdGroupId(preset.value)}
+                  aria-pressed={adGroupId === preset.value}
+                  className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                    adGroupId === preset.value
+                      ? 'border-gray-900 bg-gray-900 text-white dark:border-gray-100 dark:bg-gray-100 dark:text-gray-900'
+                      : 'border-gray-200 text-gray-600 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  {t(preset.labelKey)}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1.5 text-xs text-amber-600 dark:text-amber-500">
+              {t('pages.ads.testIdPresets.notice')}
             </p>
           </div>
           <WorkflowStepper steps={steps} activeStep={activeStep} onStepClick={setActiveStep} />
