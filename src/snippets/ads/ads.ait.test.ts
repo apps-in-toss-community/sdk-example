@@ -126,7 +126,7 @@ describe('ads · isSupported / isAppsInTossAdMobLoaded (happy path)', () => {
     },
   ];
 
-  it('모든 광고 함수가 isSupported():boolean을 노출한다 (mock) — ios는 함수별 존재 여부를 개별 관측 (#344)', () => {
+  it('광고 함수 isSupported():boolean — loadFullScreenAd만 mock/ios 통합 부재 단언 (devtools#806, #348)', () => {
     // REAL_SDK_FINDING (2.x env3, #344): 상류 표면 전체가 `isSupported():boolean`을
     // 노출한다는 전제(devtools mock이 그 전제로 구현됨)와 달리, 실기기(2.x·iOS)
     // 재캡처는 loadFullScreenAd에서 그 메서드 자체가 없음을 확인했다
@@ -137,18 +137,27 @@ describe('ads · isSupported / isAppsInTossAdMobLoaded (happy path)', () => {
     // 감싸면(threw-sync는 그 자체로 캡처되고 밖으로 다시 던지지 않는다) 한 함수의
     // 부재가 나머지 순회를 막지 않는다 — 다음 재캡처에서 전 함수의 존재 매트릭스가
     // 측정된다.
+    //
+    // devtools#806(0.1.143)로 mock의 loadFullScreenAd도 실기기처럼 `.isSupported`가
+    // 런타임에 붙어 있지 않다(호출 시 TypeError) — loadFullScreenAd만 cell-conditional
+    // 없이 통합 "부재" 단언(threw-sync)으로 접는다. 실기기 부재가 측정된 건 이
+    // 함수 1건뿐이므로 나머지 8개는 mock 셀 boolean 계약을 그대로 유지하고, ios
+    // 셀은 여전히 미단정(#783 "측정 밖 확장 금지").
     for (const { api, call } of AD_ISSUPPORTED_CALLS) {
       const { outcome, value } = captureSync(
         { category: CATEGORY, api, scenario: 'happy-default', input: null },
         call,
       );
-      if (cell.platform === 'mock') {
-        // mock 계약 유지 — 전 함수가 isSupported():boolean을 노출해야 한다.
+      if (api === 'loadFullScreenAd.isSupported') {
+        // 통합 device-faithful 단언 — mock/ios 모두 메서드 부재(호출 시 TypeError).
+        expect(outcome).toBe('threw-sync');
+      } else if (cell.platform === 'mock') {
+        // mock 계약 유지 — 나머지 8개 함수는 isSupported():boolean을 노출해야 한다.
         expect(outcome).toBe('returned-sync');
         expect(typeof value).toBe('boolean');
       } else {
         // ios(device) 셀은 존재 여부만 관측한다 — outcome이 'returned-sync'면 존재,
-        // 'threw-sync'면 부재(TypeError). 하드 단언은 하지 않는다.
+        // 'threw-sync'면 부재(TypeError). 하드 단언은 하지 않는다(미측정).
         expect(['returned-sync', 'threw-sync']).toContain(outcome);
       }
     }

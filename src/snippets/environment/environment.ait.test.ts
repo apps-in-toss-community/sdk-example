@@ -141,6 +141,12 @@ describe('environment · 값 다양화 (happy path)', () => {
   //    sync 값(mock)과 Promise(device) 양쪽에서 통과한다.
   //  - outcome(`'returned-sync'`)을 하드 단정하던 부분은 cell-conditional로 —
   //    mock 셀만 하드 단정하고 ios 셀은 미단정한다(haptic.ait.test.ts 선례).
+  //
+  // devtools#806(0.1.143, #348)으로 getSchemeUri는 mock도 실기기와 같은 Promise를
+  // 반환하도록 정렬됐다 — 이제 cell-conditional이 아니라 통합 device-faithful
+  // 단언(`returnType === 'Promise'`)이다. 나머지 4개(getGroupId/getTossAppVersion/
+  // getAppsInTossGlobals/env.getDeploymentId)는 mock이 여전히 sync이고 실기기
+  // 미측정이라 기존 cell-conditional을 그대로 둔다(#783 "측정 밖 확장 금지").
   it('신규 environment accessor 5종 — getSchemeUri/getGroupId/getTossAppVersion/getAppsInTossGlobals/env.getDeploymentId (#296)', async () => {
     const schemeUri = captureSyncWithShape(
       { category: CATEGORY, api: 'getSchemeUri', scenario: 'happy-default', input: null },
@@ -163,14 +169,18 @@ describe('environment · 값 다양화 (happy path)', () => {
       () => env.getDeploymentId(),
     );
 
+    // getSchemeUri — devtools#806(0.1.143)로 mock도 실기기처럼 Promise를 반환한다 —
+    // cell-conditional 없이 통합 device-faithful 단언.
+    expect(schemeUri.returnType).toBe('Promise');
+
     if (cell.platform === 'mock') {
-      // mock 계약 — 5개 모두 동기 반환.
-      for (const rec of [schemeUri, groupId, tossAppVersion, appsInTossGlobals, envDeploymentId]) {
+      // mock 계약 — 나머지 4개는 여전히 동기 반환.
+      for (const rec of [groupId, tossAppVersion, appsInTossGlobals, envDeploymentId]) {
         expect(rec.outcome).toBe('returned-sync');
       }
     }
-    // ios(device) 셀은 outcome을 단정하지 않는다 — getSchemeUri가 이미 Promise-leak을
-    // 실측했고, 나머지 4개는 이번 정렬 전까지 미측정이었다(다음 재캡처에서 shape을 잰다).
+    // ios(device) 셀은 나머지 4개의 outcome을 단정하지 않는다 — 이번 정렬 전까지 미측정
+    // (다음 재캡처에서 shape을 잰다).
 
     expect(typeof (await schemeUri.value)).toBe('string');
     expect(typeof (await groupId.value)).toBe('string');
