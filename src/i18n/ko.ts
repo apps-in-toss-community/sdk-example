@@ -193,6 +193,8 @@ export const ko = {
   'pages.ads.loadFullScreenAd.description': '전면 광고 로드 — 여러 이벤트를 수신합니다',
   'pages.ads.showFullScreenAd.description': '전면 광고 표시 — 여러 이벤트를 수신합니다',
   'pages.ads.isAppsInTossAdMobLoaded.description': 'AdMob 광고가 로드 상태인지 확인',
+  'pages.ads.adGroupIdHint':
+    '실기기에서 사용할 광고 지면(placement group) ID — 아래 로드/표시 호출에 그대로 전달됩니다.',
 
   // EventsPage
   'pages.events.subscribing': '구독 중',
