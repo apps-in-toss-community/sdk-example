@@ -102,16 +102,56 @@ describe('ads · lifecycle (initialize/attach/destroy, happy path)', () => {
 });
 
 describe('ads · isSupported / isAppsInTossAdMobLoaded (happy path)', () => {
-  it('모든 광고 함수가 isSupported():boolean을 노출한다', () => {
-    expect(typeof TossAds.initialize.isSupported()).toBe('boolean');
-    expect(typeof TossAds.attach.isSupported()).toBe('boolean');
-    expect(typeof TossAds.attachBanner.isSupported()).toBe('boolean');
-    expect(typeof TossAds.destroy.isSupported()).toBe('boolean');
-    expect(typeof TossAds.destroyAll.isSupported()).toBe('boolean');
-    expect(typeof loadFullScreenAd.isSupported()).toBe('boolean');
-    expect(typeof GoogleAdMob.loadAppsInTossAdMob.isSupported()).toBe('boolean');
-    expect(typeof GoogleAdMob.showAppsInTossAdMob.isSupported()).toBe('boolean');
-    expect(typeof GoogleAdMob.isAppsInTossAdMobLoaded.isSupported()).toBe('boolean');
+  // 9개 광고 함수 각각의 isSupported() 호출을 캡처 메타와 함께 나열 — 순회 중
+  // 어떤 함수가 실패해도 다음 함수로 넘어가야 하므로(#344), 개별 `it`이 아니라
+  // 한 테스트 안에서 각자 독립 `captureSync`로 감싼다.
+  const AD_ISSUPPORTED_CALLS: ReadonlyArray<{ api: string; call: () => boolean }> = [
+    { api: 'TossAds.initialize.isSupported', call: () => TossAds.initialize.isSupported() },
+    { api: 'TossAds.attach.isSupported', call: () => TossAds.attach.isSupported() },
+    { api: 'TossAds.attachBanner.isSupported', call: () => TossAds.attachBanner.isSupported() },
+    { api: 'TossAds.destroy.isSupported', call: () => TossAds.destroy.isSupported() },
+    { api: 'TossAds.destroyAll.isSupported', call: () => TossAds.destroyAll.isSupported() },
+    { api: 'loadFullScreenAd.isSupported', call: () => loadFullScreenAd.isSupported() },
+    {
+      api: 'GoogleAdMob.loadAppsInTossAdMob.isSupported',
+      call: () => GoogleAdMob.loadAppsInTossAdMob.isSupported(),
+    },
+    {
+      api: 'GoogleAdMob.showAppsInTossAdMob.isSupported',
+      call: () => GoogleAdMob.showAppsInTossAdMob.isSupported(),
+    },
+    {
+      api: 'GoogleAdMob.isAppsInTossAdMobLoaded.isSupported',
+      call: () => GoogleAdMob.isAppsInTossAdMobLoaded.isSupported(),
+    },
+  ];
+
+  it('모든 광고 함수가 isSupported():boolean을 노출한다 (mock) — ios는 함수별 존재 여부를 개별 관측 (#344)', () => {
+    // REAL_SDK_FINDING (2.x env3, #344): 상류 표면 전체가 `isSupported():boolean`을
+    // 노출한다는 전제(devtools mock이 그 전제로 구현됨)와 달리, 실기기(2.x·iOS)
+    // 재캡처는 loadFullScreenAd에서 그 메서드 자체가 없음을 확인했다
+    // (`loadFullScreenAd.isSupported is not a function` — native TypeError). 예전
+    // 구조(9개 함수를 한 줄씩 순차 단정)는 그 지점에서 조기 실패해 뒤 3개 함수
+    // (GoogleAdMob.loadAppsInTossAdMob/showAppsInTossAdMob/isAppsInTossAdMobLoaded)의
+    // isSupported 존재 여부가 아예 측정되지 못했다. 함수마다 독립 `captureSync`로
+    // 감싸면(threw-sync는 그 자체로 캡처되고 밖으로 다시 던지지 않는다) 한 함수의
+    // 부재가 나머지 순회를 막지 않는다 — 다음 재캡처에서 전 함수의 존재 매트릭스가
+    // 측정된다.
+    for (const { api, call } of AD_ISSUPPORTED_CALLS) {
+      const { outcome, value } = captureSync(
+        { category: CATEGORY, api, scenario: 'happy-default', input: null },
+        call,
+      );
+      if (cell.platform === 'mock') {
+        // mock 계약 유지 — 전 함수가 isSupported():boolean을 노출해야 한다.
+        expect(outcome).toBe('returned-sync');
+        expect(typeof value).toBe('boolean');
+      } else {
+        // ios(device) 셀은 존재 여부만 관측한다 — outcome이 'returned-sync'면 존재,
+        // 'threw-sync'면 부재(TypeError). 하드 단언은 하지 않는다.
+        expect(['returned-sync', 'threw-sync']).toContain(outcome);
+      }
+    }
   });
 
   it('isAppsInTossAdMobLoaded가 다양한 adGroupId로 boolean을 resolve한다', async () => {
