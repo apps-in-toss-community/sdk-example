@@ -111,11 +111,11 @@ describe('notification · requestNotificationAgreement (mock nextResult 3분기 
     }
   });
 
-  it('cancel 값이 동기로 반환된다 — mock은 함수 계약, ios는 object shape 관측 (#344)', () => {
+  it('cancel 값이 동기로 반환된다 — mock/ios 통합 object shape 단언 (devtools#806, #348)', () => {
     // requestNotificationAgreement는 즉시 cancel 값을 동기 반환한다 — 이 계약(값의
     // *존재*)은 outcome(onEvent/onError 도착) 여부와 무관하게 항상 성립해야 한다.
     // captureSync로 감싸 반환값의 shape을 캡처에 남긴다(object라면 Object.keys가
-    // `valueKeys`로 자동 실린다) — 다음 env3 재캡처에서 이 shape을 측정할 수 있게 한다.
+    // `valueKeys`로 자동 실린다).
     let cancel: unknown;
     expect(() => {
       const result = captureSync(
@@ -135,20 +135,15 @@ describe('notification · requestNotificationAgreement (mock nextResult 3분기 
       cancel = result.value;
     }).not.toThrow();
 
-    if (cell.platform === 'mock') {
-      // mock 계약 — cancel 함수를 동기 반환한다.
-      expect(typeof cancel).toBe('function');
-      // unmount 시 흔한 패턴 — 이벤트 도착 전 취소해도 예외 없이 정리돼야 한다.
-      expect(() => (cancel as () => void)?.()).not.toThrow();
-    } else {
-      // REAL_SDK_FINDING (2.x env3, #344): 상류 `.d.ts`는 이 API가 즉시 cancel
-      // 함수(`() => void`)를 동기 반환한다고 선언하지만, 실기기(2.x·iOS) 재캡처는
-      // function이 아니라 object를 반환함을 확인했다(`Expected function, received
-      // object`) — 선언과 런타임이 어긋난 상류 타입 버그다. cancel()을 시도하면
-      // TypeError이므로 여기선 시도하지 않고 shape 관측만 한다.
-      expect(typeof cancel).not.toBe('function');
-      expect(typeof cancel).toBe('object');
-    }
+    // REAL_SDK_FINDING (2.x env3, #344) → devtools#806(0.1.143)부터 mock도 실측
+    // 재현: 상류 `.d.ts`는 이 API가 즉시 cancel 함수(`() => void`)를 동기 반환한다고
+    // 선언하지만, 실기기(2.x·iOS)는 function이 아니라 object를 반환한다(`Expected
+    // function, received object`) — 선언과 런타임이 어긋난 상류 타입 버그다. 이제
+    // mock도 같은 object를 반환하므로 cell-conditional 없이 통합 device-faithful
+    // 단언 — cancel()을 시도하면 TypeError이므로 여기선 시도하지 않고 shape 관측만
+    // 한다.
+    expect(typeof cancel).not.toBe('function');
+    expect(typeof cancel).toBe('object');
   });
 });
 
@@ -177,16 +172,11 @@ describe('notification · 의도적 오류 (확인된 오용 가드)', () => {
       cancel = result.value;
     }).not.toThrow();
 
-    if (cell.platform === 'mock') {
-      // mock 계약 — cancel 함수를 동기 반환한다.
-      expect(typeof cancel).toBe('function');
-      (cancel as (() => void) | undefined)?.();
-    } else {
-      // REAL_SDK_FINDING (2.x env3, #344): 위 happy-cancel-shape과 동일한 발산 —
-      // 빈 templateCode에서도 cancel은 function이 아니라 object다.
-      expect(typeof cancel).not.toBe('function');
-      expect(typeof cancel).toBe('object');
-    }
+    // REAL_SDK_FINDING (2.x env3, #344) → devtools#806(0.1.143)부터 mock도 실측
+    // 재현: 위 happy-cancel-shape과 동일한 발산 — 빈 templateCode에서도 cancel은
+    // function이 아니라 object다. cell-conditional 없이 통합 device-faithful 단언.
+    expect(typeof cancel).not.toBe('function');
+    expect(typeof cancel).toBe('object');
 
     // mock은 templateCode 값과 무관하게 nextResult를 그대로 onEvent에 실어 보낸다 —
     // 실계약 하드 단언(mock에서 rejected/timeout이 뜨면 회귀).
