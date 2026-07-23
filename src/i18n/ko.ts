@@ -195,6 +195,13 @@ export const ko = {
   'pages.ads.isAppsInTossAdMobLoaded.description': 'AdMob 광고가 로드 상태인지 확인',
   'pages.ads.adGroupIdHint':
     '실기기에서 사용할 광고 지면(placement group) ID — 아래 로드/표시 호출에 그대로 전달됩니다.',
+  'pages.ads.testIdPresets.heading': '테스트 ID 프리셋',
+  'pages.ads.testIdPresets.interstitial': '전면형 광고',
+  'pages.ads.testIdPresets.rewarded': '리워드 광고',
+  'pages.ads.testIdPresets.banner': '배너 광고 (리스트형)',
+  'pages.ads.testIdPresets.nativeImage': '배너 광고 (피드형)',
+  'pages.ads.testIdPresets.notice':
+    '개발용 테스트 ID예요 — 실제(운영) adGroupId로 테스트하면 정책 위반으로 간주될 수 있어요.',
 
   // EventsPage
   'pages.events.subscribing': '구독 중',

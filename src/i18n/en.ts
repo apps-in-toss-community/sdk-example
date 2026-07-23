@@ -200,6 +200,13 @@ export const en: Record<StringKey, string> = {
   'pages.ads.isAppsInTossAdMobLoaded.description': 'Check whether an AdMob ad is loaded',
   'pages.ads.adGroupIdHint':
     'The ad placement group ID to use on a real device — passed as-is to the load/show calls below.',
+  'pages.ads.testIdPresets.heading': 'Test ID presets',
+  'pages.ads.testIdPresets.interstitial': 'Interstitial ad',
+  'pages.ads.testIdPresets.rewarded': 'Rewarded ad',
+  'pages.ads.testIdPresets.banner': 'Banner ad (list)',
+  'pages.ads.testIdPresets.nativeImage': 'Banner ad (feed)',
+  'pages.ads.testIdPresets.notice':
+    'Development test IDs — testing with a production adGroupId may be treated as a policy violation.',
 
   // EventsPage
   'pages.events.subscribing': 'Subscribed',
