@@ -37,8 +37,8 @@
     "diff:captures": "tsx scripts/diff-ait-captures.ts"
   },
   "dependencies": {
-    "@ait-co/devtools": "^0.1.141",
-    "@ait-co/polyfill": "^0.1.17",
+    "@ait-co/devtools": "^0.1.142",
+    "@ait-co/polyfill": "^0.1.18",
     "@apps-in-toss/web-framework": "2.10.0",
     "qrcode": "^1.5.4",
     "react": "^19.2.7",
