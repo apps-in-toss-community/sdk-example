@@ -198,6 +198,8 @@ export const en: Record<StringKey, string> = {
   'pages.ads.loadFullScreenAd.description': 'Load full-screen ad — emits multiple events',
   'pages.ads.showFullScreenAd.description': 'Show full-screen ad — emits multiple events',
   'pages.ads.isAppsInTossAdMobLoaded.description': 'Check whether an AdMob ad is loaded',
+  'pages.ads.adGroupIdHint':
+    'The ad placement group ID to use on a real device — passed as-is to the load/show calls below.',
 
   // EventsPage
   'pages.events.subscribing': 'Subscribed',

@@ -15,6 +15,7 @@ import {
   HistoryLog,
 } from '../components/HistoryLog';
 import { PageHeader } from '../components/PageHeader';
+import { ParamInput } from '../components/ParamInput';
 import { ResultView } from '../components/ResultView';
 import { WorkflowStepper } from '../components/WorkflowStepper';
 import { t } from '../i18n';
@@ -38,6 +39,9 @@ export function AdsPage() {
   const [loadStatus, setLoadStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [loadResult, setLoadResult] = useState<unknown>(undefined);
   const [loadError, setLoadError] = useState('');
+  // 광고 지면(placement group) ID — 실기기에서 콘솔이 발급한 실제 ID로 바꿔
+  // 넣을 수 있게 입력 필드로 노출한다(#351). load/show 양쪽 호출에 그대로 전달.
+  const [adGroupId, setAdGroupId] = useState('demo-ad-group');
 
   const addLog = useCallback((status: 'success' | 'error', data?: unknown, error?: string) => {
     setEventLog((prev) => appendHistory(prev, createHistoryEntry({ status, data, error })));
@@ -46,6 +50,7 @@ export function AdsPage() {
   const handleLoad = useCallback(() => {
     setLoadStatus('loading');
     GoogleAdMob.loadAppsInTossAdMob({
+      options: { adGroupId },
       onEvent: (e) => {
         setLoadStatus('success');
         setLoadResult(e);
@@ -59,14 +64,15 @@ export function AdsPage() {
         addLog('error', undefined, String(e));
       },
     });
-  }, [addLog]);
+  }, [addLog, adGroupId]);
 
   const handleShow = useCallback(() => {
     GoogleAdMob.showAppsInTossAdMob({
+      options: { adGroupId },
       onEvent: (e) => addLog('success', e),
       onError: (e) => addLog('error', undefined, String(e)),
     });
-  }, [addLog]);
+  }, [addLog, adGroupId]);
 
   const handleReset = useCallback(() => {
     setActiveStep(0);
@@ -214,6 +220,17 @@ export function AdsPage() {
             >
               {t('pages.ads.reset')}
             </button>
+          </div>
+          <div className="mb-3 rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
+            <ParamInput
+              label="adGroupId"
+              value={adGroupId}
+              onChange={setAdGroupId}
+              placeholder="demo-ad-group"
+            />
+            <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+              {t('pages.ads.adGroupIdHint')}
+            </p>
           </div>
           <WorkflowStepper steps={steps} activeStep={activeStep} onStepClick={setActiveStep} />
 
