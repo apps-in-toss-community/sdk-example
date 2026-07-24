@@ -202,6 +202,15 @@ export const ko = {
   'pages.ads.testIdPresets.nativeImage': '배너 광고 (피드형)',
   'pages.ads.testIdPresets.notice':
     '개발용 테스트 ID예요 — 실제(운영) adGroupId로 테스트하면 정책 위반으로 간주될 수 있어요.',
+  'pages.ads.realPlacementPresets.heading': '실 지면 프리셋 (dog-food)',
+  'pages.ads.realPlacementPresets.interstitial': '전면형',
+  'pages.ads.realPlacementPresets.rewarded': '리워드',
+  'pages.ads.realPlacementPresets.bannerList': '배너 (리스트형)',
+  'pages.ads.realPlacementPresets.bannerFeed': '배너 (피드형)',
+  'pages.ads.realPlacementPresets.notice':
+    '이 예제 앱(31146) 전용 실 지면이에요 — 복사해 쓰는 경우 본인 콘솔에서 발급받은 지면 ID로 교체하세요.',
+  'pages.ads.fullScreenAdGroupId.hint':
+    '위 GoogleAdMob 섹션의 adGroupId("{adGroupId}")를 그대로 사용해요.',
 
   // EventsPage
   'pages.events.subscribing': '구독 중',
