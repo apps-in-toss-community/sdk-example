@@ -18,6 +18,7 @@ import { PageHeader } from '../components/PageHeader';
 import { ParamInput } from '../components/ParamInput';
 import { ResultView } from '../components/ResultView';
 import { WorkflowStepper } from '../components/WorkflowStepper';
+import { AD_REAL_PLACEMENT_GROUPS } from '../constants';
 import { type StringKey, t } from '../i18n';
 import { docsLink } from '../lib/docs';
 import isAppsInTossAdMobLoadedSnippet from '../snippets/ads/isAppsInTossAdMobLoaded.ts?raw';
@@ -44,6 +45,37 @@ const AD_TEST_ID_PRESETS = [
   { labelKey: 'pages.ads.testIdPresets.rewarded', value: 'ait-ad-test-rewarded-id' },
   { labelKey: 'pages.ads.testIdPresets.banner', value: 'ait-ad-test-banner-id' },
   { labelKey: 'pages.ads.testIdPresets.nativeImage', value: 'ait-ad-test-native-image-id' },
+] as const satisfies { labelKey: StringKey; value: string }[];
+
+// Real placement group (adGroupId) presets — issued for this example app
+// (miniAppId 31146, aitc-sdk-example) only via `aitcc app ads placement-groups
+// create` (2026-07-24, #355; see src/constants.ts for per-type console status).
+// Unlike the test IDs above, these resolve to a real ad once the workspace's
+// business/settlement review clears — until then they behave the same as any
+// other adGroupId here in the browser/mock dev environment (simulated events).
+// Anyone copying this boilerplate for their own mini-app MUST replace these
+// with adGroupIds issued to their own console workspace — these ids only
+// resolve for 31146.
+const AD_REAL_FULLSCREEN_PRESETS = [
+  {
+    labelKey: 'pages.ads.realPlacementPresets.interstitial',
+    value: AD_REAL_PLACEMENT_GROUPS.interstitial,
+  },
+  {
+    labelKey: 'pages.ads.realPlacementPresets.rewarded',
+    value: AD_REAL_PLACEMENT_GROUPS.rewarded,
+  },
+] as const satisfies { labelKey: StringKey; value: string }[];
+
+const AD_REAL_BANNER_PRESETS = [
+  {
+    labelKey: 'pages.ads.realPlacementPresets.bannerList',
+    value: AD_REAL_PLACEMENT_GROUPS.bannerList,
+  },
+  {
+    labelKey: 'pages.ads.realPlacementPresets.bannerFeed',
+    value: AD_REAL_PLACEMENT_GROUPS.bannerFeed,
+  },
 ] as const satisfies { labelKey: StringKey; value: string }[];
 
 export function AdsPage() {
@@ -177,9 +209,15 @@ export function AdsPage() {
   // NOTE: `status` in ResultView reflects only the *latest* event received from
   // loadFullScreenAd / showFullScreenAd. The full event history is available in
   // the shared HistoryLog below both cards.
+  //
+  // adGroupId is reused from the GoogleAdMob section's shared input above (#355)
+  // — interstitial/rewarded real placements (and the test ID presets) resolve
+  // through both GoogleAdMob.loadAppsInTossAdMob/showAppsInTossAdMob *and*
+  // loadFullScreenAd/showFullScreenAd, so one field drives both call sites.
   const handleFsLoad = useCallback(() => {
     setFsLoadStatus('loading');
     loadFullScreenAd({
+      options: { adGroupId },
       onEvent: (e) => {
         setFsLoadStatus('success');
         setFsLoadResult(e);
@@ -191,12 +229,13 @@ export function AdsPage() {
         addFsLog('error', undefined, String(e));
       },
     });
-  }, [addFsLog]);
+  }, [addFsLog, adGroupId]);
 
   // NOTE: same as handleFsLoad — `status` reflects only the latest event.
   const handleFsShow = useCallback(() => {
     setFsShowStatus('loading');
     showFullScreenAd({
+      options: { adGroupId },
       onEvent: (e) => {
         setFsShowStatus('success');
         setFsShowResult(e);
@@ -208,7 +247,7 @@ export function AdsPage() {
         addFsLog('error', undefined, String(e));
       },
     });
-  }, [addFsLog]);
+  }, [addFsLog, adGroupId]);
 
   // --- TossAds attach / attachBanner slot targets ---
   // We need DOM elements as `attach` / `attachBanner` targets. Refs keep them
@@ -218,6 +257,10 @@ export function AdsPage() {
   const attachBannerSlotRef = useRef<HTMLDivElement>(null);
   // Most recent attachBanner result, so `destroy` can tear down the banner.
   const lastAttachBannerRef = useRef<{ destroy: () => void } | null>(null);
+  // adGroupId driving the TossAds.attachBanner card below (#355 real placement
+  // presets). ApiCard owns its params as internal state, so we key-remount the
+  // card on this value to re-seed its defaultValue when a preset is clicked.
+  const [bannerAdGroupId, setBannerAdGroupId] = useState('demo-ad-group');
 
   return (
     <div>
@@ -270,6 +313,30 @@ export function AdsPage() {
             <p className="mt-1.5 text-xs text-amber-600 dark:text-amber-500">
               {t('pages.ads.testIdPresets.notice')}
             </p>
+
+            <p className="mt-3 text-sm text-gray-700 dark:text-gray-300">
+              {t('pages.ads.realPlacementPresets.heading')}
+            </p>
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {AD_REAL_FULLSCREEN_PRESETS.map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  onClick={() => setAdGroupId(preset.value)}
+                  aria-pressed={adGroupId === preset.value}
+                  className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                    adGroupId === preset.value
+                      ? 'border-blue-600 bg-blue-600 text-white dark:border-blue-500 dark:bg-blue-500'
+                      : 'border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/40'
+                  }`}
+                >
+                  {t(preset.labelKey)}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1.5 text-xs text-blue-600 dark:text-blue-400">
+              {t('pages.ads.realPlacementPresets.notice')}
+            </p>
           </div>
           <WorkflowStepper steps={steps} activeStep={activeStep} onStepClick={setActiveStep} />
 
@@ -298,9 +365,12 @@ export function AdsPage() {
 
         {/* FullScreen Ad — dedicated event-log cards */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 dark:text-gray-300">
+          <h2 className="text-sm font-semibold text-gray-700 mb-1 dark:text-gray-300">
             FullScreen Ad
           </h2>
+          <p className="mb-3 text-xs text-gray-500 dark:text-gray-400">
+            {t('pages.ads.fullScreenAdGroupId.hint', { adGroupId })}
+          </p>
           <div className="space-y-3">
             {/* loadFullScreenAd */}
             <div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
@@ -387,7 +457,35 @@ export function AdsPage() {
               ref={attachSlotRef}
               className="rounded-lg border border-dashed border-gray-300 p-1 dark:border-gray-700"
             />
+            {/* Real placement presets for TossAds.attachBanner (#355) — key-remounts
+                the card below so its internal adGroupId param picks up the preset. */}
+            <div className="rounded-xl border border-gray-200 bg-white p-3 dark:border-gray-800 dark:bg-gray-900">
+              <p className="text-sm text-gray-700 dark:text-gray-300">
+                {t('pages.ads.realPlacementPresets.heading')}
+              </p>
+              <div className="mt-1.5 flex flex-wrap gap-1.5">
+                {AD_REAL_BANNER_PRESETS.map((preset) => (
+                  <button
+                    key={preset.value}
+                    type="button"
+                    onClick={() => setBannerAdGroupId(preset.value)}
+                    aria-pressed={bannerAdGroupId === preset.value}
+                    className={`rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                      bannerAdGroupId === preset.value
+                        ? 'border-blue-600 bg-blue-600 text-white dark:border-blue-500 dark:bg-blue-500'
+                        : 'border-blue-200 text-blue-700 hover:bg-blue-50 dark:border-blue-900 dark:text-blue-300 dark:hover:bg-blue-950/40'
+                    }`}
+                  >
+                    {t(preset.labelKey)}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-xs text-blue-600 dark:text-blue-400">
+                {t('pages.ads.realPlacementPresets.notice')}
+              </p>
+            </div>
             <ApiCard
+              key={bannerAdGroupId}
               name="TossAds.attachBanner"
               description={t('pages.ads.tossAdsAttachBanner.description')}
               params={[
@@ -395,14 +493,14 @@ export function AdsPage() {
                   name: 'adGroupId',
                   label: 'adGroupId',
                   type: 'text',
-                  defaultValue: 'demo-ad-group',
+                  defaultValue: bannerAdGroupId,
                 },
               ]}
               execute={async ({ adGroupId }) => {
                 if (!attachBannerSlotRef.current) throw new Error('slot not mounted');
                 const result = TossAds.attachBanner(adGroupId, attachBannerSlotRef.current);
                 lastAttachBannerRef.current = result;
-                return { attached: true };
+                return { attached: true, adGroupId };
               }}
               snippet={tossAdsAttachBannerSnippet}
               docsUrl={docsLink('ads', 'attachBanner')}

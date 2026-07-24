@@ -207,6 +207,15 @@ export const en: Record<StringKey, string> = {
   'pages.ads.testIdPresets.nativeImage': 'Banner ad (feed)',
   'pages.ads.testIdPresets.notice':
     'Development test IDs — testing with a production adGroupId may be treated as a policy violation.',
+  'pages.ads.realPlacementPresets.heading': 'Real placement presets (dog-food)',
+  'pages.ads.realPlacementPresets.interstitial': 'Interstitial',
+  'pages.ads.realPlacementPresets.rewarded': 'Rewarded',
+  'pages.ads.realPlacementPresets.bannerList': 'Banner (list)',
+  'pages.ads.realPlacementPresets.bannerFeed': 'Banner (feed)',
+  'pages.ads.realPlacementPresets.notice':
+    'Real placements for this example app (31146) only — if you copy this boilerplate, replace them with placement IDs issued to your own console workspace.',
+  'pages.ads.fullScreenAdGroupId.hint':
+    'Reuses the adGroupId ("{adGroupId}") from the GoogleAdMob section above.',
 
   // EventsPage
   'pages.events.subscribing': 'Subscribed',
