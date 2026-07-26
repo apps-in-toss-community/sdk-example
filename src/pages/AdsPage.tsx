@@ -34,12 +34,21 @@ import tossAdsInitializeSnippet from '../snippets/ads/tossAdsInitialize.ts?raw';
 
 // Official development test ad IDs (developers-apps-in-toss.toss.im/ads/develop.html,
 // 규명 2026-07-24). Toss's dev guide requires these while developing — testing
-// with a production adGroupId is treated as a policy violation. Our own
-// adGroupId is still pending business/settlement approval, so these are the
-// only IDs that resolve on-device today. They only serve a *real* ad on-device
-// (env3, cold-loaded via the intoss-private deep-link, #353) — here in the
-// browser/mock dev environment (this page, `pnpm dev`), load/show always
-// simulate the event regardless of which adGroupId is set.
+// with a production adGroupId is treated as a policy violation.
+//
+// On-device observation (env3, real device, 2026-07-25/26, #353): calling
+// GoogleAdMob.loadAppsInTossAdMob with these test IDs fails with
+// `PLACEMENT_ID_FETCH_FAILED`. 31146's own real placement group IDs
+// (AD_REAL_PLACEMENT_GROUPS, used below) fail identically on the same call —
+// no ad renders via either path. Whether that's the pending workspace ad
+// business/settlement approval, the candidate bundle's PREPARE service
+// status, or something else is not yet determined — see the comment below
+// (above AD_REAL_FULLSCREEN_PRESETS) for what's been ruled out.
+//
+// In the browser/mock dev environment (this page, `pnpm dev`), load/show
+// simulate the event after a flat delay regardless of adGroupId — unless a
+// failure dial (devtools mock) is set — so success here is not a signal that
+// an ID resolves on a real device.
 const AD_TEST_ID_PRESETS = [
   { labelKey: 'pages.ads.testIdPresets.interstitial', value: 'ait-ad-test-interstitial-id' },
   { labelKey: 'pages.ads.testIdPresets.rewarded', value: 'ait-ad-test-rewarded-id' },
@@ -47,15 +56,20 @@ const AD_TEST_ID_PRESETS = [
   { labelKey: 'pages.ads.testIdPresets.nativeImage', value: 'ait-ad-test-native-image-id' },
 ] as const satisfies { labelKey: StringKey; value: string }[];
 
-// Real placement group (adGroupId) presets — issued for this example app
-// (miniAppId 31146, aitc-sdk-example) only via `aitcc app ads placement-groups
-// create` (2026-07-24, #355; see src/constants.ts for per-type console status).
-// Unlike the test IDs above, these resolve to a real ad once the workspace's
-// business/settlement review clears — until then they behave the same as any
-// other adGroupId here in the browser/mock dev environment (simulated events).
-// Anyone copying this boilerplate for their own mini-app MUST replace these
-// with adGroupIds issued to their own console workspace — these ids only
-// resolve for 31146.
+// Real placement group (adGroupId) presets — registered to this example app's
+// own console workspace (miniAppId 31146, aitc-sdk-example) via `aitcc app ads
+// placement-groups create` (2026-07-24, #355; see src/constants.ts for
+// per-type console status).
+//
+// As observed on-device today, load/show with these IDs fails identically to
+// the test IDs above (`PLACEMENT_ID_FETCH_FAILED`) — see the comment above
+// for what is and isn't known about the cause.
+//
+// In the browser/mock dev environment here, these behave the same as any
+// other adGroupId (simulated events — see the note above). Anyone copying
+// this boilerplate for their own mini-app MUST replace these with adGroupIds
+// issued to their own console workspace — these ids are registered only to
+// 31146's workspace and not meant to be reused.
 const AD_REAL_FULLSCREEN_PRESETS = [
   {
     labelKey: 'pages.ads.realPlacementPresets.interstitial',
@@ -211,9 +225,10 @@ export function AdsPage() {
   // the shared HistoryLog below both cards.
   //
   // adGroupId is reused from the GoogleAdMob section's shared input above (#355)
-  // — interstitial/rewarded real placements (and the test ID presets) resolve
-  // through both GoogleAdMob.loadAppsInTossAdMob/showAppsInTossAdMob *and*
-  // loadFullScreenAd/showFullScreenAd, so one field drives both call sites.
+  // — interstitial/rewarded real placements (and the test ID presets) are
+  // wired through to both GoogleAdMob.loadAppsInTossAdMob/showAppsInTossAdMob
+  // *and* loadFullScreenAd/showFullScreenAd, so one field drives both call
+  // sites.
   const handleFsLoad = useCallback(() => {
     setFsLoadStatus('loading');
     loadFullScreenAd({

@@ -121,17 +121,17 @@ An AI agent can read-only attach to a bundle running on a phone via `devtools-mc
 
 The single `import '@ait-co/devtools/in-app/auto';` line in `main.tsx` handles both the CDP relay attach and the `window.__sdk`/`__sdkCall` SDK bridge. It activates only when `?debug=1`/`?relay=` URL parameters are present or in DEV builds; on normal production loads it stays dormant.
 
-1. **Start the agent's `devtools-mcp`** — the `devtools-mcp` registered in the AI host (`~/.mcp.json`) spins up a Chii server + Cloudflare quick tunnel and prints a `wss://` relay URL and a secret token.
+1. **Start the agent's `devtools-mcp`** — the `devtools-mcp` registered in the AI host (`~/.mcp.json`) spins up a Chii server + Cloudflare quick tunnel and prints a `wss://` relay URL.
 
-2. **Enter via QR/deep-link** — render a deep-link carrying `_deploymentId` + `debug=1` + `relay=<wss>` + `token=<secret>` as a QR and scan it with the phone camera. This single path also cold-loads bundles in PREPARE state.
+2. **Enter via QR/deep-link** — render a deep-link carrying `_deploymentId` + `debug=1` + `relay=<wss>` + `at=<TOTP code>` as a QR and scan it with the phone camera. This single path also cold-loads bundles in PREPARE state.
 
    ```
-   intoss-private://aitc-sdk-example?_deploymentId=<id>&debug=1&relay=wss://<id>.trycloudflare.com&token=<secret>
+   intoss-private://aitc-sdk-example?_deploymentId=<id>&debug=1&relay=wss://<id>.trycloudflare.com&at=<code>
    ```
 
 3. **Agent observation** — the agent uses `devtools-mcp` tools (`list_pages`, `list_console_messages`, `call_sdk`, etc.) to inspect mini-app state and drive SDK APIs.
 
-Without a `token`, attach is rejected even if the quick tunnel URL leaks. The relay is stateless with no server-side persistence.
+The `at` code is a freshly minted TOTP code, not a static secret — attach is rejected if it is missing or invalid, even if the quick tunnel URL leaks. The relay is stateless with no server-side persistence.
 
 ## Pre-commit hook
 
