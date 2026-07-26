@@ -1,0 +1,96 @@
+{
+  "cell": {
+    "sdkLine": "2.x",
+    "platform": "ios"
+  },
+  "startedAt": "2026-07-05T04:31:09.771Z",
+  "duration": 62372,
+  "totals": {
+    "passed": 86,
+    "failed": 0,
+    "skipped": 13,
+    "total": 99
+  },
+  "preflight": {
+    "permissions": {
+      "clipboardRead": "allowed",
+      "clipboardWrite": "allowed",
+      "album": "allowed",
+      "camera": "allowed",
+      "contacts": "notDetermined",
+      "location": "allowed"
+    }
+  },
+  "files": [
+    {
+      "file": "src/snippets/ads/ads.manual.ait.test.ts",
+      "duration": 41,
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "ads · SHOW (수동-변형 — 사람이 fullscreen interstitial을 지켜보고 닫는다) > showFullScreenAd — 사람: 화면에 전면 광고가 뜨면 확인 후 닫아 주세요 (mock은 자동 dismiss)",
+          "status": "pass",
+          "duration": 9
+        },
+        {
+          "name": "ads · SHOW (수동-변형 — 사람이 fullscreen interstitial을 지켜보고 닫는다) > GoogleAdMob.showAppsInTossAdMob — 사람: AdMob 전면/보상형 광고를 확인 후 닫아 주세요 (mock은 자동 dismiss)",
+          "status": "pass",
+          "duration": 32
+        }
+      ],
+      "mode": "manual"
+    },
+    {
+      "file": "src/snippets/permissions/permissions.manual.ait.test.ts",
+      "duration": 30451,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "permissions · openPermissionDialog (수동-변형 — 사람이 다이얼로그를 확인 후 닫는다) > openPermissionDialog(camera/access) — 사람: 카메라 권한 다이얼로그가 뜨면 허용/거부 후 진행해 주세요",
+          "status": "pass",
+          "duration": 30444
+        },
+        {
+          "name": "permissions · openPermissionDialog (수동-변형 — 사람이 다이얼로그를 확인 후 닫는다) > openPermissionDialog(geolocation/read) — 사람: 위치 권한 다이얼로그가 뜨면 허용/거부 후 진행해 주세요",
+          "status": "pass",
+          "duration": 4
+        },
+        {
+          "name": "permissions · requestPermission (수동-변형 — 사람이 네이티브 프롬프트를 응답한다) > requestPermission(geolocation/read) — 사람: 네이티브 권한 프롬프트가 뜨면 응답해 주세요",
+          "status": "pass",
+          "duration": 2
+        }
+      ],
+      "mode": "manual"
+    },
+    {
+      "file": "src/snippets/storage/storage.manual.ait.test.ts",
+      "duration": 5831,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "storage · saveBase64Data 다양한 mimeType (수동-변형 — 사람이 저장/공유 시트를 확인 후 닫는다) > saveBase64Data(image/png) — 사람: 파일 저장/공유 시트가 뜨면 저장 또는 취소 후 진행해 주세요",
+          "status": "pass",
+          "duration": 2634
+        },
+        {
+          "name": "storage · saveBase64Data 다양한 mimeType (수동-변형 — 사람이 저장/공유 시트를 확인 후 닫는다) > saveBase64Data(text/plain) — 사람: 파일 저장/공유 시트가 뜨면 저장 또는 취소 후 진행해 주세요",
+          "status": "pass",
+          "duration": 3193
+        },
+        {
+          "name": "storage · saveBase64Data 빈 입력 (수동-변형 — 사람이 native 실패 시트를 확인 후 닫는다) > saveBase64Data(빈 입력) — 사람: native 실패 시트/알림이 뜨면 확인 후 진행해 주세요",
+          "status": "pass",
+          "duration": 3
+        }
+      ],
+      "mode": "manual"
+    }
+  ]
+}

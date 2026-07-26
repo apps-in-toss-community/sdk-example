@@ -1,0 +1,478 @@
+{
+  "cell": {
+    "sdkLine": "2.x",
+    "platform": "ios"
+  },
+  "startedAt": "2026-07-20T10:37:26.793Z",
+  "duration": 111717,
+  "totals": {
+    "passed": 47,
+    "failed": 17,
+    "skipped": 6,
+    "total": 70
+  },
+  "preflight": {
+    "permissions": {
+      "clipboardRead": "allowed",
+      "clipboardWrite": "allowed",
+      "album": "allowed",
+      "camera": "allowed",
+      "contacts": "notDetermined",
+      "location": "allowed"
+    }
+  },
+  "files": [
+    {
+      "file": "src/snippets/ads/ads.ait.test.ts",
+      "duration": 55,
+      "passed": 11,
+      "failed": 1,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "ads · lifecycle (initialize/attach/destroy, happy path) > TossAds.initialize({})가 예외 없이 동기 실행된다",
+          "status": "pass",
+          "duration": 7
+        },
+        {
+          "name": "ads · lifecycle (initialize/attach/destroy, happy path) > TossAds.attachBanner가 동기로 { destroy } shape를 반환한다 (theme/variant 다양화)",
+          "status": "pass",
+          "duration": 0
+        },
+        {
+          "name": "ads · lifecycle (initialize/attach/destroy, happy path) > [deprecated] TossAds.attach가 예외 없이 동기 실행된다",
+          "status": "pass",
+          "duration": 0
+        },
+        {
+          "name": "ads · lifecycle (initialize/attach/destroy, happy path) > TossAds.destroy / destroyAll이 예외 없이 동기 실행된다",
+          "status": "pass",
+          "duration": 0
+        },
+        {
+          "name": "ads · isSupported / isAppsInTossAdMobLoaded (happy path) > 모든 광고 함수가 isSupported():boolean을 노출한다",
+          "status": "fail",
+          "duration": 0,
+          "error": "import_web_framework.loadFullScreenAd.isSupported is not a function. (In 'import_web_framework.loadFullScreenAd.isSupported()', 'import_web_framework.loadFullScreenAd.isSupported' is undefined)"
+        },
+        {
+          "name": "ads · isSupported / isAppsInTossAdMobLoaded (happy path) > isAppsInTossAdMobLoaded가 다양한 adGroupId로 boolean을 resolve한다",
+          "status": "pass",
+          "duration": 2
+        },
+        {
+          "name": "ads · LOAD (captureCallback, env3=terminal-arrived만 단언) > loadFullScreenAd — onEvent/onError 중 하나가 도착하거나 callback-timeout",
+          "status": "pass",
+          "duration": 15
+        },
+        {
+          "name": "ads · LOAD (captureCallback, env3=terminal-arrived만 단언) > GoogleAdMob.loadAppsInTossAdMob — onEvent/onError 중 하나가 도착하거나 callback-timeout",
+          "status": "pass",
+          "duration": 27
+        },
+        {
+          "name": "ads · LOAD (captureCallback, env3=terminal-arrived만 단언) > isAppsInTossAdMobLoaded — load 시도 후에도 boolean 계약을 지킨다",
+          "status": "pass",
+          "duration": 1
+        },
+        {
+          "name": "ads · 의도적 오류 (확인된 오용 가드) > [A1] initialize 없이 destroy(알 수 없는 slotId)를 호출해도 예외를 던지지 않는다",
+          "status": "pass",
+          "duration": 0
+        },
+        {
+          "name": "ads · 의도적 오류 (확인된 오용 가드) > [A2] 형식이 이상한 adGroupId로 isAppsInTossAdMobLoaded를 호출해도 boolean|rejected 계약을 지킨다",
+          "status": "pass",
+          "duration": 1
+        },
+        {
+          "name": "ads · 4-cell 오류-shape 캡처 > 호출 결과가 capture sink에 쌓인다",
+          "status": "pass",
+          "duration": 0
+        }
+      ]
+    },
+    {
+      "file": "src/snippets/analytics/analytics.ait.test.ts",
+      "duration": 2004,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "analytics · 값 다양화 (happy path) > eventLog를 각 log_type union 멤버로 호출 (popup 포함)",
+          "status": "pass",
+          "duration": 2001
+        },
+        {
+          "name": "analytics · 값 다양화 (happy path) > Analytics.click / impression / screen을 다양한 component/page로 호출",
+          "status": "pass",
+          "duration": 2
+        },
+        {
+          "name": "analytics · 4-cell 오류-shape 캡처 > 호출 결과가 capture sink에 쌓인다",
+          "status": "pass",
+          "duration": 1
+        }
+      ]
+    },
+    {
+      "file": "src/snippets/auth/auth.ait.test.ts",
+      "duration": 489,
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "auth · 값 다양화 (happy path) > appLogin이 authorizationCode를 가진 객체로 resolve (거부 시 native 오류 shape)",
+          "status": "pass",
+          "duration": 35
+        },
+        {
+          "name": "auth · 값 다양화 (happy path) > getAnonymousKey / getUserKeyForGame가 { hash, type } shape로 resolve (또는 문자열 반환 — #291)",
+          "status": "pass",
+          "duration": 60
+        },
+        {
+          "name": "auth · 의도적 오류 (확인된 오용 가드) > [A1] getIsTossLoginIntegratedService: await 없는 반환은 thenable, await하면 boolean",
+          "status": "pass",
+          "duration": 315
+        },
+        {
+          "name": "auth · 의도적 오류 (확인된 오용 가드) > [A2/A3] appLogin referrer가 SDK가 채운 값이다 (하드코딩 DEFAULT 아님, 거부 시 native shape)",
+          "status": "pass",
+          "duration": 79
+        },
+        {
+          "name": "auth · 4-cell 오류-shape 캡처 > 호출 결과가 capture sink에 정규화 레코드로 쌓인다",
+          "status": "pass",
+          "duration": 0
+        }
+      ]
+    },
+    {
+      "file": "src/snippets/camera/camera.ait.test.ts",
+      "duration": 1,
+      "passed": 1,
+      "failed": 0,
+      "skipped": 3,
+      "tests": [
+        {
+          "name": "camera · 값 다양화 (happy path) > fetchAlbumPhotos를 다양한 maxCount로 호출",
+          "status": "skip",
+          "duration": 0
+        },
+        {
+          "name": "camera · 값 다양화 (happy path) > fetchAlbumItems를 각 AlbumItemType union 멤버로 호출",
+          "status": "skip",
+          "duration": 0
+        },
+        {
+          "name": "camera · native shape (오류-shape 검증) > [denied] 앨범 접근 권한 거부 시 native 오류 shape가 도착한다",
+          "status": "skip",
+          "duration": 0,
+          "note": "album 권한이 denied가 아님(현재: allowed) — allowed면 피커가 열려 hang 위험, 그 외는 상태 불명"
+        },
+        {
+          "name": "camera · 4-cell 오류-shape 캡처 > 호출 결과가 capture sink에 쌓인다",
+          "status": "pass",
+          "duration": 0
+        }
+      ]
+    },
+    {
+      "file": "src/snippets/clipboard/clipboard.ait.test.ts",
+      "duration": 4184,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "clipboard · 권한 거부 (실계약 단언) > getClipboardText: 거부 시 GetClipboardTextPermissionError / native shape + errorCode 필드",
+          "status": "pass",
+          "duration": 3158
+        },
+        {
+          "name": "clipboard · 권한 거부 (실계약 단언) > setClipboardText: 거부 시 SetClipboardTextPermissionError / native shape",
+          "status": "pass",
+          "duration": 7
+        },
+        {
+          "name": "clipboard · 값 다양화 (happy path) > setClipboardText → getClipboardText 라운드트립 (빈 문자열·유니코드·긴 문자열)",
+          "status": "pass",
+          "duration": 1017
+        },
+        {
+          "name": "clipboard · 4-cell 오류-shape 캡처 > 호출 결과가 capture sink에 쌓인다",
+          "status": "pass",
+          "duration": 0
+        }
+      ]
+    },
+    {
+      "file": "src/snippets/contacts/contacts.ait.test.ts",
+      "duration": 4,
+      "passed": 1,
+      "failed": 2,
+      "skipped": 3,
+      "tests": [
+        {
+          "name": "contacts · getPermission (무인, 비-blocking 조회) > fetchContacts.getPermission()이 PermissionStatus union 멤버를 반환한다",
+          "status": "fail",
+          "duration": 2,
+          "error": "Expected resolved, received rejected"
+        },
+        {
+          "name": "contacts · getPermission (무인, 비-blocking 조회) > denied로 강제한 뒤 getPermission()이 denied를 반환한다 (mock)",
+          "status": "fail",
+          "duration": 0,
+          "error": "Expected resolved, received rejected"
+        },
+        {
+          "name": "contacts · fetchContacts (mock-only — 실기기 피커 hang 위험) > 허용 상태에서 fetchContacts가 { result, nextOffset, done } shape로 resolve된다 (size/offset 다양화)",
+          "status": "skip",
+          "duration": 0
+        },
+        {
+          "name": "contacts · fetchContacts (mock-only — 실기기 피커 hang 위험) > [C1] 거부 상태에서 fetchContacts가 FetchContactsPermissionError로 reject된다",
+          "status": "skip",
+          "duration": 0
+        },
+        {
+          "name": "contacts · env3 권한-상태 결정적 분기 (__AIT_PERMS__) > [denied] fetchContacts가 native/PermissionError shape로 reject된다",
+          "status": "skip",
+          "duration": 1,
+          "note": "contacts 권한이 denied가 아님(현재: notDetermined) — allowed/notDetermined는 피커 오픈 위험"
+        },
+        {
+          "name": "contacts · 4-cell 오류-shape 캡처 > 호출 결과가 capture sink에 쌓인다",
+          "status": "pass",
+          "duration": 0
+        }
+      ]
+    },
+    {
+      "file": "src/snippets/engine/engine.ait.test.ts",
+      "duration": 10,
+      "passed": 7,
+      "failed": 3,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "engine · capability 프로브 (엔진 직접 접근, mock 우회) > engine.safeAreaEnv — capture sink에 기록된다",
+          "status": "pass",
+          "duration": 5
+        },
+        {
+          "name": "engine · capability 프로브 (엔진 직접 접근, mock 우회) > engine.visualViewport — capture sink에 기록된다",
+          "status": "pass",
+          "duration": 1
+        },
+        {
+          "name": "engine · capability 프로브 (엔진 직접 접근, mock 우회) > engine.devicePixelRatio — capture sink에 기록된다",
+          "status": "pass",
+          "duration": 0
+        },
+        {
+          "name": "engine · capability 프로브 (엔진 직접 접근, mock 우회) > engine.share — capture sink에 기록된다",
+          "status": "fail",
+          "duration": 1,
+          "error": "Expected false, received true"
+        },
+        {
+          "name": "engine · capability 프로브 (엔진 직접 접근, mock 우회) > engine.vibrate — capture sink에 기록된다",
+          "status": "pass",
+          "duration": 0
+        },
+        {
+          "name": "engine · capability 프로브 (엔진 직접 접근, mock 우회) > engine.pointerCoarse — capture sink에 기록된다",
+          "status": "pass",
+          "duration": 1
+        },
+        {
+          "name": "engine · capability 프로브 (엔진 직접 접근, mock 우회) > engine.touchEvents — capture sink에 기록된다",
+          "status": "pass",
+          "duration": 0
+        },
+        {
+          "name": "engine · capability 프로브 (엔진 직접 접근, mock 우회) > engine.clipboardApi — capture sink에 기록된다",
+          "status": "fail",
+          "duration": 0,
+          "error": "Expected false, received true"
+        },
+        {
+          "name": "engine · capability 프로브 (엔진 직접 접근, mock 우회) > engine.orientationType — capture sink에 기록된다",
+          "status": "pass",
+          "duration": 0
+        },
+        {
+          "name": "engine · capability 프로브 (엔진 직접 접근, mock 우회) > 프로브 정의가 9종 유지된다 (정본 모듈이 비지 않았음)",
+          "status": "fail",
+          "duration": 0,
+          "error": "(0, import_vitest.expect)(ENGINE_PROBES).toHaveLength is not a function. (In '(0, import_vitest.expect)(ENGINE_PROBES).toHaveLength(9)', '(0, import_vitest.expect)(ENGINE_PROBES).toHaveLength' is undefined)"
+        }
+      ]
+    },
+    {
+      "file": "src/snippets/environment/environment.ait.test.ts",
+      "duration": 4,
+      "passed": 2,
+      "failed": 3,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "environment · 값 다양화 (happy path) > 동기 환경 accessor들이 선언된 원시 타입으로 반환",
+          "status": "fail",
+          "duration": 1,
+          "error": "Expected string, received object"
+        },
+        {
+          "name": "environment · 값 다양화 (happy path) > isMinVersionSupported를 다양한 버전 임계로 호출",
+          "status": "fail",
+          "duration": 1,
+          "error": "Expected boolean, received object"
+        },
+        {
+          "name": "environment · 값 다양화 (happy path) > getNetworkStatus가 resolve",
+          "status": "pass",
+          "duration": 1
+        },
+        {
+          "name": "environment · 의도적 오류 (확인된 오용 가드) > [E1] SafeAreaInsets.get()이 구조화된 inset 객체를 반환한다 (legacy 스칼라 아님)",
+          "status": "fail",
+          "duration": 0,
+          "error": "Expected property \"top\" to exist"
+        },
+        {
+          "name": "environment · 4-cell 오류-shape 캡처 > 호출 결과가 capture sink에 쌓인다",
+          "status": "pass",
+          "duration": 0
+        }
+      ]
+    },
+    {
+      "file": "src/snippets/events/events.ait.test.ts",
+      "duration": 9507,
+      "passed": 6,
+      "failed": 0,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "events · graniteEvent (captureCallback, mock 합성 트리거) > backEvent — 구독 후 합성 CustomEvent로 onEvent가 도착한다",
+          "status": "pass",
+          "duration": 3002
+        },
+        {
+          "name": "events · graniteEvent (captureCallback, mock 합성 트리거) > homeEvent — 구독 후 합성 CustomEvent로 onEvent가 도착한다",
+          "status": "pass",
+          "duration": 3001
+        },
+        {
+          "name": "events · tdsEvent (captureCallback, mock 합성 트리거) > navigationAccessoryEvent — 구독 후 합성 CustomEvent(detail={id})로 payload를 전달받는다",
+          "status": "pass",
+          "duration": 3001
+        },
+        {
+          "name": "events · onVisibilityChangedByTransparentServiceWeb (captureCallback, cleanup shape만 단언) > 구독이 예외 없이 성립하고, 이벤트 미도착 시 callback-timeout으로 수렴한다",
+          "status": "pass",
+          "duration": 500
+        },
+        {
+          "name": "events · appsInTossEvent (예약된 네임스페이스 — export surface만 확인) > appsInTossEvent.addEventListener가 함수로 export된다",
+          "status": "pass",
+          "duration": 1
+        },
+        {
+          "name": "events · 4-cell 오류-shape 캡처 > 호출 결과가 capture sink에 쌓인다",
+          "status": "pass",
+          "duration": 0
+        }
+      ]
+    },
+    {
+      "file": "src/snippets/game/game.ait.test.ts",
+      "duration": 2070,
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "game · 값 다양화 (happy path) > getGameCenterGameProfile / submitGameCenterLeaderBoardScore가 선언 shape로 resolve",
+          "status": "pass",
+          "duration": 1096
+        },
+        {
+          "name": "game · 값 다양화 (happy path) > grantPromotionRewardForGame을 다양한 promotionCode/amount로 호출",
+          "status": "pass",
+          "duration": 645
+        },
+        {
+          "name": "game · 의도적 오류 (확인된 오용 가드) > [G1] grantPromotionRewardForGame이 게임용 보상 경로로 동작한다",
+          "status": "pass",
+          "duration": 327
+        },
+        {
+          "name": "game · 4-cell 오류-shape 캡처 > 호출 결과가 capture sink에 쌓인다",
+          "status": "pass",
+          "duration": 0
+        }
+      ]
+    },
+    {
+      "file": "src/snippets/haptic/haptic.ait.test.ts",
+      "duration": 2514,
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0,
+      "tests": [
+        {
+          "name": "haptic · 값 다양화 (happy path, fire-and-forget) > generateHapticFeedback이 10종 HapticFeedbackType 전부에서 void로 resolve된다",
+          "status": "pass",
+          "duration": 2259
+        },
+        {
+          "name": "haptic · 의도적 오류 (확인된 오용 가드) > [H1] 알 수 없는 type 문자열은 거부된다",
+          "status": "pass",
+          "duration": 252
+        },
+        {
+          "name": "haptic · 4-cell 오류-shape 캡처 > 호출 결과가 capture sink에 쌓인다",
+          "status": "pass",
+          "duration": 0
+        }
+      ]
+    },
+    {
+      "file": "src/snippets/iap/iap.ait.test.ts",
+      "error": "relay WebSocket 연결이 끊겼습니다. list_pages로 attach 상태를 확인하고 enableDomains()로 재연결하세요."
+    },
+    {
+      "file": "src/snippets/location/location.ait.test.ts",
+      "error": "relay에 연결되어 있지 않습니다 (Runtime.evaluate). list_pages로 attach 상태를 확인하고 enableDomains()로 재연결하세요."
+    },
+    {
+      "file": "src/snippets/navigation/navigation.ait.test.ts",
+      "error": "relay에 연결되어 있지 않습니다 (Runtime.evaluate). list_pages로 attach 상태를 확인하고 enableDomains()로 재연결하세요."
+    },
+    {
+      "file": "src/snippets/notification/notification.ait.test.ts",
+      "error": "relay에 연결되어 있지 않습니다 (Runtime.evaluate). list_pages로 attach 상태를 확인하고 enableDomains()로 재연결하세요."
+    },
+    {
+      "file": "src/snippets/partner/partner.ait.test.ts",
+      "error": "relay에 연결되어 있지 않습니다 (Runtime.evaluate). list_pages로 attach 상태를 확인하고 enableDomains()로 재연결하세요."
+    },
+    {
+      "file": "src/snippets/payment/payment.ait.test.ts",
+      "error": "relay에 연결되어 있지 않습니다 (Runtime.evaluate). list_pages로 attach 상태를 확인하고 enableDomains()로 재연결하세요."
+    },
+    {
+      "file": "src/snippets/permissions/permissions.ait.test.ts",
+      "error": "relay에 연결되어 있지 않습니다 (Runtime.evaluate). list_pages로 attach 상태를 확인하고 enableDomains()로 재연결하세요."
+    },
+    {
+      "file": "src/snippets/storage/storage.ait.test.ts",
+      "error": "relay에 연결되어 있지 않습니다 (Runtime.evaluate). list_pages로 attach 상태를 확인하고 enableDomains()로 재연결하세요."
+    }
+  ]
+}
