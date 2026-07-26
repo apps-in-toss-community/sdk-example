@@ -72,21 +72,9 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 - `aitc-sdk-example.ait` — gitignored.
 
-**Deploy로 가는 prerequisite (2026-05-18 dry-run 캡처)**
+**Deploy 약관 동의 상태 (2026-07-26 기준)**
 
-`aitcc app deploy <bundle.ait> --workspace 3095 --app 31146 --dry-run`은 우리 console-cli가 번들을 정확히 파싱함을 확인했다(`bundleFormat: ait`, embedded deploymentId 추출 성공). 그러나 실 deploy는 **워크스페이스 약관 7개 미체결**로 차단된 상태:
-
-| Scope | Type | errorCode | 약관 |
-|---|---|---|---|
-| workspace | TOSS_LOGIN | 4037 | [제휴용] 개인(신용)정보 보안관리 약정서 |
-| workspace | TOSS_LOGIN | 4037 | 토스 로그인 약관 |
-| workspace | BIZ_WORKSPACE | 4040 | 앱인토스 제휴 서비스 이용약관(제휴사용) |
-| workspace | BIZ_WORKSPACE | 4040 | [위탁용] 개인(신용)정보 보안관리 약정서 |
-| workspace | BIZ_WORKSPACE | 4040 | 앱인토스 보안점검 약관 |
-| workspace | IAA | 4099 | TOSS 광고대행 서비스 이용약관 |
-| workspace | IAP | 5001 | 앱인토스 디지털콘텐츠 위탁매매 약관 |
-
-각각 `aitcc workspace terms --type <TYPE>`로 동의 가능 — 단 (주)프로덕트팩토리 사업체 명의의 약관이라 maintainer 결정 필요. 동의 후에야 `aitcc app deploy ... --request-review --release-notes ...`가 통과한다.
+`aitcc app deploy`는 (주)프로덕트팩토리 워크스페이스 약관(TOSS_LOGIN/BIZ_WORKSPACE/IAA/IAP 등) 동의를 전제로 한다 — 동의는 `aitcc workspace terms --type <TYPE>`로 한다. 2026-05-18 dry-run 캡처 시점엔 약관 7개가 미체결로 deploy를 막았으나, 이후 전부 동의 완료됐다 — 2026-07-26 기준 `app deploy --dry-run`은 약관 관련 blocker 없이 clean pre-flight를 리포트한다. 새 약관이 추가되면 `--dry-run`이 해당 errorCode(4037/4040/4099/5001 등)와 함께 보고하며, 동의 방법은 동일하다. 약관 동의는 (주)프로덕트팩토리 사업체 명의의 business/legal 결정이라 maintainer가 수동으로 진행한다.
 
 ## Deploy Key (= 콘솔 "API 키")
 
@@ -109,9 +97,9 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 **2. `ait build`는 real SDK 번들** (mock 아님). `pnpm bundle:ait`(= `ait build`)는 devtools mock alias를 **적용하지 않는다** — 그 alias는 Vite dev 전용 rewrite다. 따라서 on-device 번들의 SDK 호출은 mock이 아니라 진짜 브리지 호출이다. (`pnpm dev` 브라우저에선 같은 import가 mock으로 resolve되지만, dev 서버는 `.ait` 배포와 무관하다.)
 
-**3. QR 스캔 단일 진입** (위 "Deploy Key" 단락 참조). `devicectl`/`adb` 발사 금지. `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>` deep-link를 ASCII QR로 렌더해 폰 카메라로 스캔.
+**3. QR 스캔 단일 진입** (위 "Deploy Key" 단락 참조). `devicectl`/`adb` 발사 금지. `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>&at=<TOTP 코드>` deep-link를 ASCII QR로 렌더해 폰 카메라로 스캔. `at` 코드는 매번 회전하는 TOTP라 손으로 조립한 deep-link는 재사용할 수 없다.
 
-**devtools-debug MCP**는 umbrella·sdk-example **양쪽** `.mcp.json`에 등록돼 있다(둘 다 같은 launcher `~/.local/share/aitc/devtools-mcp-debug.mjs`를 가리킴) → 어느 cwd에서 Claude Code를 띄워도 로드된다. `.mcp.json`은 머신 절대경로가 박혀 있어 **gitignore**(커밋 금지). MCP 도구(`build_attach_url`/`list_pages`/`list_console_messages` 등)로 relay attach·관측한다. MCP 서버가 특정 도구(`measure_safe_area`/`take_screenshot`)를 미구현이면 Chii relay client WS에 직접 붙어 `Runtime.evaluate`로 우회한다(`Page.captureScreenshot`은 chobitsu 미구현이라 스크린샷은 DOM 측정으로 대체).
+**devtools-debug MCP**는 umbrella·sdk-example **양쪽** `.mcp.json`에 등록돼 있다(둘 다 같은 launcher `~/.local/share/aitc/devtools-mcp-debug.mjs`를 가리킴) → 어느 cwd에서 Claude Code를 띄워도 로드된다. `.mcp.json`은 머신 절대경로가 박혀 있어 **gitignore**(커밋 금지). MCP 도구(`start_attach`/`list_pages`/`list_console_messages` 등)로 relay attach·관측한다. MCP 서버가 특정 도구(`measure_safe_area`/`take_screenshot`)를 미구현이면 Chii relay client WS에 직접 붙어 `Runtime.evaluate`로 우회한다(`Page.captureScreenshot`은 chobitsu 미구현이라 스크린샷은 DOM 측정으로 대체).
 
 ## OIDC bridge URL
 
@@ -130,7 +118,7 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 새 컴포넌트 추가 시: render + 핵심 interaction 1개. SDK 자체 호출은 `vi.mock('@apps-in-toss/web-framework')` 또는 devtools mock에 의존. 깊은 단위 테스트는 지양 — sdk-example의 가치는 dog-food이지 라이브러리가 아니므로 테스트는 "렌더 깨짐" 가드 역할만.
 
-- **`pnpm test:env3`** — 실기기 WebView(env3)에서 `*.ait.test.ts` 슈트를 실행한다. `AIT_SCHEME_URL`(scheme URL) + `.ait_relay`(TOTP 시크릿)가 필요해 폰 스캔이 필수다. `--report-dir`(`AIT_REPORT_DIR`, 기본 `.ait-run`)에 runner-agnostic report(`<sdkLine>.<platform>.json`)와 capture 파일(`.ait-run/.ait-capture/<category>.<sdkLine>.<platform>.json`)을 산출한다. 두 경로 모두 gitignored(per-run).
+- **`pnpm test:env3`** — 실기기 WebView(env3)에서 `*.ait.test.ts` 슈트를 실행한다. `AIT_SCHEME_URL`(scheme URL) + `.ait_relay`(TOTP 시크릿)가 필요해 폰 스캔이 필수다. 스캔 대상은 손으로 조립한 deep-link QR이 아니라 `devtools-test`가 로컬에 띄우는 QR 대시보드(기본 `http://127.0.0.1:8317/`)다 — 이 대시보드 QR은 scheme-url + relay wss + 회전하는 TOTP `at=` 코드를 한 캡슐 안에 담아 매 요청마다 재발급하므로, 이 QR을 스캔해야 cold-load와 CDP attach가 동시에 일어난다. 맨 `intoss-private://` deep-link만 스캔하면 앱은 cold-load되지만 디버거는 attach되지 않는다. `--report-dir`(`AIT_REPORT_DIR`, 기본 `.ait-run`)에 runner-agnostic report(`<sdkLine>.<platform>.json`)와 capture 파일(`.ait-run/.ait-capture/<category>.<sdkLine>.<platform>.json`)을 산출한다. 두 경로 모두 gitignored(per-run). 러너는 run-then-exit이다 — 테스트 파일 실행이 끝나면 디버거가 detach되어(폰에 "디버거 연결 끊김" 표시) CLI가 종료하지만, 미니앱 자체는 계속 떠 있다.
 - **`pnpm test:env3:matrix`** — `{2.x,3.x}×{ios,android}` 4셀을 순차 실행해 `.ait-run/`에 세포별 파일을 누적한다. 4 run 완료 후 diff로 2.x↔3.0 오류-shape를 대조한다.
 - **`pnpm test:env3:vitest`** — `vitest.env3.config.ts`(maintainer dog-food 전용)를 통한 동일 슈트의 Vitest pool 경로. `AIT_SCHEME_URL` + `.ait_relay` 필요.
 

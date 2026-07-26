@@ -121,17 +121,17 @@ Deploy Key는 앱인토스 콘솔의 "API 키" 기능으로 발급한다 (이 �
 
 `main.tsx`에 있는 `import '@ait-co/devtools/in-app/auto';` 한 줄이 CDP relay attach와 `window.__sdk`/`__sdkCall` SDK 브리지를 모두 담당한다. `?debug=1`/`?relay=` URL 파라미터가 있거나 DEV 빌드에서만 활성화되고, 그 외 일반 production load에서는 dormant다.
 
-1. **에이전트의 `devtools-mcp` 기동** — AI host(`~/.mcp.json`)에 등록된 `devtools-mcp`가 Chii 서버 + Cloudflare quick tunnel을 띄우고 `wss://` relay URL과 secret token을 출력한다.
+1. **에이전트의 `devtools-mcp` 기동** — AI host(`~/.mcp.json`)에 등록된 `devtools-mcp`가 Chii 서버 + Cloudflare quick tunnel을 띄우고 `wss://` relay URL을 출력한다.
 
-2. **QR/deep-link로 진입** — `_deploymentId` + `debug=1` + `relay=<wss>` + `token=<secret>`을 포함한 deep-link를 QR로 렌더해 폰 카메라로 스캔한다. 이 경로 하나로 PREPARE 상태의 번들도 cold-load + relay attach된다.
+2. **QR/deep-link로 진입** — `_deploymentId` + `debug=1` + `relay=<wss>` + `at=<TOTP 코드>`를 포함한 deep-link를 QR로 렌더해 폰 카메라로 스캔한다. 이 경로 하나로 PREPARE 상태의 번들도 cold-load + relay attach된다.
 
    ```
-   intoss-private://aitc-sdk-example?_deploymentId=<id>&debug=1&relay=wss://<id>.trycloudflare.com&token=<secret>
+   intoss-private://aitc-sdk-example?_deploymentId=<id>&debug=1&relay=wss://<id>.trycloudflare.com&at=<code>
    ```
 
 3. **에이전트 관측** — `devtools-mcp` 도구(`list_pages`, `list_console_messages`, `call_sdk` 등)로 미니앱 상태를 조회하고 SDK API를 구동한다.
 
-`token`이 없으면 quick tunnel URL이 노출돼도 attach가 거부된다. relay는 stateless이고 서버 영구 저장이 없다.
+`at` 코드는 매번 새로 발급되는 TOTP라 정적 시크릿이 아니다 — 코드가 없거나 유효하지 않으면 quick tunnel URL이 노출돼도 attach가 거부된다. relay는 stateless이고 서버 영구 저장이 없다.
 
 ## Pre-commit hook
 
