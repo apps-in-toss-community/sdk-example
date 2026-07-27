@@ -117,11 +117,11 @@ The Deploy Key is issued from the Apps in Toss console ("API key" in the console
 
 ## Debug mode
 
-An AI agent can read-only attach to a bundle running on a phone via `devtools-mcp`, so regressions can be diagnosed without a human watching the screen.
+An AI agent can read-only attach to a bundle running on a phone via the `ait-devtools` MCP server, so regressions can be diagnosed without a human watching the screen.
 
-The single `import '@ait-co/devtools/in-app/auto';` line in `main.tsx` handles both the CDP relay attach and the `window.__sdk`/`__sdkCall` SDK bridge. It activates only when `?debug=1`/`?relay=` URL parameters are present or in DEV builds; on normal production loads it stays dormant.
+The single `import '@ait-co/debug-console/auto';` line in `main.tsx` handles both the CDP relay attach and the `window.__sdk`/`__sdkCall` SDK bridge. It activates only when `?debug=1`/`?relay=` URL parameters are present or in DEV builds; on normal production loads it stays dormant.
 
-1. **Start the agent's `devtools-mcp`** — the `devtools-mcp` registered in the AI host (`~/.mcp.json`) spins up a Chii server + Cloudflare quick tunnel and prints a `wss://` relay URL.
+1. **Start the agent's `ait-devtools` MCP daemon** — the AI host's plugin manifest always registers the `ait-devtools` MCP server (`@ait-co/debugger`'s `debugger` daemon, `npx -y -p @ait-co/debugger debugger`), which spins up a Chii server + Cloudflare quick tunnel and prints a `wss://` relay URL.
 
 2. **Enter via QR/deep-link** — render a deep-link carrying `_deploymentId` + `debug=1` + `relay=<wss>` + `at=<TOTP code>` as a QR and scan it with the phone camera. This single path also cold-loads bundles in PREPARE state.
 
@@ -129,7 +129,7 @@ The single `import '@ait-co/devtools/in-app/auto';` line in `main.tsx` handles b
    intoss-private://aitc-sdk-example?_deploymentId=<id>&debug=1&relay=wss://<id>.trycloudflare.com&at=<code>
    ```
 
-3. **Agent observation** — the agent uses `devtools-mcp` tools (`list_pages`, `list_console_messages`, `call_sdk`, etc.) to inspect mini-app state and drive SDK APIs.
+3. **Agent observation** — the agent uses `ait-devtools` MCP tools (`list_pages`, `list_console_messages`, `call_sdk`, etc.) to inspect mini-app state and drive SDK APIs.
 
 The `at` code is a freshly minted TOTP code, not a static secret — attach is rejected if it is missing or invalid, even if the quick tunnel URL leaks. The relay is stateless with no server-side persistence.
 
@@ -147,7 +147,7 @@ This is a developer convenience for fast feedback before push. CI runs the same 
 
 ```
 src/
-├── main.tsx               # Entry point (@ait-co/polyfill/auto + @ait-co/devtools/in-app/auto)
+├── main.tsx               # Entry point (@ait-co/polyfill/auto + @ait-co/debug-console/auto)
 ├── App.tsx                # React Router setup
 ├── __typecheck.ts         # Compile-time SDK export coverage check
 ├── components/            # Shared components (Layout, PageHeader, ApiCard, ...)
@@ -212,6 +212,8 @@ The UI copy primary locale is **`ko`** (Korean). All UI strings are looked up fr
 
 - [`@apps-in-toss/web-framework`](https://www.npmjs.com/package/@apps-in-toss/web-framework) — the original SDK
 - [`@ait-co/devtools`](https://github.com/apps-in-toss-community/devtools) — mock library and unplugin
+- [`@ait-co/debug-console`](https://github.com/apps-in-toss-community/debugger) — on-device attach + in-app eruda console (the only debug package that ships in the production bundle)
+- [`@ait-co/debugger`](https://github.com/apps-in-toss-community/debugger) — MCP debug daemon + test runner
 
 ---
 
