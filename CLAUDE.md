@@ -27,7 +27,7 @@ React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`),
 
 ## 공통 스택 / 개발 환경
 
-- Node 24 LTS, **pnpm 10.33.0** (`packageManager` 고정), TypeScript strict.
+- Node 24 LTS, **pnpm 11.17.0** (`packageManager` 고정), TypeScript strict.
 - **Biome** (lint + formatter). ESLint/Prettier 사용 안 함. `pnpm lint` / `pnpm lint:fix` / `pnpm format`.
 - **Pre-commit hook**: `.githooks/pre-commit`이 source-controlled. contributor가 수동 활성화: `git config core.hooksPath .githooks`. CI `pnpm lint`가 실제 강제 계층, hook은 빠른 피드백.
 - **Commit message**: Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`).
