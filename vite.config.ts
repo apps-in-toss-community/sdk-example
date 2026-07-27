@@ -9,11 +9,11 @@ export default defineConfig({
   // defaults to '/' for local dev and 앱인토스 배포.
   base: process.env.BASE_PATH ?? '/',
   // __DEBUG_BUILD__ — consumer-build constant gating the on-device debug
-  // surface (main.tsx, #210 / devtools #647). Defaults false so plain
-  // `pnpm build` / `ait build` DCE the `@ait-co/devtools/in-app/auto` graph
-  // (Chii relay + eruda console + __sdk bridge) to 0 bytes. Set AIT_DEBUG_BUILD=1
-  // to build a debug bundle where the auto entry's runtime self-gate
-  // (host allowlist + ?debug=1 + relay + TOTP) takes over.
+  // surface (main.tsx, #210 / devtools #647, specifier updated #361). Defaults
+  // false so plain `pnpm build` / `ait build` DCE the `@ait-co/debug-console/auto`
+  // graph (Chii relay + eruda console + __sdk bridge) to 0 bytes. Set
+  // AIT_DEBUG_BUILD=1 to build a debug bundle where the auto entry's runtime
+  // self-gate (host allowlist + ?debug=1 + relay + TOTP) takes over.
   define: {
     __DEBUG_BUILD__: JSON.stringify(process.env.AIT_DEBUG_BUILD === '1'),
   },
@@ -21,8 +21,9 @@ export default defineConfig({
     react(),
     tailwindcss(),
     // mcp: true exposes GET/POST /api/ait-devtools/state on the dev server so
-    // `devtools-mcp --mode=dev` can read the live browser mock state (the
-    // phone-independent half of station 3 debug). The panel POSTs a snapshot
+    // the `ait-devtools` MCP daemon (`@ait-co/debugger`'s `debugger --mode=dev`)
+    // can read the live browser mock state (the phone-independent half of
+    // station 3 debug). The panel POSTs a snapshot
     // on every state change; the MCP stdio server GETs it for the agent.
     //
     // tunnel: AIT_TUNNEL=1 opens a Cloudflare quick-tunnel so a real phone can

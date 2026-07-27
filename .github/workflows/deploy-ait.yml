@@ -20,9 +20,11 @@ name: Deploy .ait bundle
 # used for v* tag pushes) builds a normal bundle. `dogfood` sets
 # AIT_DEBUG_BUILD=1 (via the bundle:ait:dogfood script) so vite.config.ts
 # inlines __DEBUG_BUILD__=true, keeping the in-app debug attach surface
-# (Chii relay + eruda + __sdk bridge) for on-device CDP relay sessions
-# (devtools-mcp). RELEASE_CHANNEL=dogfood is also set for metadata purposes.
-# dog-food builds are workflow_dispatch only.
+# (Chii relay + eruda + __sdk bridge, `@ait-co/debug-console/auto` since
+# #361 — specifier changed, build-time-gated structure unchanged) for
+# on-device CDP relay sessions (the ait-devtools MCP daemon, `@ait-co/debugger`).
+# RELEASE_CHANNEL=dogfood is also set for metadata purposes. dog-food builds
+# are workflow_dispatch only.
 
 on:
   push:

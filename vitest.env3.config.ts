@@ -3,7 +3,7 @@
  * 일반 미니앱 개발자가 복사해도 동작하지 않는다.
  * 일반 개발·테스트는 `vitest.config.ts`(env1 mock) 또는 `test:env3`(CLI)를 사용한다.
  *
- * 이 파일은 `@ait-co/devtools/test-runner` 배럴을 통해 Vitest pool을 env3 relay로
+ * 이 파일은 `@ait-co/debugger/test-runner` 배럴을 통해 Vitest pool을 env3 relay로
  * 배선하는 경로를 dog-food로 검증한다. createRelayConnectionFactory는 공개 패키지의
  * 정상 사용이므로 boilerplate 청정성 허용선 안이다.
  *
@@ -17,7 +17,7 @@
 import {
   createRelayConnectionFactory,
   definePhoneVitestConfig,
-} from '@ait-co/devtools/test-runner';
+} from '@ait-co/debugger/test-runner';
 import { defineConfig } from 'vitest/config';
 
 const schemeUrl = process.env.AIT_SCHEME_URL;

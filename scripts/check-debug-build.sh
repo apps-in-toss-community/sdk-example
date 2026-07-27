@@ -16,10 +16,20 @@
 # Root-cause reference: AIT_DEBUG_BUILD env var mismatch (package.json fix,
 # #247). Without AIT_DEBUG_BUILD=1 in bundle:ait:dogfood, vite.config.ts
 # inlines __DEBUG_BUILD__=false → Rollup DCE removes the entire
-# @ait-co/devtools/in-app/auto graph → total silence on real device.
+# @ait-co/debug-console/auto graph (specifier updated #361, 3-package split)
+# → total silence on real device.
+#
+# Sentinel identifiers (updated #361): devtools-era internal function names
+# (deriveTargetScriptUrl, installRelayWsObserver, maybeAttach) do NOT survive
+# production minification and no longer appear in either channel — verified
+# empirically against a real dogfood + release .ait build, 0 matches in both.
+# `eruda` (its own literal CSS class prefix / UMD wrapper) and
+# `[@ait-co/debug-console]` (a stable string-literal log prefix baked into the
+# package's own console.debug calls) both DO survive minification and were
+# confirmed present in dogfood / absent in release the same way.
 set -euo pipefail
 
-PATTERN="eruda|deriveTargetScriptUrl|installRelayWsObserver|maybeAttach"
+PATTERN="eruda|\[@ait-co/debug-console\]"
 BUNDLE="aitc-sdk-example.ait"
 
 # Extract web/assets/*.js from the .ait (which is a zip with a prepended

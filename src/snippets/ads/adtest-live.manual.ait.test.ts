@@ -20,7 +20,7 @@
  * 강제 실패(assert)를 걸지 않는 이유: 목적이 판정이 아니라 관측이라서다.
  * outcome shape만 느슨히 확인하고 실제 신호는 capture 파일에 남긴다.
  *
- * `.manual.ait.test.ts` 접미사 → `pnpm test`(vitest, CI) 제외, devtools-test
+ * `.manual.ait.test.ts` 접미사 → `pnpm test`(vitest, CI) 제외, debugger-test
  * `--manual-blocking`에서만 실행. 광고가 실제로 뜨는 경우 사람이 폰에서 보고
  * 닫으면 이벤트 스트림
  * (requested→loaded→impression→clicked→userEarnedReward→dismissed)이 캡처된다.

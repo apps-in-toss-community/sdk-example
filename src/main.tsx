@@ -4,10 +4,11 @@ import '@ait-co/polyfill/auto';
 import './index.css';
 import { App } from './App';
 
-// On-device 디버그 표면을 빌드 타임에 가둔다 (#210, devtools #647).
+// On-device 디버그 표면을 빌드 타임에 가둔다 (#210, devtools #647; specifier는
+// #361에서 3-패키지 분리 이후 `@ait-co/debug-console`로 교체).
 //
-// `@ait-co/devtools/in-app/auto`는 maybeAttach(Chii relay + eruda 콘솔 주입)와
-// `window.__sdk`/`__sdkCall` 브리지(devtools-debug MCP가 Runtime.evaluate로 구동
+// `@ait-co/debug-console/auto`는 maybeAttach(Chii relay + eruda 콘솔 주입)와
+// `window.__sdk`/`__sdkCall` 브리지(`ait-devtools` MCP가 Runtime.evaluate로 구동
 // — CLAUDE.md §On-device 디버깅)를 함께 설치한다. 정적 side-effect import면 이
 // 디버그 코드가 release 번들에 dormant로 남아(side-effect import는 DCE 불가)
 // 런타임 self-gate가 닫혀 있어도 표면이 존재한다.
@@ -17,7 +18,7 @@ import { App } from './App';
 // bytes로 사라지고, 디버그 빌드(AIT_DEBUG_BUILD=1)에서는 auto의 기존 런타임
 // self-gate(host allowlist + ?debug=1 + relay + TOTP)를 그대로 상속한다.
 if (__DEBUG_BUILD__) {
-  import('@ait-co/devtools/in-app/auto');
+  import('@ait-co/debug-console/auto');
 }
 
 createRoot(document.getElementById('root')!).render(

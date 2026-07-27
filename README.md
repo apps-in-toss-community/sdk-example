@@ -117,11 +117,11 @@ Deploy Key는 앱인토스 콘솔의 "API 키" 기능으로 발급한다 (이 �
 
 ## 디버그 모드
 
-폰에서 도는 번들에 AI 에이전트가 `devtools-mcp`로 read-only attach해, 사람이 화면을 지켜보지 않고도 회귀를 진단할 수 있다.
+폰에서 도는 번들에 AI 에이전트가 `ait-devtools` MCP로 read-only attach해, 사람이 화면을 지켜보지 않고도 회귀를 진단할 수 있다.
 
-`main.tsx`에 있는 `import '@ait-co/devtools/in-app/auto';` 한 줄이 CDP relay attach와 `window.__sdk`/`__sdkCall` SDK 브리지를 모두 담당한다. `?debug=1`/`?relay=` URL 파라미터가 있거나 DEV 빌드에서만 활성화되고, 그 외 일반 production load에서는 dormant다.
+`main.tsx`는 `__DEBUG_BUILD__` 빌드 타임 가드 안에서 `@ait-co/debug-console/auto`를 동적 import한다 — CDP relay attach와 `window.__sdk`/`__sdkCall` SDK 브리지를 모두 담당한다. 릴리스 빌드(`pnpm build`/`bundle:ait`)는 `__DEBUG_BUILD__`가 `false`라 이 그래프 전체가 DCE돼 dist에서 사라지고, `bundle:ait:dogfood`(`AIT_DEBUG_BUILD=1`)만 남긴다. 남아 있는 경우에도 `/auto` 자체의 런타임 self-gate(`?debug=1`/`?relay=` URL 파라미터 또는 DEV 빌드) 없이는 활성화되지 않는다.
 
-1. **에이전트의 `devtools-mcp` 기동** — AI host(`~/.mcp.json`)에 등록된 `devtools-mcp`가 Chii 서버 + Cloudflare quick tunnel을 띄우고 `wss://` relay URL을 출력한다.
+1. **에이전트의 `ait-devtools` MCP 데몬 기동** — AI host의 plugin manifest가 상시 등록한 `ait-devtools` MCP 서버(`@ait-co/debugger`의 `debugger` 데몬, `npx -y -p @ait-co/debugger debugger`)가 Chii 서버 + Cloudflare quick tunnel을 띄우고 `wss://` relay URL을 출력한다.
 
 2. **QR/deep-link로 진입** — `_deploymentId` + `debug=1` + `relay=<wss>` + `at=<TOTP 코드>`를 포함한 deep-link를 QR로 렌더해 폰 카메라로 스캔한다. 이 경로 하나로 PREPARE 상태의 번들도 cold-load + relay attach된다.
 
@@ -129,7 +129,7 @@ Deploy Key는 앱인토스 콘솔의 "API 키" 기능으로 발급한다 (이 �
    intoss-private://aitc-sdk-example?_deploymentId=<id>&debug=1&relay=wss://<id>.trycloudflare.com&at=<code>
    ```
 
-3. **에이전트 관측** — `devtools-mcp` 도구(`list_pages`, `list_console_messages`, `call_sdk` 등)로 미니앱 상태를 조회하고 SDK API를 구동한다.
+3. **에이전트 관측** — `ait-devtools` MCP 도구(`list_pages`, `list_console_messages`, `call_sdk` 등)로 미니앱 상태를 조회하고 SDK API를 구동한다.
 
 `at` 코드는 매번 새로 발급되는 TOTP라 정적 시크릿이 아니다 — 코드가 없거나 유효하지 않으면 quick tunnel URL이 노출돼도 attach가 거부된다. relay는 stateless이고 서버 영구 저장이 없다.
 
@@ -147,7 +147,7 @@ push 전에 빠른 피드백을 주기 위한 개발자 편의 장치다. 실제
 
 ```
 src/
-├── main.tsx               # 엔트리포인트 (@ait-co/polyfill/auto + @ait-co/devtools/in-app/auto)
+├── main.tsx               # 엔트리포인트 (@ait-co/polyfill/auto + @ait-co/debug-console/auto)
 ├── App.tsx                # React Router 설정
 ├── __typecheck.ts         # SDK export 커버리지 컴파일 타임 검증
 ├── components/            # 공유 컴포넌트 (Layout, PageHeader, ApiCard, ...)
@@ -212,6 +212,8 @@ UI 카피의 primary locale은 **`ko`** (한국어). 모든 UI string은 `src/i1
 
 - [`@apps-in-toss/web-framework`](https://www.npmjs.com/package/@apps-in-toss/web-framework) — 원본 SDK
 - [`@ait-co/devtools`](https://github.com/apps-in-toss-community/devtools) — mock 라이브러리, unplugin
+- [`@ait-co/debug-console`](https://github.com/apps-in-toss-community/debugger) — on-device attach + eruda 인앱 콘솔 (프로덕션 번들에 들어가는 유일한 디버그 패키지)
+- [`@ait-co/debugger`](https://github.com/apps-in-toss-community/debugger) — MCP 디버그 데몬 + 테스트 러너
 
 ---
 

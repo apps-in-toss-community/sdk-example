@@ -5,7 +5,7 @@
  *
  *  - `pnpm test`(vitest, env1)에서는 `vitest.config.ts`의 `exclude`로 완전히
  *    건너뛴다 — CI에 영향 없음.
- *  - `pnpm test:env3`(devtools-test CLI)에서도 **기본적으로 제외**된다.
+ *  - `pnpm test:env3`(debugger-test CLI)에서도 **기본적으로 제외**된다.
  *    `--manual-blocking` 플래그를 줄 때만 실행되며, 일반 파일들이 먼저 돌고
  *    이 파일이 **마지막**에 스케줄된다.
  *

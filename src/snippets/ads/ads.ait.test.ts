@@ -10,7 +10,7 @@
  * 등 **정당한 무응답**(callback-timeout)이라 오류로 오기록하지 않는다.
  * ad SHOW(`showFullScreenAd`/`GoogleAdMob.showAppsInTossAdMob`)는 실기기에서
  * fullscreen interstitial을 띄워 사용자 dismiss가 필요하다 — env3에서 무인
- * 실행하면 devtools-test의 30s 파일-드롭 타임아웃에 걸려 파일 전체가 죽는다
+ * 실행하면 debugger-test의 30s 파일-드롭 타임아웃에 걸려 파일 전체가 죽는다
  * (camera 계열과 동일 위험군). 그래서 SHOW는 이 파일에 없고 `ads.manual.ait.test.ts`
  * (devtools 0.1.132 `--manual-blocking` 전용, 일반 실행에서 자동 제외)로 분리했다.
  *

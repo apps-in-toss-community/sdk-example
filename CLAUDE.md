@@ -19,6 +19,8 @@
 
 **sdk-example** — `@apps-in-toss/web-framework` SDK의 모든 public API를 인터랙티브하게 테스트하는 레퍼런스 앱. 앱 자체가 사용 예제이며, 앱인토스에 배포해 네이티브에서 직접 확인 가능. 개발 시 `@ait-co/devtools`의 unplugin이 SDK import를 mock으로 swap해 토스 앱 없이 동작.
 
+**3-패키지 구조 (#361)**: 예전 단일 `@ait-co/devtools` 패키지가 브라우저 dev(mock·panel·unplugin, 여전히 `@ait-co/devtools`)와 실기기 디버깅(MCP 데몬·테스트 러너는 `@ait-co/debugger`, on-device attach + eruda 인앱 콘솔은 `@ait-co/debug-console`)로 분리됐다. 프로덕션 번들에 실제로 들어갈 수 있는 유일한 디버그 패키지는 `@ait-co/debug-console`이고, 그래서 이 셋 중 그것만 `dependencies`, 나머지 둘은 `devDependencies`다.
+
 **조직 내 위치**: sdk-example은 모든 repo가 수렴하는 downstream consumer / 살아있는 QA 타겟. 직접 짝은 `devtools`(SDK mock 제공자)와 `docs`(양방향 deep-link, 경로 변경 시 반대쪽 링크 체크 필요).
 
 ## 기술 스택
@@ -36,7 +38,9 @@ React 19 + TypeScript strict (`noUncheckedIndexedAccess`, `noImplicitOverride`),
 
 ```
 @apps-in-toss/web-framework   # 원본 SDK (앱인토스 배포 시 사용)
-@ait-co/devtools              # Mock (개발 시 unplugin이 SDK를 alias)
+@ait-co/devtools              # Mock (개발 시 unplugin이 SDK를 alias) — devDependency
+@ait-co/debugger              # MCP 디버그 데몬 + 테스트 러너 (bin: debugger, debugger-test) — devDependency
+@ait-co/debug-console         # on-device attach + eruda 인앱 콘솔 — dependency (프로덕션 번들에 들어가는 유일한 디버그 패키지)
 @ait-co/polyfill              # 표준 Web API shim (src/main.tsx에서 auto import)
 ```
 
@@ -50,7 +54,7 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 `src/`에는 devtools·디버그 환경(CDP relay/attach)·PWA(launcher) 등 메인테이너 인프라 전용 특수 기능을 넣지 않는다. 다른 개발자가 boilerplate/example로 복사해 쓸 수 있어야 하기 때문이다.
 
-**판정 기준**: 일반 미니앱 개발자가 복사해 그대로 가져갈 코드(SDK 사용 예제, 표준 dev 셋업, 공개 패키지의 정상 사용)는 OK — 메인테이너 디버깅·QA 인프라 전용 런타임 코드는 금지(devtools 쪽으로 productize). `vite.config.ts`의 devtools unplugin 옵션과 `dev:phone`(`dev:phone:cdp`) 스크립트는 공개 제품 기능의 표준 사용이라 허용.
+**판정 기준**: 일반 미니앱 개발자가 복사해 그대로 가져갈 코드(SDK 사용 예제, 표준 dev 셋업, 공개 패키지의 정상 사용)는 OK — 메인테이너 디버깅·QA 인프라 전용 런타임 코드는 금지(devtools 쪽으로 productize). `vite.config.ts`의 devtools unplugin 옵션과 `dev:phone`(`dev:phone:cdp`) 스크립트는 공개 제품 기능의 표준 사용이라 허용. `src/main.tsx`의 `if (__DEBUG_BUILD__) { import('@ait-co/debug-console/auto'); }` 한 블록이 허용선 안이다 — 공개 패키지가 문서화한 self-gating 진입점(`/auto`)을 그대로 쓰되 `__DEBUG_BUILD__` 빌드 타임 가드로 한 겹 더 강하게 감싼 것뿐이고, 그 이상의 attach 제어 로직·relay 배선은 `src/`에 두지 않는다.
 
 ## Mini-app 번들 빌드 (`.ait`)
 
@@ -90,16 +94,29 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 실기기 토스 앱 WebView에 띄운 번들을 에이전트가 사람 폰 관찰 없이 디버깅하는 station 3(debug) 경로. 핵심 인프라 세 가지:
 
-**1. `window.__sdk` / `window.__sdkCall` 브리지** — `@ait-co/devtools/in-app/auto` (`main.tsx`의 single-line import)가 설치한다. `@apps-in-toss/web-framework`의 전체 export namespace를 `window.__sdk`로 노출하고, `window.__sdkCall(name, ...args)`로 임의 SDK API를 호출해 `{ ok, value | error }`를 받는다. 에이전트가 CDP relay의 `Runtime.evaluate`로 직접 구동한다 — 예: `window.__sdkCall('setDeviceOrientation', { type: 'landscape' })`. namespace mirror 패턴이라 새 SDK API가 추가되면 자동 노출되고 2.x·3.x 양쪽에서 동작한다.
+**1. `window.__sdk` / `window.__sdkCall` 브리지** — `@ait-co/debug-console/auto`가 설치한다(`main.tsx`에서 `__DEBUG_BUILD__` 가드 안 동적 import — 아래 2겹 게이트 참고). `@apps-in-toss/web-framework`의 전체 export namespace를 `window.__sdk`로 노출하고, `window.__sdkCall(name, ...args)`로 임의 SDK API를 호출해 `{ ok, value | error }`를 받는다. 에이전트가 CDP relay의 `Runtime.evaluate`로 직접 구동한다 — 예: `window.__sdkCall('setDeviceOrientation', { type: 'landscape' })`. namespace mirror 패턴이라 새 SDK API가 추가되면 자동 노출되고 2.x·3.x 양쪽에서 동작한다.
 
 - **왜 필요한가**: SDK는 호출을 Granite/ReactNative 브리지(`window.ReactNativeWebView.postMessage` + 독자 envelope)로 라우팅하고, SDK 함수들은 모듈 내부(tree-shaken, global에 안 붙음)다. envelope을 CDP eval로 hand-synthesize할 수 없으므로, 이 브리지 없이는 `setDeviceOrientation` 같은 API를 실기기에서 구동하려면 사람이 UI를 탭해야 한다.
-- **self-gate**: `@ait-co/devtools/in-app/auto`는 소비자 번들러가 `import.meta.env.DEV`를 `true`로 치환하는 DEV 빌드이거나 URL에 `?debug=1`/`?relay=`가 있을 때만 활성화된다. 그 외 일반 production load에서는 dormant — `window.__sdk`/`__sdkCall`이 설치되지 않는다.
+- **2겹 게이트** (#210, devtools #647 — specifier만 #361에서 `@ait-co/debug-console`로 교체, 구조는 유지): 빌드 타임(강) — `main.tsx`가 `if (__DEBUG_BUILD__) { import('@ait-co/debug-console/auto'); }`로 감싸고, `vite.config.ts`가 `AIT_DEBUG_BUILD` env var를 `define`으로 인라인한다. 기본(release, `pnpm build`/`bundle:ait`)은 `false`라 Rollup이 `@ait-co/debug-console/auto` 그래프(Chii relay + eruda + `__sdk` 브리지) 전체를 DCE — dist에 **0 bytes**. `bundle:ait:dogfood`만 `AIT_DEBUG_BUILD=1`을 세팅해 이 그래프를 살린다. 런타임(약) — 살아있는 그래프 안에서도 `@ait-co/debug-console/auto` 자체가 DEV 빌드이거나 URL에 `?debug=1`/`?relay=`가 있을 때만 활성화되는 self-gate를 갖는다. 이 두 겹이 함께 "release 번들엔 표면 자체가 없음 + dogfood 빌드여도 opt-in 없인 attach 안 함"을 보장한다 — 회귀 가드는 `scripts/check-debug-build.sh`(dogfood=sentinel present / release=sentinel absent 비대칭 단언).
 
 **2. `ait build`는 real SDK 번들** (mock 아님). `pnpm bundle:ait`(= `ait build`)는 devtools mock alias를 **적용하지 않는다** — 그 alias는 Vite dev 전용 rewrite다. 따라서 on-device 번들의 SDK 호출은 mock이 아니라 진짜 브리지 호출이다. (`pnpm dev` 브라우저에선 같은 import가 mock으로 resolve되지만, dev 서버는 `.ait` 배포와 무관하다.)
 
 **3. QR 스캔 단일 진입** (위 "Deploy Key" 단락 참조). `devicectl`/`adb` 발사 금지. `intoss-private://…?_deploymentId=…&debug=1&relay=<wss>&at=<TOTP 코드>` deep-link를 ASCII QR로 렌더해 폰 카메라로 스캔. `at` 코드는 매번 회전하는 TOTP라 손으로 조립한 deep-link는 재사용할 수 없다.
 
-**devtools-debug MCP**는 umbrella·sdk-example **양쪽** `.mcp.json`에 등록돼 있다(둘 다 같은 launcher `~/.local/share/aitc/devtools-mcp-debug.mjs`를 가리킴) → 어느 cwd에서 Claude Code를 띄워도 로드된다. `.mcp.json`은 머신 절대경로가 박혀 있어 **gitignore**(커밋 금지). MCP 도구(`start_attach`/`list_pages`/`list_console_messages` 등)로 relay attach·관측한다. MCP 서버가 특정 도구(`measure_safe_area`/`take_screenshot`)를 미구현이면 Chii relay client WS에 직접 붙어 `Runtime.evaluate`로 우회한다(`Page.captureScreenshot`은 chobitsu 미구현이라 스크린샷은 DOM 측정으로 대체).
+**`ait-devtools` MCP 서버**(데몬 패키지는 `@ait-co/debugger`, bin은 `debugger` — `npx -y -p @ait-co/debugger debugger`)는 agent-plugin의 plugin manifest(`mcpServers.ait-devtools`)가 상시 기동한다 — plugin이 설치돼 있으면 어느 cwd에서 Claude Code를 띄워도 `/mcp`에 `ait-devtools`로 뜬다. 프로젝트별 `.mcp.json` 수동 등록은 **필요 없다**. 로컬에서 다른 command(예: 아직 npm에 없는 로컬 빌드)를 가리키고 싶을 때만 프로젝트 루트에 `.mcp.json`을 두면 되고, 그 파일은 머신-specific이라 **gitignore**(커밋 금지) — 샘플 형태:
+
+```jsonc
+{
+  "mcpServers": {
+    "ait-devtools": {
+      "command": "npx",
+      "args": ["-y", "-p", "@ait-co/debugger", "debugger"]
+    }
+  }
+}
+```
+
+MCP 도구(`start_attach`/`list_pages`/`list_console_messages` 등)로 relay attach·관측한다. MCP 서버가 특정 도구(`measure_safe_area`/`take_screenshot`)를 미구현이면 Chii relay client WS에 직접 붙어 `Runtime.evaluate`로 우회한다(`Page.captureScreenshot`은 chobitsu 미구현이라 스크린샷은 DOM 측정으로 대체).
 
 ## OIDC bridge URL
 
@@ -118,7 +135,7 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 새 컴포넌트 추가 시: render + 핵심 interaction 1개. SDK 자체 호출은 `vi.mock('@apps-in-toss/web-framework')` 또는 devtools mock에 의존. 깊은 단위 테스트는 지양 — sdk-example의 가치는 dog-food이지 라이브러리가 아니므로 테스트는 "렌더 깨짐" 가드 역할만.
 
-- **`pnpm test:env3`** — 실기기 WebView(env3)에서 `*.ait.test.ts` 슈트를 실행한다. `AIT_SCHEME_URL`(scheme URL) + `.ait_relay`(TOTP 시크릿)가 필요해 폰 스캔이 필수다. 스캔 대상은 손으로 조립한 deep-link QR이 아니라 `devtools-test`가 로컬에 띄우는 QR 대시보드(기본 `http://127.0.0.1:8317/`)다 — 이 대시보드 QR은 scheme-url + relay wss + 회전하는 TOTP `at=` 코드를 한 캡슐 안에 담아 매 요청마다 재발급하므로, 이 QR을 스캔해야 cold-load와 CDP attach가 동시에 일어난다. 맨 `intoss-private://` deep-link만 스캔하면 앱은 cold-load되지만 디버거는 attach되지 않는다. `--report-dir`(`AIT_REPORT_DIR`, 기본 `.ait-run`)에 runner-agnostic report(`<sdkLine>.<platform>.json`)와 capture 파일(`.ait-run/.ait-capture/<category>.<sdkLine>.<platform>.json`)을 산출한다. 두 경로 모두 gitignored(per-run). 러너는 run-then-exit이다 — 테스트 파일 실행이 끝나면 디버거가 detach되어(폰에 "디버거 연결 끊김" 표시) CLI가 종료하지만, 미니앱 자체는 계속 떠 있다.
+- **`pnpm test:env3`** — 실기기 WebView(env3)에서 `*.ait.test.ts` 슈트를 실행한다. `AIT_SCHEME_URL`(scheme URL) + `.ait_relay`(TOTP 시크릿)가 필요해 폰 스캔이 필수다. 스캔 대상은 손으로 조립한 deep-link QR이 아니라 `debugger-test`가 로컬에 띄우는 QR 대시보드(기본 `http://127.0.0.1:8317/`)다 — 이 대시보드 QR은 scheme-url + relay wss + 회전하는 TOTP `at=` 코드를 한 캡슐 안에 담아 매 요청마다 재발급하므로, 이 QR을 스캔해야 cold-load와 CDP attach가 동시에 일어난다. 맨 `intoss-private://` deep-link만 스캔하면 앱은 cold-load되지만 디버거는 attach되지 않는다. `--report-dir`(`AIT_REPORT_DIR`, 기본 `.ait-run`)에 runner-agnostic report(`<sdkLine>.<platform>.json`)와 capture 파일(`.ait-run/.ait-capture/<category>.<sdkLine>.<platform>.json`)을 산출한다. 두 경로 모두 gitignored(per-run). 러너는 run-then-exit이다 — 테스트 파일 실행이 끝나면 디버거가 detach되어(폰에 "디버거 연결 끊김" 표시) CLI가 종료하지만, 미니앱 자체는 계속 떠 있다.
 - **`pnpm test:env3:matrix`** — `{2.x,3.x}×{ios,android}` 4셀을 순차 실행해 `.ait-run/`에 세포별 파일을 누적한다. 4 run 완료 후 diff로 2.x↔3.0 오류-shape를 대조한다.
 - **`pnpm test:env3:vitest`** — `vitest.env3.config.ts`(maintainer dog-food 전용)를 통한 동일 슈트의 Vitest pool 경로. `AIT_SCHEME_URL` + `.ait_relay` 필요.
 
