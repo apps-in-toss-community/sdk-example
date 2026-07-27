@@ -119,7 +119,7 @@ Deploy Key는 앱인토스 콘솔의 "API 키" 기능으로 발급한다 (이 �
 
 폰에서 도는 번들에 AI 에이전트가 `ait-devtools` MCP로 read-only attach해, 사람이 화면을 지켜보지 않고도 회귀를 진단할 수 있다.
 
-`main.tsx`에 있는 `import '@ait-co/debug-console/auto';` 한 줄이 CDP relay attach와 `window.__sdk`/`__sdkCall` SDK 브리지를 모두 담당한다. `?debug=1`/`?relay=` URL 파라미터가 있거나 DEV 빌드에서만 활성화되고, 그 외 일반 production load에서는 dormant다.
+`main.tsx`는 `__DEBUG_BUILD__` 빌드 타임 가드 안에서 `@ait-co/debug-console/auto`를 동적 import한다 — CDP relay attach와 `window.__sdk`/`__sdkCall` SDK 브리지를 모두 담당한다. 릴리스 빌드(`pnpm build`/`bundle:ait`)는 `__DEBUG_BUILD__`가 `false`라 이 그래프 전체가 DCE돼 dist에서 사라지고, `bundle:ait:dogfood`(`AIT_DEBUG_BUILD=1`)만 남긴다. 남아 있는 경우에도 `/auto` 자체의 런타임 self-gate(`?debug=1`/`?relay=` URL 파라미터 또는 DEV 빌드) 없이는 활성화되지 않는다.
 
 1. **에이전트의 `ait-devtools` MCP 데몬 기동** — AI host의 plugin manifest가 상시 등록한 `ait-devtools` MCP 서버(`@ait-co/debugger`의 `debugger` 데몬, `npx -y -p @ait-co/debugger debugger`)가 Chii 서버 + Cloudflare quick tunnel을 띄우고 `wss://` relay URL을 출력한다.
 

@@ -119,7 +119,7 @@ The Deploy Key is issued from the Apps in Toss console ("API key" in the console
 
 An AI agent can read-only attach to a bundle running on a phone via the `ait-devtools` MCP server, so regressions can be diagnosed without a human watching the screen.
 
-The single `import '@ait-co/debug-console/auto';` line in `main.tsx` handles both the CDP relay attach and the `window.__sdk`/`__sdkCall` SDK bridge. It activates only when `?debug=1`/`?relay=` URL parameters are present or in DEV builds; on normal production loads it stays dormant.
+`main.tsx` dynamically imports `@ait-co/debug-console/auto` inside a `__DEBUG_BUILD__` build-time guard — it handles both the CDP relay attach and the `window.__sdk`/`__sdkCall` SDK bridge. The release build (`pnpm build`/`bundle:ait`) has `__DEBUG_BUILD__` set to `false`, so the whole graph is dead-code-eliminated out of dist; only `bundle:ait:dogfood` (`AIT_DEBUG_BUILD=1`) keeps it. Even when present, it stays inactive without `/auto`'s own runtime self-gate (`?debug=1`/`?relay=` URL parameters, or a DEV build).
 
 1. **Start the agent's `ait-devtools` MCP daemon** — the AI host's plugin manifest always registers the `ait-devtools` MCP server (`@ait-co/debugger`'s `debugger` daemon, `npx -y -p @ait-co/debugger debugger`), which spins up a Chii server + Cloudflare quick tunnel and prints a `wss://` relay URL.
 

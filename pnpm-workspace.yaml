@@ -8,3 +8,5 @@ allowBuilds:
 minimumReleaseAgeExclude:
   - '@ait-co/debug-console@0.1.1'
   - '@ait-co/debugger@0.1.1'
+patchedDependencies:
+  '@ait-co/debugger@0.1.1': patches/@ait-co__debugger@0.1.1.patch

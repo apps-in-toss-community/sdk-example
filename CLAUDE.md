@@ -54,7 +54,7 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 `src/`에는 devtools·디버그 환경(CDP relay/attach)·PWA(launcher) 등 메인테이너 인프라 전용 특수 기능을 넣지 않는다. 다른 개발자가 boilerplate/example로 복사해 쓸 수 있어야 하기 때문이다.
 
-**판정 기준**: 일반 미니앱 개발자가 복사해 그대로 가져갈 코드(SDK 사용 예제, 표준 dev 셋업, 공개 패키지의 정상 사용)는 OK — 메인테이너 디버깅·QA 인프라 전용 런타임 코드는 금지(devtools 쪽으로 productize). `vite.config.ts`의 devtools unplugin 옵션과 `dev:phone`(`dev:phone:cdp`) 스크립트는 공개 제품 기능의 표준 사용이라 허용. `src/main.tsx`의 `import '@ait-co/debug-console/auto';` 한 줄이 허용선의 정확한 경계다 — 공개 패키지가 문서화한 self-gating 진입점 그대로이고, 그 이상의 attach 제어 로직·relay 배선은 `src/`에 두지 않는다.
+**판정 기준**: 일반 미니앱 개발자가 복사해 그대로 가져갈 코드(SDK 사용 예제, 표준 dev 셋업, 공개 패키지의 정상 사용)는 OK — 메인테이너 디버깅·QA 인프라 전용 런타임 코드는 금지(devtools 쪽으로 productize). `vite.config.ts`의 devtools unplugin 옵션과 `dev:phone`(`dev:phone:cdp`) 스크립트는 공개 제품 기능의 표준 사용이라 허용. `src/main.tsx`의 `if (__DEBUG_BUILD__) { import('@ait-co/debug-console/auto'); }` 한 블록이 허용선 안이다 — 공개 패키지가 문서화한 self-gating 진입점(`/auto`)을 그대로 쓰되 `__DEBUG_BUILD__` 빌드 타임 가드로 한 겹 더 강하게 감싼 것뿐이고, 그 이상의 attach 제어 로직·relay 배선은 `src/`에 두지 않는다.
 
 ## Mini-app 번들 빌드 (`.ait`)
 
@@ -94,10 +94,10 @@ dev에서 devtools mock과 polyfill이 동시에 활성화될 때 polyfill은 `g
 
 실기기 토스 앱 WebView에 띄운 번들을 에이전트가 사람 폰 관찰 없이 디버깅하는 station 3(debug) 경로. 핵심 인프라 세 가지:
 
-**1. `window.__sdk` / `window.__sdkCall` 브리지** — `@ait-co/debug-console/auto` (`main.tsx`의 single-line import)가 설치한다. `@apps-in-toss/web-framework`의 전체 export namespace를 `window.__sdk`로 노출하고, `window.__sdkCall(name, ...args)`로 임의 SDK API를 호출해 `{ ok, value | error }`를 받는다. 에이전트가 CDP relay의 `Runtime.evaluate`로 직접 구동한다 — 예: `window.__sdkCall('setDeviceOrientation', { type: 'landscape' })`. namespace mirror 패턴이라 새 SDK API가 추가되면 자동 노출되고 2.x·3.x 양쪽에서 동작한다.
+**1. `window.__sdk` / `window.__sdkCall` 브리지** — `@ait-co/debug-console/auto`가 설치한다(`main.tsx`에서 `__DEBUG_BUILD__` 가드 안 동적 import — 아래 2겹 게이트 참고). `@apps-in-toss/web-framework`의 전체 export namespace를 `window.__sdk`로 노출하고, `window.__sdkCall(name, ...args)`로 임의 SDK API를 호출해 `{ ok, value | error }`를 받는다. 에이전트가 CDP relay의 `Runtime.evaluate`로 직접 구동한다 — 예: `window.__sdkCall('setDeviceOrientation', { type: 'landscape' })`. namespace mirror 패턴이라 새 SDK API가 추가되면 자동 노출되고 2.x·3.x 양쪽에서 동작한다.
 
 - **왜 필요한가**: SDK는 호출을 Granite/ReactNative 브리지(`window.ReactNativeWebView.postMessage` + 독자 envelope)로 라우팅하고, SDK 함수들은 모듈 내부(tree-shaken, global에 안 붙음)다. envelope을 CDP eval로 hand-synthesize할 수 없으므로, 이 브리지 없이는 `setDeviceOrientation` 같은 API를 실기기에서 구동하려면 사람이 UI를 탭해야 한다.
-- **self-gate**: `@ait-co/debug-console/auto`는 소비자 번들러가 `import.meta.env.DEV`를 `true`로 치환하는 DEV 빌드이거나 URL에 `?debug=1`/`?relay=`가 있을 때만 활성화된다. 그 외 일반 production load에서는 dormant — `window.__sdk`/`__sdkCall`이 설치되지 않는다. 이 self-gate는 순수 런타임이라(URL 파라미터를 매 로드마다 확인) 빌드 타임에 DCE되지 않는다 — `dependencies`에 두는 이유이자, `pnpm build`/`bundle:ait`/`bundle:ait:dogfood` 어느 채널로 빌드해도 dormant chunk가 dist에 남는 이유다 (#361 이전에는 `__DEBUG_BUILD__` Vite `define`으로 채널별 빌드 타임 DCE를 걸었으나, `@ait-co/debug-console`로 옮기며 패키지 자체의 권장 사용법인 self-gating 한 줄 import로 단순화했다 — `scripts/check-debug-build.sh` 참고).
+- **2겹 게이트** (#210, devtools #647 — specifier만 #361에서 `@ait-co/debug-console`로 교체, 구조는 유지): 빌드 타임(강) — `main.tsx`가 `if (__DEBUG_BUILD__) { import('@ait-co/debug-console/auto'); }`로 감싸고, `vite.config.ts`가 `AIT_DEBUG_BUILD` env var를 `define`으로 인라인한다. 기본(release, `pnpm build`/`bundle:ait`)은 `false`라 Rollup이 `@ait-co/debug-console/auto` 그래프(Chii relay + eruda + `__sdk` 브리지) 전체를 DCE — dist에 **0 bytes**. `bundle:ait:dogfood`만 `AIT_DEBUG_BUILD=1`을 세팅해 이 그래프를 살린다. 런타임(약) — 살아있는 그래프 안에서도 `@ait-co/debug-console/auto` 자체가 DEV 빌드이거나 URL에 `?debug=1`/`?relay=`가 있을 때만 활성화되는 self-gate를 갖는다. 이 두 겹이 함께 "release 번들엔 표면 자체가 없음 + dogfood 빌드여도 opt-in 없인 attach 안 함"을 보장한다 — 회귀 가드는 `scripts/check-debug-build.sh`(dogfood=sentinel present / release=sentinel absent 비대칭 단언).
 
 **2. `ait build`는 real SDK 번들** (mock 아님). `pnpm bundle:ait`(= `ait build`)는 devtools mock alias를 **적용하지 않는다** — 그 alias는 Vite dev 전용 rewrite다. 따라서 on-device 번들의 SDK 호출은 mock이 아니라 진짜 브리지 호출이다. (`pnpm dev` 브라우저에선 같은 import가 mock으로 resolve되지만, dev 서버는 `.ait` 배포와 무관하다.)
 

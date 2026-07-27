@@ -39,5 +39,5 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Debug surface check (debug-console present / devtools+debugger absent)
+      - name: Debug build toggle (dogfood present / release absent)
         run: bash scripts/check-debug-build.sh
