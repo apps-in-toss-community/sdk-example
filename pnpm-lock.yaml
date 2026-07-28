@@ -4,16 +4,13 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-patchedDependencies:
-  '@ait-co/debugger@0.1.1': 2f52feb7a490ca56b5e265be5f6c40c75c7b720c427f2c16d7bc75b26180c7ef
-
 importers:
 
   .:
     dependencies:
       '@ait-co/debug-console':
-        specifier: ^0.1.1
-        version: 0.1.1
+        specifier: ^0.1.3
+        version: 0.1.3
       '@ait-co/polyfill':
         specifier: ^0.1.18
         version: 0.1.18(@apps-in-toss/web-framework@2.10.0(cd00c9bf3192723904933ff39d975219))
@@ -34,8 +31,8 @@ importers:
         version: 7.18.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
     devDependencies:
       '@ait-co/debugger':
-        specifier: ^0.1.1
-        version: 0.1.1(patch_hash=2f52feb7a490ca56b5e265be5f6c40c75c7b720c427f2c16d7bc75b26180c7ef)(supports-color@8.1.1)(zod@4.4.3)
+        specifier: ^0.1.3
+        version: 0.1.3(supports-color@8.1.1)(zod@4.4.3)
       '@ait-co/devtools':
         specifier: ^0.1.143
         version: 0.1.143(@apps-in-toss/web-framework@2.10.0(cd00c9bf3192723904933ff39d975219))(rolldown@1.1.3)(rollup@4.62.2)(supports-color@8.1.1)(vite@8.1.0(@types/node@26.1.1)(esbuild@0.27.7)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(zod@4.4.3)
@@ -105,12 +102,12 @@ packages:
   '@adobe/css-tools@4.5.0':
     resolution: {integrity: sha512-6OzddxPio9UiWTCemp4N8cYLV2ZN1ncRnV1cVGtve7dhPOtRkleRyx32GQCYSwDYgaHU3USMm84tNsvKzRCa1Q==}
 
-  '@ait-co/debug-console@0.1.1':
-    resolution: {integrity: sha512-9W7GVXe8HwhAxx2jQKEu7nr5agUqrRPn/AR+CecuMf+FJWhbhQxF4xbYYP08MeW2FbMwwX5SaCK7nuVarBbLXQ==}
+  '@ait-co/debug-console@0.1.3':
+    resolution: {integrity: sha512-77U4sNEyXPO+At4OZS5z0p9vmWye0ke9PjRwucZi4SVz18TMSkD2+66vvcgdpQTsDCUDmDRt/QtUwX6y83VQSw==}
     engines: {node: '>=24'}
 
-  '@ait-co/debugger@0.1.1':
-    resolution: {integrity: sha512-YB+LedwZEr9SSOuo42P+ZLf+j7SB/jMg2j4BIfx4eRcXrw4TScViQEWl4wCXrkTWL6dXnYtT8XZdyfsMGxoQkA==}
+  '@ait-co/debugger@0.1.3':
+    resolution: {integrity: sha512-Ij1yt+lNJeJfJIYEuzYF6gag7wMwhd1zKGsXFfelW+GM7qGiNB3b6mUSWXHhyJVBkzIyZ7nDZozD25hieYwt2Q==}
     engines: {node: '>=24'}
     hasBin: true
 
@@ -7822,11 +7819,11 @@ snapshots:
 
   '@adobe/css-tools@4.5.0': {}
 
-  '@ait-co/debug-console@0.1.1':
+  '@ait-co/debug-console@0.1.3':
     dependencies:
       eruda: 3.4.3
 
-  '@ait-co/debugger@0.1.1(patch_hash=2f52feb7a490ca56b5e265be5f6c40c75c7b720c427f2c16d7bc75b26180c7ef)(supports-color@8.1.1)(zod@4.4.3)':
+  '@ait-co/debugger@0.1.3(supports-color@8.1.1)(zod@4.4.3)':
     dependencies:
       '@modelcontextprotocol/sdk': 1.29.0(supports-color@8.1.1)(zod@4.4.3)
       '@vitest/runner': 4.1.10
