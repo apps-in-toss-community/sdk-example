@@ -1,3 +1,6 @@
+minimumReleaseAgeExclude:
+  - '@ait-co/debug-console'
+  - '@ait-co/debugger'
 allowBuilds:
   "@sentry/cli": false
   "@swc/core": false
@@ -5,8 +8,3 @@ allowBuilds:
   esbuild: true
   protobufjs: false
   sharp: false
-minimumReleaseAgeExclude:
-  - '@ait-co/debug-console@0.1.1'
-  - '@ait-co/debugger@0.1.1'
-patchedDependencies:
-  '@ait-co/debugger@0.1.1': patches/@ait-co__debugger@0.1.1.patch
