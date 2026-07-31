@@ -47,7 +47,7 @@
   },
   "devDependencies": {
     "@ait-co/debugger": "^0.1.3",
-    "@ait-co/devtools": "^0.1.143",
+    "@ait-co/devtools": "^0.2.0",
     "@apps-in-toss/cli": "2.10.0",
     "@biomejs/biome": "2.5.1",
     "@playwright/test": "^1.61.1",

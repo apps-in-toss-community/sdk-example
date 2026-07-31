@@ -1,6 +1,7 @@
 minimumReleaseAgeExclude:
   - '@ait-co/debug-console'
   - '@ait-co/debugger'
+  - '@ait-co/devtools'
 allowBuilds:
   "@sentry/cli": false
   "@swc/core": false
