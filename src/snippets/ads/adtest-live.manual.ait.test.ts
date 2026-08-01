@@ -30,7 +30,12 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { AD_REAL_PLACEMENT_GROUPS } from '../../constants';
 import { captureCallback, flushCapture } from '../../test/aitCapture';
 
-const CATEGORY = 'ads';
+// 표준 무인 슈트(`ads.ait.test.ts`)와 갈라 둔다 — `flushCapture(CATEGORY)`가
+// `<category>.<sdkLine>.<platform>.json`으로 떨어뜨리므로 같은 `'ads'`를 쓰면 이
+// 파일이 표준 슈트의 캡처를 통째로 덮어써 `happy-load` 비교 키가 사라진다(#368).
+// diff 비교 키는 `(api, scenario)`라 카테고리 이름은 대조 의미를 바꾸지 않는다
+// (`scripts/diff-ait-captures.ts`).
+const CATEGORY = 'ads-live';
 
 // AdsPage AD_TEST_ID_PRESETS와 동일한 값.
 const TEST_ID_INTERSTITIAL = 'ait-ad-test-interstitial-id';

@@ -26,6 +26,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { captureAsync, captureCallback, captureSync, cell, flushCapture } from '../../test/aitCapture';
 import { clearProvisioningMirror, mirrorProvisioning } from '../../test/provisioningMirror';
 
+// 표준(무인) 슈트가 이 카테고리의 정본 캡처 파일을 소유한다 — 같은 디렉토리의
+// 수동 슈트는 `'ads-manual'`/`'ads-live'`로 갈라 이 파일의 `happy-load` 비교 키를
+// 덮어쓰지 않게 한다(#368).
 const CATEGORY = 'ads';
 
 // 31146은 AdMob placement가 발급돼 있지 않다(광고 계약 미체결) — 실기기는 load
