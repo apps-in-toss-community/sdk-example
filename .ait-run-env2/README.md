@@ -22,6 +22,22 @@ sdk-example#333의 provenance 감사는 이 실행분이 물리 기기가 아니
 기질이었다고 판정하고 라벨을 `ios-sim`으로 정정할 것을 지시했다. 이 디렉토리는 그
 지시를 반영한 상태다.
 
+**단, #333 작업 (1)의 나머지 절반 — canonical 경로로의 이전 — 은 하지 않았다.**
+정정된 것은 라벨(파일명 + `platform` 필드)뿐이고, 이 리포트는 여전히 파이프라인이
+읽지 않는 `.ait-run-env2/`에 있다. canonical replay 경로는
+`scripts/replay-engine-sim-capture.ts`가 `.ait-capture-env2/engine.2.x.ios-sim.json`으로
+산출하는 것인데, 그 디렉토리는 `.gitignore`에 있어 저장소에 남지 않는다 — 즉 "경로
+이전"은 이 tracked 파일을 gitignored 경로로 옮기는 것을 뜻하게 되어 archive 후
+기록이 사라진다. 그래서 여기서는 옮기지 않고 미완으로 남긴다.
+
+경로에 대한 사실 하나 더: #333 본문은 대상을 `.ait-run-env2/engine.2.x.ios-pwa.json`
+이라고 적었지만, git-tracked 파일은 `engine.` prefix가 없는
+`.ait-run-env2/2.x.ios-pwa.json`(현 `2.x.ios-sim.json`)이었다. `engine.2.x.ios-pwa.json`
+이라는 이름의 파일은 하위 `.ait-run-env2/.ait-capture/`에 있고 그쪽은 gitignored라
+tracked가 아니다. #333 본문이 run report 파일명과 capture 파일명 규칙
+(`engine.<sdkLine>.<platform>.json`)을 한 경로로 합쳐 적은 것으로 보이며, 이 문서의
+서술은 실제 tracked 파일을 기준으로 한다.
+
 함께 남기는 불확실성:
 
 - **이 파일 자체에는 기질을 증명하는 값이 없다.** userAgent·AppleWebKit 문자열·

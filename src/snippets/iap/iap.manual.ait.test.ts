@@ -28,19 +28,22 @@
  * 네이티브 UI고, 완료/취소 제스처 자체가 사람의 판단(그리고 #298에서 결정할
  * 실결제 정책)을 전제한다. 그래서 이 파일은 "사람이 대신 눌러준다"를 전제로
  * 한 manual-blocking 슈트로만 존재할 수 있고, 완료·취소 어느 쪽이 나와도(또는
- * 프로비저닝 미비로 UI가 뜨기도 전에 즉시 거부돼도) outcome+shape을 정직하게
- * 기록하는 것을 목표로 삼는다 — 특정 갈래(happy)를 강제하는 assertion은
- * 실기기 셀에 두지 않는다.
+ * UI가 뜨기도 전에 즉시 거부돼도) outcome+shape을 정직하게 기록하는 것을
+ * 목표로 삼는다 — 특정 갈래(happy)를 강제하는 assertion은 실기기 셀에 두지
+ * 않는다.
  *
  * ─ 프로비저닝 미비 내성 ──────────────────────────────────────────────────────
- * 31146은 이 작성 시점 기준 IAP/페이먼츠 약관이 완전히 체결되지 않았을 수
- * 있다(#298) — 그러면 아래 두 호출은 UI를 띄우지도 못하고 즉시 native 오류
- * shape로 reject되거나(주문 생성) `{ success:false, ... }` 류 실패 envelope으로
+ * 워크스페이스 3095 약관은 2026-07-23 콘솔 read-only 관측 기준 **7종 전부
+ * 체결**돼 있다(#298) — 약관 체결 여부는 더 이상 미확정 항목이 아니다. 그럼에도
+ * 실기기에서 아래 두 호출이 UI를 띄우지도 못하고 즉시 native 오류 shape로
+ * reject되거나(주문 생성) `{ success:false, ... }` 류 실패 envelope으로
  * resolve될 수 있다(구매 시트 — `iap.ait.test.ts`의 soft-resolve 미러가 관측한
- * `{ false, reason }` shape 참조). 그 rejection/실패 shape 자체가 ground
- * truth이므로 `iap.ait.test.ts`와 같은 원칙으로 happy를 단정하지 않고,
- * resolved/rejected/timeout 중 무엇이 나오든 shape을 기록하는 관측-단언으로
- * 설계한다.
+ * `{ false, reason }` shape 참조). **어느 프로비저닝 축이 그 거부의 실제
+ * 관문인지는 현재 증거로 가를 수 없으므로 원인은 단정하지 않는다** — 이 절이
+ * 지키는 것은 원인 진단이 아니라 "무엇이 나오든 견디고 기록한다"는 설계
+ * 의도다. 그 rejection/실패 shape 자체가 ground truth이므로 `iap.ait.test.ts`와
+ * 같은 원칙으로 happy를 단정하지 않고, resolved/rejected/timeout 중 무엇이
+ * 나오든 shape을 기록하는 관측-단언으로 설계한다.
  *
  * ─ cell 판별 (haptic.ait.test.ts 선례) ──────────────────────────────────────
  * mock 셀(`cell.platform === 'mock'`)은 devtools mock의 결정적 성공 계약
@@ -71,8 +74,11 @@ afterAll(async () => {
 describe('iap · 주문 생성 (수동-변형 — 사람이 주문서 페이지를 확인 후 완료/취소한다)', () => {
   it('IAP.createOneTimePurchaseOrder — 사람: 인앱결제 주문서 페이지가 뜨면 결제를 완료하거나 취소해 주세요', async () => {
     // 1) 상품 조회 선행 — 실기기에서는 이 호출부터 거부되거나 빈 목록으로 돌아올
-    //    수 있다(약관은 2026-07-23 기준 7종 전부 체결 확인, 확인된 관문은 거래처
-    //    (partner) 미등록 — #298). 그런 경우엔 mock 기본 상품 sku로
+    //    수 있다. 콘솔 read-only 관측(2026-07-23, #298)으로 확인된 것은 약관 7종
+    //    전부 체결, 거래처(partner) 등록 조회가 `registered:false`, 콘솔 IAP 상품
+    //    카탈로그 API가 `errorCode 5002`로 응답한 것까지다 — 전부 **콘솔 API
+    //    표면**의 관측이고, 온디바이스 호출 거부와 잇는 관측은 아직 없으므로
+    //    실기기 거부의 원인으로 삼지 않는다. 그런 경우엔 mock 기본 상품 sku로
     //    fallback한다 — 이 테스트의 목적은 상품 조회 자체가 아니라 주문 생성
     //    호출의 outcome+shape 관측이라 sku 유효성은 부차적이다.
     const listResult = await captureAsync(
@@ -97,8 +103,8 @@ describe('iap · 주문 생성 (수동-변형 — 사람이 주문서 페이지�
     //    결제를 완료(또는 취소)하면 onEvent(success)/onError(USER_CANCELED 등
     //    네이티브 오류)가 오는지 확인한다. mock은 300ms 뒤 자동으로
     //    onEvent(success)를 발화하므로 사람이 직접 개입할 필요가 없다 —
-    //    실기기(프로비저닝 완료 후)에서만 실제 주문서 UI가 뜨고 사람의
-    //    완료/취소 제스처가 필요하다.
+    //    실기기에서 실제 주문서 UI가 뜬 경우에만 사람의 완료/취소 제스처가
+    //    필요하다.
     const orderResult = await captureCallback(
       {
         category: CATEGORY,
