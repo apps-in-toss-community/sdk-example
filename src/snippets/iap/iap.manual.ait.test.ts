@@ -32,7 +32,7 @@
  * 목표로 삼는다 — 특정 갈래(happy)를 강제하는 assertion은 실기기 셀에 두지
  * 않는다.
  *
- * ─ 프로비저닝 미비 내성 ──────────────────────────────────────────────────────
+ * ─ 실패 내성 ────────────────────────────────────────────────────────────────
  * 워크스페이스 3095 약관은 2026-07-23 콘솔 read-only 관측 기준 **7종 전부
  * 체결**돼 있다(#298) — 약관 체결 여부는 더 이상 미확정 항목이 아니다. 그럼에도
  * 실기기에서 아래 두 호출이 UI를 띄우지도 못하고 즉시 native 오류 shape로
@@ -49,7 +49,7 @@
  * mock 셀(`cell.platform === 'mock'`)은 devtools mock의 결정적 성공 계약
  * (300ms 뒤 자동 success — 이 파일은 `mirrorSoftResolve`를 켜지 않으므로)을
  * 하드 단언해 mock 무인 통과를 회귀 가드로 지킨다. 그 외 셀(ios/android 등
- * 아직 실측 코퍼스가 없는 실기기)은 위 프로비저닝 미비 내성 원칙대로 관용
+ * 아직 실측 코퍼스가 없는 실기기)은 위 실패 내성 원칙대로 관용
  * 단언으로 남긴다.
  *
  * 커뮤니티 오픈소스 프로젝트입니다.
@@ -131,8 +131,8 @@ describe('iap · 주문 생성 (수동-변형 — 사람이 주문서 페이지�
         data: expect.objectContaining({ orderId: expect.any(String) }),
       });
     } else {
-      // 실기기: 프로비저닝 상태·사람의 완료/취소에 따라 갈린다 — 어느 갈래든
-      // shape만 정직하게 기록한다(그 rejection shape 자체가 ground truth).
+      // 실기기: 어느 갈래든 shape만 정직하게 기록한다(그 rejection shape 자체가
+      // ground truth).
       expect(['resolved', 'rejected', 'callback-timeout']).toContain(orderResult.outcome);
       if (orderResult.outcome === 'resolved') {
         expect(orderResult.value).toMatchObject({
@@ -164,8 +164,8 @@ describe('iap · 구매 시트 (수동-변형 — 사람이 TossPay 결제창을
       expect(outcome).toBe('resolved');
       expect(value).toMatchObject({ success: true });
     } else {
-      // 실기기: 프로비저닝 미비면 결제창이 뜨지도 못하고 { success:false, ... }
-      // 류 실패 envelope으로 resolve되거나(iap.ait.test.ts의 soft-resolve 미러가
+      // 실기기: 결제창이 뜨지도 못한 채 { success:false, ... } 류 실패
+      // envelope으로 resolve되거나(iap.ait.test.ts의 soft-resolve 미러가
       // 관측한 `{ false, reason }` shape 포함) native 오류로 reject/timeout될 수
       // 있다 — 어느 갈래든 shape만 기록한다.
       expect(['resolved', 'rejected', 'timeout']).toContain(outcome);

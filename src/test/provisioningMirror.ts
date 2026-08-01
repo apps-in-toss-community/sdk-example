@@ -11,8 +11,7 @@
  *
  * 아래 다이얼 값은 그 **관측된 결과**를 옮긴 것이지 원인 진단이 아니다 — 어느
  * 축(약관·거래처 등록·앱 승인·배포 상태·콘솔 설정)이 실제 관문인지는 현재 증거로
- * 가르지 못한 것이 있다(ads는 #358, IAP/결제는 #298). 원인이 확인된 축은 그
- * 항목 주석에 따로 적는다.
+ * 가르지 못한 것이 있다(ads는 #358, IAP/결제는 #298).
  *
  * 이 갭을 "mock을 고쳐서" 없애면 안 된다 — mock의 기본값이 항상 실패로 바뀌면
  * 정상 프로비저닝된 앱을 개발하는 일반 사용자의 dev 경험이 망가진다. 대신
@@ -48,7 +47,7 @@ async function loadAitState(): Promise<AitStateLike | undefined> {
  * 각 항목 옆 주석은 그 값을 관측한 env3 시나리오다 — 재측정 시 대조 지점.
  */
 const PROVISIONING_31146 = {
-  /** `auth` — `happy-default` / `A2-referrer-forwarding`: 토스 로그인 미연동. */
+  /** `auth` — `happy-default` / `A2-referrer-forwarding`. */
   appLogin: 'APP_LOGIN',
   /** `auth` — `A1-awaited-is-boolean`. */
   getIsTossLoginIntegratedService: 'EXECUTION_ERROR',
@@ -61,8 +60,6 @@ const PROVISIONING_31146 = {
   /**
    * `permissions` — `happy-each-name` 순회 실측: `geolocation`/`camera`/
    * `microphone`만 거부, `clipboard`/`contacts`/`photos`는 통과.
-   * `granite.config.ts`의 `permissions: []`와 정합하는 **이름 단위** 맵이다
-   * (전역 on/off가 아니다).
    */
   getPermission: {
     geolocation: 'NO_PERMISSION',

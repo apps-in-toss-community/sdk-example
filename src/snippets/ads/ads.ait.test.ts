@@ -208,7 +208,7 @@ describe('ads · LOAD (captureCallback, env3=terminal-arrived만 단언)', () =>
     if (result.outcome === 'resolved') {
       expect(result.value).toMatchObject({ type: 'loaded' });
     } else {
-      // 프로비저닝 거부(rejected) 또는 응답 없음(timeout) 모두 ENV_EXPECTED.
+      // 거부(rejected) 또는 응답 없음(timeout) 모두 ENV_EXPECTED.
       expect(['rejected', 'callback-timeout']).toContain(result.outcome);
     }
   });
