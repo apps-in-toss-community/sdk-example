@@ -58,8 +58,9 @@ afterEach(async () => {
 });
 
 beforeAll(async () => {
-  // 31146엔 조회한 orderId에 활성 구독이 없고 결제도 미프로비저닝이라, 실기기(env3)는
-  // 아래 둘을 reject가 아니라 대체 shape로 resolve한다(run11 2.x/iOS 실측):
+  // 실기기(env3, 31146)에서 아래 둘은 reject가 아니라 대체 shape로 resolve하는 것이
+  // 관측됐다(run11 2.x/iOS 실측). 원인은 단정하지 않는다 — 프로비저닝 축이 여럿이라
+  // 어느 것이 관문인지 현재 증거로 가를 수 없다(#298):
   //   - getSubscriptionInfo → 빈 객체 {} (valueKeys=[])
   //   - checkoutPayment → { false, reason } (valueKeys=['false','reason'])
   // env1(mock)도 같은 shape로 맞춰 capture diff가 동치를 보게 한다(devtools#789/#793).
@@ -92,7 +93,12 @@ describe('iap · 값 다양화 (happy path)', () => {
       },
       () => IAP.getCompletedOrRefundedOrders(),
     );
-    // fix #7: 실기기에서 IAP 약관 미체결이나 권한 문제로 reject될 수 있다.
+    // fix #7: 실기기에서 이 조회들이 reject될 수 있다. 콘솔 read-only 관측
+    // (2026-07-23, #298)에서 확인된 범위: 워크스페이스 3095 약관 7종은 전부
+    // 체결됐고, 거래처(partner) 등록 조회는 `registered:false`, 콘솔 IAP 상품
+    // 카탈로그 API는 `errorCode 5002`로 응답했다. 셋 다 **콘솔 API 표면**의
+    // 관측이며, 온디바이스 호출 거부와 이것들을 잇는 관측은 스레드에 없다 —
+    // 실기기 거부의 원인은 단정하지 않는다.
     // resolved 시에만 shape를 단언한다.
     if (list.outcome === 'resolved') {
       expect(list.value).toMatchObject({ products: expect.any(Array) });

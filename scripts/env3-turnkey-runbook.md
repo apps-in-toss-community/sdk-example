@@ -21,7 +21,8 @@
 - `AIT_SCHEME_URL`(scheme URL) + `.ait_relay`(TOTP 시크릿)가 있어야 `pnpm test:env3`가 돈다.
 - **시크릿·TOTP·relay wss·터널 호스트는 어떤 출력에도 싣지 않는다.** `.ait_relay`/`.ait_urls`
   내용, `at=` 파라미터, `*.trycloudflare.com`, `AIT_TUNNEL_BASE_URL`을 echo/로그 금지.
-- 배포(약관 7건 미체결, maintainer 결정)는 이 런북 밖이다 — 여기서는 debug-relay QR
+- 배포(maintainer 결정 사안)는 이 런북 밖이다 — 워크스페이스 3095 약관 7종은
+  2026-07-23 관측 기준 전부 체결됐다(#298). 여기서는 debug-relay QR
   경로만 다룬다. scheme URL 발급은 tag-gated `deploy-ait.yml`(= `ait deploy --scheme-only`)이
   GitHub Release에 QR로 붙여 주는 것을 쓴다.
 

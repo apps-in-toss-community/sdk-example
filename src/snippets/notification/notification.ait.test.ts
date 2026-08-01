@@ -95,8 +95,7 @@ describe('notification · requestNotificationAgreement (mock nextResult 3분기 
           }),
       );
 
-      // 31146에는 알림 템플릿이 등록돼 있지 않다 — 실기기는 `nextResult` 분기에
-      // 닿기도 전에 `4000`으로 거부하고, env1도 프로비저닝 미러로 같은 상태다.
+      // 실기기에서 `4000` 거부가 관측됐고, env1도 프로비저닝 미러로 같은 상태다.
       // mock의 nextResult 강제 경로 자체는 devtools 자체 슈트
       // (`src/__tests__/notification.test.ts`)가 게이트하므로 여기서는 두 환경에
       // 함께 성립하는 것만 단언한다.
@@ -194,8 +193,7 @@ describe('notification · 의도적 오류 (확인된 오용 가드)', () => {
           onError,
         }),
     );
-    // 위 3분기 테스트와 같은 이유로 수렴 단언 — 템플릿 미등록 상태에서는 빈
-    // templateCode 이전에 프로비저닝 거부가 먼저 걸린다.
+    // 위 3분기 테스트와 같은 이유로 수렴 단언.
     if (result.outcome === 'resolved') {
       expect(AGREEMENT_RESULTS).toContain((result.value as { type?: unknown }).type);
     } else if (result.outcome === 'rejected') {

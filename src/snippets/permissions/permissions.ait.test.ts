@@ -74,9 +74,8 @@ const PERMISSION_NAMES = [
  */
 const PERMISSIONS_CALL_TIMEOUT_MS = 5_000;
 
-// 31146의 `granite.config.ts`는 `permissions: []`다 — 선언되지 않은 권한
-// (geolocation/camera/microphone)만 실기기에서 `NO_PERMISSION`으로 거부되고
-// clipboard/contacts/photos는 통과한다. 이름 단위 맵으로 그 그림을 옮긴다.
+// 실기기에서 geolocation/camera/microphone만 `NO_PERMISSION`으로 거부되고
+// clipboard/contacts/photos는 통과하는 것이 관측됐다.
 beforeAll(async () => {
   await mirrorProvisioning('getPermission');
 });

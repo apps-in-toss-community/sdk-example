@@ -85,10 +85,10 @@ describe('payment · 정기결제 인증 (수동-변형 — 사람이 토스페�
       { raceTimeoutMs: HUMAN_RESPONSE_TIMEOUT_MS },
     );
 
-    // 프로비저닝 미비(31146 결제 미프로비저닝, umbrella CLAUDE.md 참조)면 인증
-    // 화면이 뜨지도 못하고 실패 envelope으로 resolve되거나 native 오류로
-    // reject/timeout될 수 있다 — iap.manual과 같은 원칙으로 어느 갈래든 shape만
-    // 정직하게 기록한다.
+    // 실기기에서 이 호출은 인증 화면이 뜨지도 못한 채 실패 envelope으로
+    // resolve되거나 native 오류로 reject/timeout될 수 있다. 원인은 단정하지
+    // 않는다 — 관측과 논의는 #298 스레드에 있다(이 저장소 안에서 읽을 수 있는
+    // 근거). iap.manual과 같은 원칙으로 어느 갈래든 shape만 정직하게 기록한다.
     expect(['resolved', 'rejected', 'timeout']).toContain(outcome);
     if (outcome === 'resolved' && value != null) {
       const result = value as { success?: boolean; reason?: unknown };

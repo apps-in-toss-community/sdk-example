@@ -28,8 +28,11 @@ import { clearProvisioningMirror, mirrorProvisioning } from '../../test/provisio
 
 const CATEGORY = 'ads';
 
-// 31146은 AdMob placement가 발급돼 있지 않다(광고 계약 미체결) — 실기기는 load
-// 단계에서 이미 네이티브 오류로 거부한다. env1을 그 프로비저닝 상태로 맞춘다.
+// 실기기(31146)에서 광고가 서빙되는 것이 관측된 적이 없다 — 2026-07-25/26 관측
+// (iOS, web-framework 2.10.0)에서 두 LOAD 경로 모두 네이티브 오류
+// (`PLACEMENT_ID_FETCH_FAILED` / `EXECUTION_ERROR`)로 거부되는 것만 확인됐다.
+// **원인은 확정되지 않았다**(#358) — 여기서는 원인을 단정하지 않고 관측된 결과에만
+// env1을 맞춘다.
 beforeAll(async () => {
   await mirrorProvisioning('loadAdMob', 'loadFullScreenAd');
 });
@@ -196,8 +199,8 @@ describe('ads · LOAD (captureCallback, env3=terminal-arrived만 단언)', () =>
           options: { adGroupId: 'adGroupId' },
         }),
     );
-    // 31146은 광고 계약이 체결돼 있지 않아 실기기는 load 단계에서 거부한다 —
-    // env1도 프로비저닝 미러로 같은 상태에 세워져 있으므로 `mock이면 반드시
+    // 실기기에서는 이 호출이 load 단계에서 거부되는 것만 관측됐다(원인 미확정,
+    // #358) — env1도 프로비저닝 미러로 같은 상태에 세워져 있으므로 `mock이면 반드시
     // resolved` 같은 env1 전용 단언은 두지 않는다(그 단언 자체가 env1↔env3
     // 발산을 코드로 못박는 것이었다). mock의 낙관적 happy 경로(200ms 후
     // onEvent `loaded`)는 devtools 자체 슈트(`src/__tests__/ads.test.ts`)가
@@ -205,7 +208,7 @@ describe('ads · LOAD (captureCallback, env3=terminal-arrived만 단언)', () =>
     if (result.outcome === 'resolved') {
       expect(result.value).toMatchObject({ type: 'loaded' });
     } else {
-      // 프로비저닝 거부(rejected) 또는 응답 없음(timeout) 모두 ENV_EXPECTED.
+      // 거부(rejected) 또는 응답 없음(timeout) 모두 ENV_EXPECTED.
       expect(['rejected', 'callback-timeout']).toContain(result.outcome);
     }
   });
@@ -225,8 +228,8 @@ describe('ads · LOAD (captureCallback, env3=terminal-arrived만 단언)', () =>
           options: { adGroupId: 'adGroupId' },
         }),
     );
-    // 위 loadFullScreenAd와 같은 이유로 수렴 단언 — 31146은 AdMob placement가
-    // 발급돼 있지 않아 양쪽 환경 모두 load 단계에서 거부된다.
+    // 위 loadFullScreenAd와 같은 이유로 수렴 단언 — 실기기에서 이 경로의 광고
+    // 서빙이 관측된 적이 없고(원인 미확정, #358), 미러를 켠 env1도 같은 상태다.
     if (result.outcome === 'resolved') {
       expect(result.value).toMatchObject({
         type: 'loaded',

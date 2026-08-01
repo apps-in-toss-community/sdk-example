@@ -14,8 +14,10 @@ import { clearSoftResolveMirror, mirrorSoftResolve } from '../../test/provisioni
 const CATEGORY = 'payment';
 
 beforeAll(async () => {
-  // 31146은 결제가 미프로비저닝이라 실기기(env3)는 requestTossPayPaysBilling을 reject가
-  // 아니라 { false, reason }(valueKeys=['false','reason'])로 resolve한다(run11 2.x/iOS 실측).
+  // 실기기(env3, 31146)에서 requestTossPayPaysBilling은 reject가 아니라
+  // { false, reason }(valueKeys=['false','reason'])로 resolve하는 것이 관측됐다(run11
+  // 2.x/iOS 실측). 원인은 단정하지 않는다 — 어느 프로비저닝 축이 관문인지는 현재
+  // 증거로 가를 수 없다(#298).
   // env1(mock)도 같은 shape로 맞춰 capture diff가 동치를 보게 한다(devtools#789/#793). 아래
   // 단언들은 `'success' in result` 가드가 이미 있어 이 shape에서 통과한다. 리터럴 `false`
   // 키는 하네스 artifact가 아니라 실기기 WebView 관측값으로 확정(#303, capture.ts).
