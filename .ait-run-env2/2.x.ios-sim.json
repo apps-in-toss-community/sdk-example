@@ -1,7 +1,7 @@
 {
   "cell": {
     "sdkLine": "2.x",
-    "platform": "ios-pwa"
+    "platform": "ios-sim"
   },
   "startedAt": "2026-07-20T10:02:25.351Z",
   "duration": 1855,

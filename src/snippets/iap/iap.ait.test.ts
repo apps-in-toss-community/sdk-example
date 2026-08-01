@@ -92,7 +92,9 @@ describe('iap · 값 다양화 (happy path)', () => {
       },
       () => IAP.getCompletedOrRefundedOrders(),
     );
-    // fix #7: 실기기에서 IAP 약관 미체결이나 권한 문제로 reject될 수 있다.
+    // fix #7: 실기기에서 이 조회들이 reject될 수 있다 — 워크스페이스 3095 약관은
+    // 2026-07-23 관측 기준 7종 전부 체결됐고, 확인된 관문은 거래처(partner)
+    // 미등록이다(IAP 상품 카탈로그 API가 `5002`로 차단, #298).
     // resolved 시에만 shape를 단언한다.
     if (list.outcome === 'resolved') {
       expect(list.value).toMatchObject({ products: expect.any(Array) });

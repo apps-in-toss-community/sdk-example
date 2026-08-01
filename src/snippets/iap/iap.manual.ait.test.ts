@@ -70,8 +70,9 @@ afterAll(async () => {
 
 describe('iap · 주문 생성 (수동-변형 — 사람이 주문서 페이지를 확인 후 완료/취소한다)', () => {
   it('IAP.createOneTimePurchaseOrder — 사람: 인앱결제 주문서 페이지가 뜨면 결제를 완료하거나 취소해 주세요', async () => {
-    // 1) 상품 조회 선행 — 실기기가 IAP 약관 미체결이면 이 호출부터 거부되거나
-    //    빈 목록으로 돌아올 수 있다. 그런 경우엔 mock 기본 상품 sku로
+    // 1) 상품 조회 선행 — 실기기에서는 이 호출부터 거부되거나 빈 목록으로 돌아올
+    //    수 있다(약관은 2026-07-23 기준 7종 전부 체결 확인, 확인된 관문은 거래처
+    //    (partner) 미등록 — #298). 그런 경우엔 mock 기본 상품 sku로
     //    fallback한다 — 이 테스트의 목적은 상품 조회 자체가 아니라 주문 생성
     //    호출의 outcome+shape 관측이라 sku 유효성은 부차적이다.
     const listResult = await captureAsync(
