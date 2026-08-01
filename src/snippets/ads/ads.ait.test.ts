@@ -26,6 +26,19 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { captureAsync, captureCallback, captureSync, cell, flushCapture } from '../../test/aitCapture';
 import { clearProvisioningMirror, mirrorProvisioning } from '../../test/provisioningMirror';
 
+// 표준(무인) 슈트가 이 카테고리의 정본 캡처 파일을 소유한다 — 같은 디렉토리의
+// 수동 슈트는 `'ads-manual'`/`'ads-live'`로 갈라 둔다(#368).
+//
+// 캡처가 파일이 되는 경로는 환경마다 다르다(`src/test/aitCapture.ts` flushCapture):
+//  - env1(Node/vitest): flushCapture가 직접
+//    `<capture-dir>/<category>.<sdkLine>.<platform>.json`을 쓴다.
+//  - env3(브라우저 주입): 파일을 쓰지 않는다 — `globalThis.__AIT_CAPTURE__`에 push하고
+//    `__AIT_CAPTURE__ <category> <json>` 콘솔 한 줄을 낼 뿐이고, `debugger-test` 러너가
+//    relay 콘솔에서 그 줄들을 수확해 **실행이 끝난 뒤** 카테고리별로 묶어
+//    `<report-dir>/.ait-capture/<category>.<sdkLine>.<platform>.json`을 쓴다.
+//    한 실행 안의 같은 카테고리 줄은 병합되므로 실행 내부에서는 덮어쓰기가 없다.
+// 카테고리를 가르는 건 같은 report-dir을 공유하는 **별도 실행**끼리 같은 출력 파일명을
+// 놓고 다투지 않게 하기 위해서다.
 const CATEGORY = 'ads';
 
 // 실기기(31146)에서 광고가 서빙되는 것이 관측된 적이 없다 — 2026-07-25/26 관측
@@ -188,6 +201,15 @@ describe('ads · isSupported / isAppsInTossAdMobLoaded (happy path)', () => {
   });
 });
 
+// 이 블록의 두 `happy-load` 키에 대한 env3 실측값 기록(#368) — 다음 사람이 캡처
+// 부재를 회귀로 오인하지 않도록 남긴다. 로컬 백업 코퍼스
+// `.ait-run-pre-0118-backup/.ait-capture/ads.2.x.ios.json`(2026-07-20 실행, iOS,
+// web-framework 2.10.0)에서 확인했다:
+//   - `loadFullScreenAd :: happy-load`                → rejected / `EXECUTION_ERROR`
+//   - `GoogleAdMob.loadAppsInTossAdMob :: happy-load` → rejected / `PLACEMENT_ID_FETCH_FAILED`
+// 같은 두 키의 env1 미러 캡처(`.ait-capture/ads.2.x.mock.json`)와 outcome·errorCode가
+// 일치한다. 그 백업 디렉토리 안쪽 `.ait-capture/`는 `.gitignore`(`.ait-capture/`)에
+// 걸려 repo에 남지 않는 로컬 산출물이라, 값 자체를 여기에 적어 둔다.
 describe('ads · LOAD (captureCallback, env3=terminal-arrived만 단언)', () => {
   it('loadFullScreenAd — onEvent/onError 중 하나가 도착하거나 callback-timeout', async () => {
     const result = await captureCallback(

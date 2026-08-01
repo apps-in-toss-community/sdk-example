@@ -33,7 +33,22 @@ import {
 import { afterAll, describe, expect, it } from 'vitest';
 import { captureCallback, flushCapture } from '../../test/aitCapture';
 
-const CATEGORY = 'ads';
+// 표준 무인 슈트(`ads.ait.test.ts`)와 카테고리를 갈라 둔다(#368).
+//
+// env3에서 `flushCapture`는 파일을 쓰지 않는다 — `globalThis.__AIT_CAPTURE__`에 push하고
+// `__AIT_CAPTURE__ <category> <json>` 콘솔 한 줄을 낼 뿐이고, `debugger-test` 러너가 relay
+// 콘솔에서 그 줄들을 수확해 실행 종료 후 카테고리별로 묶어
+// `<report-dir>/.ait-capture/<category>.<sdkLine>.<platform>.json`을 쓴다. 한 실행 안의
+// 같은 카테고리 줄은 병합되므로 **한 실행 안에서는 덮어쓰기가 없다**. 손실이 나는 자리는
+// 같은 report-dir로 들어간 **별도 실행 사이**다 — 러너는 그 파일을 디스크에 있던 앞선
+// 실행분과 병합하지 않고 통째로 다시 쓰므로, 수동 슈트만 스코프한 실행이 앞선 표준
+// 실행의 `ads.<sdkLine>.<platform>.json`(= `happy-load` 비교 키)을 대체한다.
+// env1(Node)은 flushCapture가 직접 파일을 쓰므로 같은 카테고리면 한 실행 안에서도 나중
+// 쓰기가 이기지만, 이 파일은 `vitest.config.ts` exclude로 env1에서 돌지 않는다.
+// 카테고리를 가르면 세 슈트의 출력 파일명이 달라져 어느 실행 조합에서도 충돌하지 않는다.
+// diff 비교 키는 `(api, scenario)`라 카테고리 이름은 대조 의미를 바꾸지 않는다
+// (`scripts/diff-ait-captures.ts`).
+const CATEGORY = 'ads-manual';
 
 afterAll(async () => {
   await flushCapture(CATEGORY);
